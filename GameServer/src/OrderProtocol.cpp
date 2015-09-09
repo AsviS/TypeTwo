@@ -21,10 +21,20 @@
  * string:
  * "engineer\n9"
  */
+/// \brief Order data
+///
+/// Data received must be formatted as follows:
+/// "itemName\nquantity"
+/// where itemName is the name of the item to order, and
+/// quantity is how many items to order.
+///
+/// For example, to order 9 engineers, send the following
+/// string:
+/// "engineer\n9"
 struct Order
 {
-    std::string     item;
-    unsigned int    quantity;
+    std::string     item;       ///< Item identifier
+    unsigned int    quantity;   ///< How many items to order
 };
 
 OrderProtocol::OrderProtocol()

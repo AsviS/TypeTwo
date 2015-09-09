@@ -46,7 +46,7 @@ void WebSocketServer::initializeProtocols(const std::vector<WebSocketSubProtocol
         mProtocols[i] = protocols[i - 1]->toLibWebSocketProtocol();
 
     mProtocols[size - 1] = {nullptr, nullptr, 0};
-};
+}
 
 ///////////////////////////////////
 

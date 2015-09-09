@@ -41,7 +41,7 @@ class WebSocketSubProtocol
     protected:
         std::string         mName;              ///< Identifying name
         callback_function*  mCallback;          ///< Callback function called when receiving messages from Client.
-        unsigned int        mSessionDataSize;   ///< Size of session data.
+        unsigned int        mSessionDataSize = 0;   ///< Size of session data.
 };
 
 #endif // TYPETWO_WEBSOCKETSUBPROTOCOL_HPP

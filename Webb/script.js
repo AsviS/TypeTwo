@@ -2,39 +2,67 @@ window.onload = function(){
 
 	var label1 = document.getElementById("label1");
 	var buttonSend = document.getElementById("sendButton");
-	var textfield = document.getElementById("textbox");
+	var buttonConn = document.getElementById("connectButton");
+	var textbox = document.getElementById("textbox");
+	var username = document.getElementById("namefield");
+	var ipfield;
+	var portfield;
 
-	var socket = new WebSocket("ws://192.168.0.191:8080", "order");
-
-	socket.onopen = function (event){
-		label1.innerHTML ="Uppkopplad!";
+	buttonConn.onclick = function (event){
+		joinRoom();	
 	}
 
-	socket.onclose = function(event){
-		label1.innerHTML = "Butiken är stängd.";
-	}
-
-	socket.onmessage = function (event) {
-		if (typeof event.data === "string"){
-			label1.innerHTML = event.data;
+	username.onkeypress = function (event) {
+		if(event.keyCode == 13){
+			joinRoom();
 		};
 	}
 
 	buttonSend.onclick = function (event) {
 		sendMessage();
 	}
+}
 
-	textfield.onkeypress = function (event) {
+function joinRoom(){
+	ipfield = document.getElementById("ipfield");
+	portfield = document.getElementById("portfield");
+	username = document.getElementById("namefield");
+	socket = new WebSocket('ws://' + ipfield.value + ':' + portfield.value, "order");
+	addMessage("Connecting..");
+
+	socket.onopen = function (event){
+		//addMessage("Uppkopplad!");
+		socket.send(username.value + " connected!");
+		textbox.focus();
+	}
+
+	socket.onclose = function (event){
+		addMessage("Connection closed.");
+	}
+
+	socket.onmessage = function (event) {
+		if (typeof event.data === "string"){
+			addMessage(event.data);
+		};
+	}
+
+	textbox.onkeypress = function (event) {
 		if(event.keyCode == 13){
 			sendMessage();
 		};
 	}
+}
 
-	function sendMessage (event){
-		if (socket.readyState == WebSocket.OPEN) {
-			socket.send(textfield.value);
-			textfield.value = "";
-		};
+function addMessage (mess){
+	label1.innerHTML += mess + "<br />";
+}
+
+function sendMessage (event){
+	if (socket.readyState == WebSocket.OPEN) {
+		socket.send(username.value + ": " + textbox.value);
+		textbox.value = '';
 	}
-
+	else{
+		alert("Not connected");
+	}
 }

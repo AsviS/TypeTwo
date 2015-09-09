@@ -8,6 +8,7 @@
 // STD C++
 #include <iostream>
 #include <sstream>
+//#include <cstring>
 ///////////////////////////////////
 
 
@@ -69,10 +70,8 @@ OrderProtocol::OrderProtocol()
                                 << "Quantity: " << order.quantity << std::endl;
 
                 std::string output = outputStream.str();
-                char response[output.size()];
-                output.copy(response, output.size());
-                libwebsocket_write(wsi, (unsigned char*)response, output.size(), LWS_WRITE_TEXT);
-
+				unsigned char* response = stringToUChar(output);
+                libwebsocket_write(wsi, response, output.size(), LWS_WRITE_TEXT);
                 break;
             }
             default:

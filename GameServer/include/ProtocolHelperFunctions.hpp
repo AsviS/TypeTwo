@@ -21,5 +21,7 @@
 ///
 std::string getClientIp(libwebsocket_context* context, libwebsocket* wsi);
 
+char* stringToChar(const std::string& str);
+unsigned char* stringToUChar(const std::string& str);
 
 #endif // TYPETWO_PROTOCOLHELPERFUNCTIONS_HPP

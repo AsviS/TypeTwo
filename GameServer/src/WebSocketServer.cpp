@@ -6,7 +6,9 @@
 ///////////////////////////////////
 // STD C++
 #include <stdexcept>
+#include <algorithm>
 ///////////////////////////////////
+
 
 WebSocketServer::WebSocketServer(unsigned int port, const std::vector<WebSocketSubProtocol::Ptr>& protocols)
 {
@@ -21,14 +23,18 @@ WebSocketServer::WebSocketServer(unsigned int port, const std::vector<WebSocketS
     info.gid = -1;
     info.uid = -1;
 
+    info.user = this;
+
     mContext = libwebsocket_create_context(&info);
+
 
     if (!mContext)
         throw std::runtime_error("Could not initialize WebSocket server.");
 }
 
 ///////////////////////////////////
-
+#include <iostream>
+#include "ProtocolHelperFunctions.hpp"
 void WebSocketServer::initializeProtocols(const std::vector<WebSocketSubProtocol::Ptr>& protocols)
 {
 
@@ -38,14 +44,53 @@ void WebSocketServer::initializeProtocols(const std::vector<WebSocketSubProtocol
     mProtocols[0] =
     {
         "http-only",
-        [](libwebsocket_context * context, libwebsocket *wsi, libwebsocket_callback_reasons reason, void *user, void *in, size_t len){return 0;},
-        0
+        [](libwebsocket_context * context, libwebsocket *wsi, libwebsocket_callback_reasons reason, void *user, void *in, size_t len)
+        {
+            if(reason == LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED)
+            {
+                std::cout << "BBBBBBBBBBBBBBBBBBB" << std::endl;
+                //std::cout << ((char*)in)[0] << std::endl;
+                //WebSocketServer& server = *((WebSocketServer*)libwebsocket_context_user(context));
+                //server.addClient(ClientConnection(getClientIp(context, wsi), server));
+            }
+            return 0;
+        },
+        sizeof(100)
     };
 
     for(unsigned int i = 1; i < size - 1; i++)
         mProtocols[i] = protocols[i - 1]->toLibWebSocketProtocol();
 
     mProtocols[size - 1] = {nullptr, nullptr, 0};
+}
+
+///////////////////////////////////
+
+void WebSocketServer::addClient(ClientConnection client)
+{
+    mClients.insert(std::make_pair(client.getUsername(), client));
+}
+
+///////////////////////////////////
+
+bool WebSocketServer::userIsConnected(std::string username) const
+{
+    return mClients.find(username) != mClients.end();
+}
+
+///////////////////////////////////
+
+void WebSocketServer::removeClient(std::string username)
+{
+    mClients.erase(username);
+}
+
+
+///////////////////////////////////
+
+const std::map<std::string, WebSocketServer::ClientConnection>& WebSocketServer::getClients() const
+{
+    return mClients;
 }
 
 ///////////////////////////////////

@@ -113,8 +113,8 @@ void WebSocketServer::run()
 WebSocketServer::ResponseCode WebSocketServer::validateConnection(const WebSocketConnection& connection) const
 {
     std::string username = connection.getUsername();
-    if(username != "bob" && username != "karl")
-        return ResponseCode::InvalidUserCredentials;
+    //if(username != "bob" && username != "karl")
+       // return ResponseCode::InvalidUserCredentials;
 
     if(userIsConnected(username))
         return ResponseCode::UserAlreadyLoggedIn;

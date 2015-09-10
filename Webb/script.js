@@ -55,6 +55,9 @@ function joinRoom(){
 
 function addMessage (mess){
 	label1.innerHTML += mess + "<br />";
+
+	var chatWin = document.getElementById("chat-window");
+	chatWin.scrollTop = chatWin.scrollHeight;
 }
 
 function sendMessage (event){

@@ -24,6 +24,7 @@
 		height: 400px;
 		background-color: #fafafa;
 		text-align: left;
+		overflow-y: scroll;
 	}
 	#sendButton{
 		margin: 10px;
@@ -44,9 +45,9 @@ Port:<input type="text" id="portfield" placeholder="Input Port" value="8080" max
 Username:<input type="text" id="namefield" placeholder="John Doe" maxlength="100" />
 <input type="button" id="connectButton" value="Connect" />
 <br />
-<section id="chat-window">
+<div id="chat-window">
 	<label id="label1"></label>
-</section>
+</div>
 <br />
 <input type="text" id="textbox" required="true" placeholder="Yes, this is dog!" maxlength="1000" />
 <input type="button" id="sendButton" value="Send" />

@@ -3,12 +3,17 @@
 
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "WebSocketSubProtocol.hpp"
+class WebSocketSubProtocol;
 ///////////////////////////////////
 
-/// \brief Order protocol
+
+/// \brief Static class containing all available WebSocket subprotocols.
 ///
-/// Protocol for ordering items/units/buildings etc.
-class OrderProtocol : public WebSocketSubProtocol{public:OrderProtocol();};
+class WebSocketSubProtocols
+{
+    public:
+        static const WebSocketSubProtocol& ORDER_PROTOCOL; ///<  Protocol for ordering items/units/buildings etc.
+};
 
 #endif // TYPETWO_WEBSOCKETSUBPROTOCOLS_HPP
+

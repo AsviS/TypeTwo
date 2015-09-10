@@ -1,16 +1,23 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 #include "WebSocketServer.hpp"
+#include "WebSocketSubProtocol.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
 // STD C++
 #include <stdexcept>
-#include <algorithm>
+#include <iostream>
+///////////////////////////////////
+
+///////////////////////////////////
+// libwebsockets
+#include "libwebsockets.h"
 ///////////////////////////////////
 
 
-WebSocketServer::WebSocketServer(unsigned int port, const std::vector<WebSocketSubProtocol::Ptr>& protocols)
+WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocols)
+: mVerbose(false)
 {
     lws_context_creation_info info;
     memset(&info, 0, sizeof info);
@@ -33,9 +40,8 @@ WebSocketServer::WebSocketServer(unsigned int port, const std::vector<WebSocketS
 }
 
 ///////////////////////////////////
-#include <iostream>
-#include "ProtocolHelperFunctions.hpp"
-void WebSocketServer::initializeProtocols(const std::vector<WebSocketSubProtocol::Ptr>& protocols)
+
+void WebSocketServer::initializeProtocols(const std::vector<const WebSocketSubProtocol*>& protocols)
 {
 
     unsigned int size = protocols.size() + 2;
@@ -44,18 +50,11 @@ void WebSocketServer::initializeProtocols(const std::vector<WebSocketSubProtocol
     mProtocols[0] =
     {
         "http-only",
-        [](libwebsocket_context * context, libwebsocket *wsi, libwebsocket_callback_reasons reason, void *user, void *in, size_t len)
+        [](libwebsocket_context * context, libwebsocket* webSocketInstance, libwebsocket_callback_reasons reason, void* connectionData, void* in, size_t len)
         {
-            if(reason == LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED)
-            {
-                std::cout << "BBBBBBBBBBBBBBBBBBB" << std::endl;
-                //std::cout << ((char*)in)[0] << std::endl;
-                //WebSocketServer& server = *((WebSocketServer*)libwebsocket_context_user(context));
-                //server.addClient(ClientConnection(getClientIp(context, wsi), server));
-            }
             return 0;
         },
-        sizeof(100)
+        0
     };
 
     for(unsigned int i = 1; i < size - 1; i++)
@@ -66,7 +65,7 @@ void WebSocketServer::initializeProtocols(const std::vector<WebSocketSubProtocol
 
 ///////////////////////////////////
 
-void WebSocketServer::addClient(ClientConnection client)
+void WebSocketServer::addClient(WebSocketConnection client)
 {
     mClients.insert(std::make_pair(client.getUsername(), client));
 }
@@ -88,7 +87,7 @@ void WebSocketServer::removeClient(std::string username)
 
 ///////////////////////////////////
 
-const std::map<std::string, WebSocketServer::ClientConnection>& WebSocketServer::getClients() const
+const std::map<std::string, WebSocketConnection>& WebSocketServer::getClients() const
 {
     return mClients;
 }
@@ -108,3 +107,89 @@ void WebSocketServer::run()
     while(true)
         libwebsocket_service(mContext, 50);
 }
+
+///////////////////////////////////
+
+WebSocketServer::ResponseCode WebSocketServer::validateConnection(const WebSocketConnection& connection) const
+{
+    std::string username = connection.getUsername();
+    if(username != "bob" && username != "karl")
+        return ResponseCode::InvalidUserCredentials;
+
+    if(userIsConnected(username))
+        return ResponseCode::UserAlreadyLoggedIn;
+
+    return ResponseCode::Success;
+}
+
+///////////////////////////////////
+
+std::string WebSocketServer::getIp(libwebsocket* webSocketInstance) const
+{
+    unsigned int BUFFER_SIZE = 50;
+    char* ipBuffer = new char[BUFFER_SIZE];
+    memset(ipBuffer, 0, BUFFER_SIZE);
+
+    libwebsockets_get_peer_addresses(mContext, webSocketInstance, libwebsocket_get_socket_fd(webSocketInstance), ipBuffer, 0, ipBuffer, BUFFER_SIZE);
+
+	std::string ip(ipBuffer);
+	delete[] ipBuffer;
+
+	return ip;
+}
+
+///////////////////////////////////
+
+WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance) const
+{
+    WebSocketConnection& connection = WebSocketSubProtocol::createConnection(connectionData, webSocketInstance, *this);
+    ResponseCode response = validateConnection(connection);
+
+    if(mVerbose && response != ResponseCode::Success)
+    {
+        std::cout << "Connection from " << connection.getIp() << " refused. Reason: ";
+        switch(response)
+        {
+            case ResponseCode::InvalidUserCredentials:
+                std::cout << "Invalid user credentials" << std::endl;
+                break;
+
+            case ResponseCode::UserAlreadyLoggedIn:
+                std::cout << "User is already logged in" << std::endl;
+
+                default:
+                    break;
+        }
+    }
+
+    return response;
+}
+
+///////////////////////////////////
+
+void WebSocketServer::handleConnectionOpen(void* connectionData)
+{
+    WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
+    addClient(connection);
+
+    if(mVerbose)
+        std::cout << "'" << connection.getUsername() << "' has connected from " << connection.getIp() << "." << std::endl;
+}
+
+///////////////////////////////////
+
+void WebSocketServer::handleConnectionClosed(void* connectionData)
+{
+    WebSocketConnection connection = WebSocketSubProtocol::getConnection(connectionData);
+    removeClient(connection.getUsername());
+
+    if(mVerbose)
+        std::cout << "'" << connection.getUsername() << "' has disconnected." << std::endl;
+}
+
+///////////////////////////////////
+
+ void WebSocketServer::setVerbose(bool flag)
+ {
+     mVerbose = flag;
+ }

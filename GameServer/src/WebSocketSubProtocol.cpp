@@ -1,22 +1,61 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 #include "WebSocketSubProtocol.hpp"
-#include "ProtocolHelperFunctions.hpp"
+#include "CompatibilityWrappers.hpp"
+#include "WebSocketConnection.hpp"
 ///////////////////////////////////
 
-std::vector<WebSocketSubProtocol::Ptr> WebSocketSubProtocol::factory(std::vector<WebSocketSubProtocol*> protocols)
-{
-    std::vector<Ptr> result;
-    result.resize(protocols.size());
-    for(unsigned int i = 0; i < protocols.size(); i++)
-       result[i] = std::unique_ptr<WebSocketSubProtocol>(protocols[i]);
+///////////////////////////////////
+// STD C++
+#include <sstream>
+///////////////////////////////////
 
-    return result;
+
+WebSocketSubProtocol::WebSocketSubProtocol(std::string name, int sessionDataSize, callback_function* callback)
+: M_NAME(name)
+, M_SESSION_DATA_SIZE(sessionDataSize)
+, M_CALLBACK(callback)
+{
 }
 
 ///////////////////////////////////
 
 libwebsocket_protocols WebSocketSubProtocol::toLibWebSocketProtocol() const
 {
-    return {stringToChar(mName), mCallback, mSessionDataSize};
+    return
+    {
+        stringToChar(M_NAME),
+        M_CALLBACK,
+        M_SESSION_DATA_SIZE
+    };
+}
+
+///////////////////////////////////
+
+WebSocketServer& WebSocketSubProtocol::getServer(libwebsocket_context* context)
+{
+    return *((WebSocketServer*)libwebsocket_context_user(context));
+}
+
+///////////////////////////////////
+
+WebSocketConnection& WebSocketSubProtocol::getConnection(void* connectionData)
+{
+    return *(*(WebSocketConnection**)connectionData);
+}
+
+///////////////////////////////////
+
+WebSocketConnection& WebSocketSubProtocol::createConnection(void* connectionData, libwebsocket* webSocketInstance, const WebSocketServer& server)
+{
+    WebSocketConnection* connection = new WebSocketConnection(webSocketInstance, server);
+    *(WebSocketConnection**)connectionData = connection;
+    return *connection;
+}
+
+///////////////////////////////////
+
+std::string WebSocketSubProtocol::messageToString(void* messageData, size_t messageLength)
+{
+    return std::string(static_cast<char*>(messageData), messageLength);
 }

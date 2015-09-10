@@ -3,12 +3,20 @@
 
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "WebSocketSubProtocol.hpp"
+class WebSocketSubProtocol;
+#include "WebSocketConnection.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
 // STD C++
 #include <map>
+#include <vector>
+///////////////////////////////////
+
+///////////////////////////////////
+// libwebsockets
+struct libwebsocket_context;
+struct libwebsocket_protocols;
 ///////////////////////////////////
 
 
@@ -20,13 +28,23 @@
 class WebSocketServer
 {
     public:
+        /// \brief Response codes for connection requests
+        ///
+        enum ResponseCode
+        {
+            Success,                ///< Connection request is OK
+            UserAlreadyLoggedIn,    ///< A user of the connection's username is already connected to the server.
+            InvalidUserCredentials, ///< The connection passed invalid credentials.
+        };
+
+    public:
         /// \brief Constructor
         ///
         /// \param port unsigned int Port to listen to
         /// \param protocols const std::vector<WebSocketSubProtocol::Ptr>& Protocols to respond to
         ///
         ///
-        WebSocketServer(unsigned int port, const std::vector<WebSocketSubProtocol::Ptr>& protocols);
+        WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocol);
 
         /// \brief Destructor
         ///
@@ -41,27 +59,53 @@ class WebSocketServer
         ///
         void run();
 
-        class ClientConnection
-        {
-            public:
-                ClientConnection(std::string username, std::string ip, const WebSocketServer& server) : mUsername(username), mIp(ip), mServer(server){};
+        /// \brief Get all active client connections of this server.
+        ///
+        /// \return const std::map<std::string, WebSocketConnection>&
+        ///
+        ///
+        const std::map<std::string, WebSocketConnection>& getClients() const;
 
-                std::string getUsername() const{return mUsername;};
-                std::string getIp() const{return mIp;};
-                const WebSocketServer& getServer() const{return mServer;};
+        /// \brief Handle connection request from client
+        ///
+        /// \param connectionData void*
+        /// \param webSocketInstance libwebsocket*
+        /// \return ResponseCode
+        ///
+        ///
+        ResponseCode handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance) const;
 
-            private:
-                std::string mUsername;
-                std::string mIp;
-                const WebSocketServer& mServer;
+        /// \brief Handle connection open event from client
+        ///
+        /// \param connectionData void*
+        /// \return void
+        ///
+        ///
+        void handleConnectionOpen(void* connectionData);
 
-        };
+        /// \brief Handle connection closed event from client
+        ///
+        /// \param connectionData void*
+        /// \return void
+        ///
+        ///
+        void handleConnectionClosed(void* connectionData);
 
-        void addClient(ClientConnection client);
-        void removeClient(std::string username);
-        const std::map<std::string, ClientConnection>& getClients() const;
+        /// \brief Get IP adress of connected client.
+        ///
+        /// \param webSocketInstance libwebsocket* Client connection
+        /// \return std::string Client's IP adress
+        ///
+        ///
+        std::string getIp(libwebsocket* webSocketInstance) const;
 
-        bool userIsConnected(std::string username) const;
+        /// \brief Toggle verbose flag
+        ///
+        /// \param flag bool
+        /// \return void
+        ///
+        ///  If true, the server will print detailed information to the console.
+        void setVerbose(bool flag);
 
     private:
         /// \brief Initialize mProtocols member
@@ -70,16 +114,46 @@ class WebSocketServer
         /// \return void
         ///
         ///  Adds the given protocols to the mProtocols protocol list.
-        void initializeProtocols(const std::vector<WebSocketSubProtocol::Ptr>& protocols);
+        void initializeProtocols(const std::vector<const WebSocketSubProtocol*>& protocols);
 
+        /// \brief Add a client connection to the server's client map.
+        ///
+        /// \param client WebSocketConnection
+        /// \return void
+        ///
+        ///
+        void addClient(WebSocketConnection client);
+
+        /// \brief Remove a client connection from the server's client map.
+        ///
+        /// \param username std::string Username of client connection.
+        /// \return void
+        ///
+        ///
+        void removeClient(std::string username);
+
+        /// \brief Check if user is connected to this server.
+        ///
+        /// \param username std::string Username of user
+        /// \return bool True if a user by the given username is already connected to the server, else false.
+        ///
+        ///
+        bool userIsConnected(std::string username) const;
+
+        /// \brief Check if connection is allowed to connect to the server.
+        ///
+        /// \param connection const WebSocketConnection&
+        /// \return ResponseCode
+        ///
+        ///
+        ResponseCode validateConnection(const WebSocketConnection& connection) const;
 
 
     private:
-
-
         libwebsocket_context*   mContext;   ///< WebSocket context
         libwebsocket_protocols* mProtocols; ///< List of protocols to respond to
-        std::map<std::string, ClientConnection> mClients; ///< Clients connected to this server.
+        std::map<std::string, WebSocketConnection> mClients; ///< Clients connected to this server.
+        bool mVerbose; ///< If true, the server will print detailed information to the console.
 };
 
 

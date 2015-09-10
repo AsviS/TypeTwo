@@ -11,6 +11,11 @@
 //#include <cstring>
 ///////////////////////////////////
 
+///////////////////////////////////
+// libwebsockets
+#include "libwebsockets.h"
+///////////////////////////////////
+
 
 /*
  * Data received must be formatted as follows:
@@ -38,6 +43,7 @@ struct Order
     unsigned int    quantity;   ///< How many items to order
 };
 
+#include "WebSocketServer.hpp"
 OrderProtocol::OrderProtocol()
 {
     mName = "order";
@@ -48,12 +54,37 @@ OrderProtocol::OrderProtocol()
                    void *in,
                    size_t len)
     {
-        switch (reason) {
+        switch (reason)
+        {
             case LWS_CALLBACK_ESTABLISHED:
-                std::cout << getClientIp(context, wsi);
-                std::cout << "Order connection established" << std::endl;
+            {
+                WebSocketServer& server = *((WebSocketServer*)libwebsocket_context_user(context));
+                WebSocketServer::ClientConnection connection = *(*(WebSocketServer::ClientConnection**)user);
+                server.addClient(connection);
+
+                std::cout   << "User '" << connection.getUsername() << "' at " << connection.getIp()
+                            << " has connected." << std::endl;
+
+                std::cout << "Logged in users: " << std::endl;
+                const std::map<std::string, WebSocketServer::ClientConnection>& clients = server.getClients();
+                for(auto client : clients)
+                    std::cout << client.second.getUsername() << " -- " << client.second.getIp() << std::endl;
+
                 break;
+            }
+            case LWS_CALLBACK_CLOSED:
+            {
+                WebSocketServer& server = *((WebSocketServer*)libwebsocket_context_user(context));
+                WebSocketServer::ClientConnection connection = *(*(WebSocketServer::ClientConnection**)user);
+                server.removeClient(connection.getUsername());
+                std::cout   << "User '" << connection.getUsername() << "' at " << connection.getIp()
+                            << " has disconnected." << std::endl;
+
+                 break;
+            }
             case LWS_CALLBACK_RECEIVE: {
+
+                const libwebsocket_protocols* protocol = libwebsockets_get_protocol(wsi);
 
                 // Incoming message.
                 std::string message;
@@ -74,10 +105,62 @@ OrderProtocol::OrderProtocol()
                 libwebsocket_write(wsi, response, output.size(), LWS_WRITE_TEXT);
                 break;
             }
+            case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
+            {
+                lws_token_indexes token = WSI_TOKEN_GET_URI;
+                int size = lws_hdr_total_length(wsi, token);
+                char* c = new char[size + 1];
+                lws_hdr_copy(wsi, c, size + 1, token);
+
+                std::string username(c + 1, size - 1);
+                std::cout   << "Validating connection from user '" << username << "' at "
+                            << getClientIp(context, wsi) << std::endl;
+
+                if(username != "bob" && username != "karl")
+                    return -1;
+
+                WebSocketServer& server = *((WebSocketServer*)libwebsocket_context_user(context));
+
+                const std::map<std::string, WebSocketServer::ClientConnection>& clients = server.getClients();
+                for(auto client : clients)
+                    std::cout << client.second.getUsername() << " -- " << client.second.getIp() << std::endl;
+
+                if(server.userIsConnected(username))
+                    return -1;
+
+
+                token = WSI_TOKEN_KEY;
+                size = lws_hdr_total_length(wsi, token);
+                std::cout << size << std::endl;
+                c = new char[size + 1];
+                lws_hdr_copy(wsi, c, size + 1, token);
+
+                std::string authorizationKey(c, size);
+
+                std::cout << "KEY: " << authorizationKey << std::endl;
+
+                *(WebSocketServer::ClientConnection**)user = new WebSocketServer::ClientConnection(username, getClientIp(context, wsi), server);
+                break;
+            }
+
+
+
+/*
+WSI_TOKEN_GET_URI,
+WSI_TOKEN_POST_URI,
+WSI_TOKEN_OPTIONS_URI,
+WSI_TOKEN_HOST,
+WSI_TOKEN_CONNECTION,
+WSI_TOKEN_UPGRADE,
+WSI_TOKEN_ORIGIN,
+*/
+
             default:
                 break;
         }
 
         return 0;
     };
+
+    mSessionDataSize = sizeof(WebSocketServer::ClientConnection*);
 }

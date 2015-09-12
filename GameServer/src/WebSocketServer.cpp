@@ -8,6 +8,8 @@
 // STD C++
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
+#include <algorithm>
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -19,6 +21,15 @@
 WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocols)
 : mVerbose(false)
 {
+    lws_set_log_level
+    (
+        LLL_ERR | LLL_NOTICE,
+        NULL
+    );
+
+
+
+
     lws_context_creation_info info;
     memset(&info, 0, sizeof info);
 
@@ -29,7 +40,6 @@ WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebS
     info.extensions = libwebsocket_get_internal_extensions();
     info.gid = -1;
     info.uid = -1;
-
     info.user = this;
 
     mContext = libwebsocket_create_context(&info);
@@ -116,8 +126,8 @@ WebSocketServer::ResponseCode WebSocketServer::validateConnection(const WebSocke
     //if(username != "bob" && username != "karl")
        // return ResponseCode::InvalidUserCredentials;
 
-    if(userIsConnected(username))
-        return ResponseCode::UserAlreadyLoggedIn;
+    //if(userIsConnected(username))
+       // return ResponseCode::UserAlreadyLoggedIn;
 
     return ResponseCode::Success;
 }
@@ -193,3 +203,34 @@ void WebSocketServer::handleConnectionClosed(void* connectionData)
  {
      mVerbose = flag;
  }
+
+///////////////////////////////////
+
+void WebSocketServer::broadcastString(std::string message, std::list<std::string> excludeUsers) const
+{
+    for(const std::pair<std::string, WebSocketConnection>& client : mClients)
+    {
+        if(excludeUsers.size() > 0)
+        {
+            auto found = std::find(excludeUsers.begin(), excludeUsers.end(), client.second.getUsername());
+            if(found == excludeUsers.end())
+                client.second.sendString(message);
+            else
+                excludeUsers.erase(found);
+        }
+        else
+            client.second.sendString(message);
+    }
+
+}
+
+///////////////////////////////////
+
+void WebSocketServer::broadcastLines(std::vector<std::string> lines) const
+{
+    std::ostringstream stream;
+    for(std::string& line : lines)
+        stream << line << '\n';
+
+    broadcastString(stream.str());
+}

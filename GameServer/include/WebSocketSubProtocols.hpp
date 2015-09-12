@@ -12,7 +12,8 @@ class WebSocketSubProtocol;
 class WebSocketSubProtocols
 {
     public:
-        static const WebSocketSubProtocol& ORDER_PROTOCOL; ///<  Protocol for ordering items/units/buildings etc.
+        static const WebSocketSubProtocol& ORDER; ///<  Protocol for ordering items/units/buildings etc.
+        static const WebSocketSubProtocol& CHAT; ///< Chat protocol
 };
 
 #endif // TYPETWO_WEBSOCKETSUBPROTOCOLS_HPP

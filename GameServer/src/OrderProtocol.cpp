@@ -43,7 +43,7 @@ struct Order
     unsigned int    quantity;   ///< How many items to order
 };
 
-const WebSocketSubProtocol& WebSocketSubProtocols::ORDER_PROTOCOL = WebSocketSubProtocol
+const WebSocketSubProtocol& WebSocketSubProtocols::ORDER = WebSocketSubProtocol
 (
     "order",
     sizeof(WebSocketConnection*),
@@ -54,51 +54,27 @@ const WebSocketSubProtocol& WebSocketSubProtocols::ORDER_PROTOCOL = WebSocketSub
                    void *messageData,
                    size_t messageLength)
     {
-        switch (reason)
+        /////////////////////////////////
+        // Always call the standard protocol
+        WebSocketSubProtocol::Result result = WebSocketSubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
+        if(result != WebSocketSubProtocol::Result::NoAction)
+            return (int)result;
+        /////////////////////////////////
+
+        if(reason == LWS_CALLBACK_RECEIVE)
         {
-            case LWS_CALLBACK_ESTABLISHED:
-                WebSocketSubProtocol::getServer(context).handleConnectionOpen(connectionData);
-                break;
+            std::stringstream message(WebSocketSubProtocol::messageToString(messageData, messageLength));
 
-            case LWS_CALLBACK_CLOSED:
-                WebSocketSubProtocol::getServer(context).handleConnectionClosed(connectionData);
-                break;
+            Order order;
+            std::getline(message, order.item);
+            message >> order.quantity;
 
-            case LWS_CALLBACK_RECEIVE:
-            {
-                std::stringstream message(WebSocketSubProtocol::messageToString(messageData, messageLength));
+            std::ostringstream output;
+            output  << "You ordered the following: " << std::endl
+                    << "Item: " << order.item << std::endl
+                    << "Quantity: " << order.quantity << std::endl;
 
-                Order order;
-                std::getline(message, order.item);
-                message >> order.quantity;
-
-                std::ostringstream output;
-                output  << "You ordered the following: " << std::endl
-                        << "Item: " << order.item << std::endl
-                        << "Quantity: " << order.quantity << std::endl;
-
-                WebSocketSubProtocol::getConnection(connectionData).sendString(output.str());
-
-                WebSocketSubProtocol::getConnection(connectionData).sendLines(
-                {
-                    "It",
-                    "is",
-                    "very",
-                    "easy",
-                    "to",
-                    "send",
-                    "many",
-                    "lines",
-                    ":)"
-                });
-                break;
-            }
-
-            case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
-                return (int)WebSocketSubProtocol::getServer(context).handleConnectionRequest(connectionData, webSocketInstance);
-
-            default:
-                break;
+            WebSocketSubProtocol::getConnection(connectionData).sendString(output.str());
         }
 
         return 0;

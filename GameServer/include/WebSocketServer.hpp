@@ -11,6 +11,7 @@ class WebSocketSubProtocol;
 // STD C++
 #include <map>
 #include <vector>
+#include <list>
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -106,6 +107,23 @@ class WebSocketServer
         ///
         ///  If true, the server will print detailed information to the console.
         void setVerbose(bool flag);
+
+        /// \brief Broadcast a string to all connections connected to this server
+        ///
+        /// \param message std::string Mesage to send
+        /// \param excludeUsers std::list<std::string> Optional parameter. A list of usernames to exclude from the broadcast.
+        /// \return void
+        ///
+        ///
+        void broadcastString(std::string message, std::list<std::string> excludeUsers = std::list<std::string>()) const;
+
+        /// \brief Broadcast lines to all connections connected to this server
+        ///
+        /// \param lines std::vector<std::string> Lines to send
+        /// \return void
+        ///
+        ///
+        void broadcastLines(std::vector<std::string> lines) const;
 
     private:
         /// \brief Initialize mProtocols member

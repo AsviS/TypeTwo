@@ -25,6 +25,16 @@ class WebSocketConnection;
 class WebSocketSubProtocol
 {
     public:
+        /// \brief Tri-state boolean for standard protocol result
+        ///
+        enum Result
+        {
+            Success,    ///< Request was processed and valid
+            Fail,       ///< Request was processed and invalid
+            NoAction    ///< Request was not processed
+        };
+
+
         /// \brief Constructor
         ///
         /// \param name std::string Protocol name
@@ -78,6 +88,20 @@ class WebSocketSubProtocol
         ///
         ///
         static std::string messageToString(void* messageData, size_t messageLength);
+
+        /// \brief Perform the standard protocol
+        ///
+        /// \param context libwebsocket_context*
+        /// \param webSocketInstance libwebsocket*
+        /// \param reason libwebsocket_callback_reasons
+        /// \param connectionData void*
+        /// \return Result Result of the standard protocol processing the request. See the Result definition for more info.
+        ///
+        /// The standard protocol takes care of opening and closing connections. It
+        /// should usually be called at the start of a protocol's callback function.
+        /// See existing protocols for examples.
+        static Result performStandardProtocol(libwebsocket_context* context, libwebsocket* webSocketInstance, libwebsocket_callback_reasons reason, void* connectionData);
+
 
     protected:
         const std::string         M_NAME;                  ///< Identifying name

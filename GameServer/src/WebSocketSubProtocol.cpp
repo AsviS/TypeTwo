@@ -3,6 +3,7 @@
 #include "WebSocketSubProtocol.hpp"
 #include "CompatibilityWrappers.hpp"
 #include "WebSocketConnection.hpp"
+#include "WebSocketServer.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -58,4 +59,29 @@ WebSocketConnection& WebSocketSubProtocol::createConnection(void* connectionData
 std::string WebSocketSubProtocol::messageToString(void* messageData, size_t messageLength)
 {
     return std::string(static_cast<char*>(messageData), messageLength);
+}
+
+///////////////////////////////////
+
+WebSocketSubProtocol::Result WebSocketSubProtocol::performStandardProtocol(libwebsocket_context* context, libwebsocket* webSocketInstance, libwebsocket_callback_reasons reason, void* connectionData)
+{
+    switch(reason)
+    {
+        case LWS_CALLBACK_ESTABLISHED:
+            WebSocketSubProtocol::getServer(context).handleConnectionOpen(connectionData);
+            break;
+
+        case LWS_CALLBACK_CLOSED:
+            WebSocketSubProtocol::getServer(context).handleConnectionClosed(connectionData);
+            break;
+
+        case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
+            if(WebSocketSubProtocol::getServer(context).handleConnectionRequest(connectionData, webSocketInstance) != WebSocketServer::ResponseCode::Success)
+                return Result::Fail;
+            break;
+        default:
+            return Result::NoAction;
+    }
+
+    return Result::Success;
 }

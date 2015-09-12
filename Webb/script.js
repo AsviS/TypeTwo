@@ -27,12 +27,12 @@ function joinRoom(){
 	ipfield = document.getElementById("ipfield");
 	portfield = document.getElementById("portfield");
 	username = document.getElementById("namefield");
-	socket = new WebSocket('ws://' + ipfield.value + ':' + portfield.value + "/" + username.value, "order");
+	socket = new WebSocket('ws://' + ipfield.value + ':' + portfield.value + "/" + username.value, "chat");
 	addMessage("Connecting..");
 
 	socket.onopen = function (event){
 		//addMessage("Uppkopplad!");
-		socket.send(username.value + " connected!");
+		//socket.send(username.value + " connected!");
 		textbox.focus();
 	}
 
@@ -54,20 +54,15 @@ function joinRoom(){
 }
 
 function addMessage (mess){
-	if (mess == (username.value + ": remove everything")) {
-		label1.innerHTML = "Cleared<br />";
-	}
-	else{
 	label1.innerHTML += mess + "<br />";
 
 	var chatWin = document.getElementById("chat-window");
 	chatWin.scrollTop = chatWin.scrollHeight;
-	}
 }
 
 function sendMessage (event){
 	if (socket.readyState == WebSocket.OPEN) {
-		socket.send(username.value + ": " + textbox.value);
+		socket.send(textbox.value);
 		textbox.value = '';
 	}
 	else{

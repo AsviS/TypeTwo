@@ -1,18 +1,15 @@
+// Main
 window.onload = function(){
 
-	var label1 = document.getElementById("label1");
 	var buttonSend = document.getElementById("sendButton");
 	var buttonConn = document.getElementById("connectButton");
 	var textbox = document.getElementById("textbox");
-	var username = document.getElementById("namefield");
-	var ipfield;
-	var portfield;
 
 	buttonConn.onclick = function (event){
 		joinRoom();	
 	}
 
-	username.onkeypress = function (event) {
+	document.getElementById("passfield").onkeypress = function (event) {
 		if(event.keyCode == 13){
 			joinRoom();
 		};
@@ -21,23 +18,32 @@ window.onload = function(){
 	buttonSend.onclick = function (event) {
 		sendMessage();
 	}
+
+	setInterval(checkColor(), 1000);
+
+}
+
+function checkColor(){
+	document.getElementById("colorText").style.color = document.getElementById("textColor").value;
 }
 
 function joinRoom(){
-	ipfield = document.getElementById("ipfield");
-	portfield = document.getElementById("portfield");
-	username = document.getElementById("namefield");
-	socket = new WebSocket('ws://' + ipfield.value + ':' + portfield.value + "/" + username.value, "chat");
-	addMessage("Connecting..");
+		socket = new WebSocket('ws://' + document.getElementById("ipfield").value + ':' + 
+			document.getElementById("portfield").value + "/" + 
+			document.getElementById("namefield").value + "/" + 
+			document.getElementById("passfield").value, "chat");
+		addMessage("Connecting..");
 
 	socket.onopen = function (event){
-		//addMessage("Uppkopplad!");
-		//socket.send(username.value + " connected!");
 		textbox.focus();
+		document.getElementById("connectButton").innerHTML="Disconnect";
+		document.getElementById("connectButton").value="Disconnect";
 	}
 
 	socket.onclose = function (event){
 		addMessage("Connection closed.");
+		document.getElementById("connectButton").innerHTML="Connect";
+		document.getElementById("connectButton").value="Connect";
 	}
 
 	socket.onmessage = function (event) {
@@ -54,7 +60,11 @@ function joinRoom(){
 }
 
 function addMessage (mess){
-	label1.innerHTML += mess + "<br />";
+
+	document.getElementById("label1").innerHTML += mess + "<br />";
+
+	var text = "This is text";
+	var textArr = text.split("is");
 
 	var chatWin = document.getElementById("chat-window");
 	chatWin.scrollTop = chatWin.scrollHeight;
@@ -62,7 +72,8 @@ function addMessage (mess){
 
 function sendMessage (event){
 	if (socket.readyState == WebSocket.OPEN) {
-		socket.send(textbox.value);
+		var message = textbox.value;
+		socket.send(message);
 		textbox.value = '';
 	}
 	else{

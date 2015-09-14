@@ -71,13 +71,14 @@ class WebSocketSubProtocol
 
         /// \brief Create WebSocketConnection object and store it in connectionData
         ///
+        /// \param username std::string
         /// \param connectionData void*
         /// \param webSocketInstance libwebsocket*
         /// \param server const WebSocketServer&
         /// \return WebSocketConnection&
         ///
         ///
-        static WebSocketConnection& createConnection(void* connectionData, libwebsocket* webSocketInstance, const WebSocketServer& server);
+        static WebSocketConnection& createConnection(std::string username, void* connectionData, libwebsocket* webSocketInstance, const WebSocketServer& server);
 
 
         /// \brief Convert message data to STD string
@@ -101,6 +102,9 @@ class WebSocketSubProtocol
         /// should usually be called at the start of a protocol's callback function.
         /// See existing protocols for examples.
         static Result performStandardProtocol(libwebsocket_context* context, libwebsocket* webSocketInstance, libwebsocket_callback_reasons reason, void* connectionData);
+
+
+        static bool getUserCredentials(libwebsocket* webSocketInstance, std::string& username, std::string& password);
 
 
     protected:

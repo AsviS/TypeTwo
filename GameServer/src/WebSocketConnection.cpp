@@ -17,12 +17,12 @@
 
 
 
-WebSocketConnection::WebSocketConnection(libwebsocket* webSocketInstance, const WebSocketServer& server)
+WebSocketConnection::WebSocketConnection(std::string username, libwebsocket* webSocketInstance, const WebSocketServer& server)
 : mServer(server)
 , mWebSocketInstance(webSocketInstance)
 , mIp(mServer.getIp(mWebSocketInstance))
+, mUsername(username)
 {
-    initialize();
 }
 
 ///////////////////////////////////
@@ -46,23 +46,6 @@ const WebSocketServer& WebSocketConnection::getServer() const
     return mServer;
 }
 
-///////////////////////////////////
-
-void WebSocketConnection::initialize()
-{
-    lws_token_indexes token = WSI_TOKEN_GET_URI;
-    int size = lws_hdr_total_length(mWebSocketInstance, token);
-    char* buffer = new char[size + 1];
-    lws_hdr_copy(mWebSocketInstance, buffer, size + 1, token);
-
-    mUsername = std::string(buffer + 1, size - 1);
-/*
-    token = WSI_TOKEN_KEY;
-    size = lws_hdr_total_length(mWebSocketInstance, token);
-
-    buffer = new char[size + 1];
-    lws_hdr_copy(mWebSocketInstance, buffer, size + 1, token);*/
-}
 
 ///////////////////////////////////
 

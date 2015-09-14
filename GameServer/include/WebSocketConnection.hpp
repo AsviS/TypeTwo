@@ -27,11 +27,12 @@ class WebSocketConnection
     public:
         /// \brief Constructor
         ///
+        /// \param username std::string Connection's username.
         /// \param webSocketInstance libwebsocket* LWS instance to bind to.
         /// \param server const WebSocketServer& Server to bind to.
         ///
         ///
-        WebSocketConnection(libwebsocket* webSocketInstance, const WebSocketServer& server);
+        WebSocketConnection(std::string username, libwebsocket* webSocketInstance, const WebSocketServer& server);
 
         /// \brief Get connection's username
         ///
@@ -70,14 +71,6 @@ class WebSocketConnection
         ///  The strings are joined with a newline character ('\n') as
         ///  glue.
         void sendLines(std::vector<std::string> lines) const;
-
-    private:
-        /// \brief Initialize some member variables.
-        ///
-        /// \return void
-        ///
-        ///
-        void initialize();
 
     private:
         const WebSocketServer& mServer; ///< The server this connection is connected to

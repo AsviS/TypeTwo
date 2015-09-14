@@ -104,6 +104,14 @@ class WebSocketSubProtocol
         static Result performStandardProtocol(libwebsocket_context* context, libwebsocket* webSocketInstance, libwebsocket_callback_reasons reason, void* connectionData);
 
 
+        /// \brief Extract user credentials from request's GET URI.
+        ///
+        /// \param webSocketInstance libwebsocket*
+        /// \param username std::string& Outputs username
+        /// \param password std::string& Outputs password
+        /// \return bool True if GET URI was successfully parsed, else false.
+        ///
+        ///
         static bool getUserCredentials(libwebsocket* webSocketInstance, std::string& username, std::string& password);
 
 

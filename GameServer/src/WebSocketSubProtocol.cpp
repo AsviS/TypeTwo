@@ -1,9 +1,9 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 #include "WebSocketSubProtocol.hpp"
-#include "CompatibilityWrappers.hpp"
 #include "WebSocketConnection.hpp"
 #include "WebSocketServer.hpp"
+#include "utility.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////

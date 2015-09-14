@@ -175,7 +175,7 @@ class WebSocketServer
         libwebsocket_protocols* mProtocols; ///< List of protocols to respond to
         std::map<std::string, WebSocketConnection> mClients; ///< Clients connected to this server.
         bool mVerbose; ///< If true, the server will print detailed information to the console.
-        Database& mDb;
+        Database& mDb; ///< Database connection
 };
 
 

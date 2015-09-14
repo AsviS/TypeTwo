@@ -11,14 +11,30 @@ class Database;
 #include <string>
 ///////////////////////////////////
 
+/// \brief Provide user data from database
+///
 class UserProvider
 {
     public:
+        /// \brief Constructor
+        ///
+        /// \param db Database& Database connection
+        ///
+        ///
         UserProvider(Database& db);
+
+        /// \brief Get user credentials
+        ///
+        /// \param username std::string Username to search for.
+        /// \param hashedPassword std::string& Outputs hashed password stored in database
+        /// \param salt std::string& Outputs salt stored in database.
+        /// \return void
+        ///
+        ///
         void getCredentials(std::string username, std::string& hashedPassword, std::string& salt);
 
     private:
-        Database& mDb;
+        Database& mDb; ///< Database connection
 };
 
 

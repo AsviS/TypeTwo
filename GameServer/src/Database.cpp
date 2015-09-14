@@ -31,11 +31,14 @@ Database::Database(std::string host, int port, std::string schema, std::string u
     mConnection.rlogon(connectionStr.str().c_str());
 }
 
+///////////////////////////////////
 
 Database::~Database()
 {
     delete &mConnection;
 }
+
+///////////////////////////////////
 
 otl_connect& Database::getConnection()
 {

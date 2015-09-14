@@ -20,6 +20,8 @@ UserProvider::UserProvider(Database& db)
 {
 }
 
+///////////////////////////////////
+
 void UserProvider::getCredentials(std::string username, std::string& hashedPassword, std::string& salt)
 {
     try

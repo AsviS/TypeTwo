@@ -2,6 +2,8 @@
 // TypeTwo internal headers
 #include "WebSocketServer.hpp"
 #include "WebSocketSubProtocol.hpp"
+#include "UserProvider.hpp"
+#include "utility.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -17,9 +19,9 @@
 #include "libwebsockets.h"
 ///////////////////////////////////
 
-
-WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocols)
+WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocols, Database& db)
 : mVerbose(false)
+, mDb(db)
 {
     lws_set_log_level
     (
@@ -120,14 +122,22 @@ void WebSocketServer::run()
 
 ///////////////////////////////////
 
-WebSocketServer::ResponseCode WebSocketServer::validateConnection(const WebSocketConnection& connection) const
-{
-    std::string username = connection.getUsername();
-    //if(username != "bob" && username != "karl")
-       // return ResponseCode::InvalidUserCredentials;
 
-    //if(userIsConnected(username))
-       // return ResponseCode::UserAlreadyLoggedIn;
+WebSocketServer::ResponseCode WebSocketServer::validateUserCredentials(std::string username, std::string password) const
+{
+    if(userIsConnected(username))
+        return ResponseCode::UserAlreadyLoggedIn;
+
+    std::string hashedPassword;
+    std::string salt;
+
+    UserProvider userProvider(mDb);
+    userProvider.getCredentials(username, hashedPassword, salt);
+
+    if(sha512(password + salt) == hashedPassword)
+        return ResponseCode::Success;
+    else
+        return ResponseCode::InvalidUserCredentials;
 
     return ResponseCode::Success;
 }
@@ -152,12 +162,25 @@ std::string WebSocketServer::getIp(libwebsocket* webSocketInstance) const
 
 WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance) const
 {
-    WebSocketConnection& connection = WebSocketSubProtocol::createConnection(connectionData, webSocketInstance, *this);
-    ResponseCode response = validateConnection(connection);
-
-    if(mVerbose && response != ResponseCode::Success)
+    std::string username, password;
+    if(!WebSocketSubProtocol::getUserCredentials(webSocketInstance, username, password))
     {
-        std::cout << "Connection from " << connection.getIp() << " refused. Reason: ";
+        if(mVerbose)
+        {
+            std::cout << "Connection from " << getIp(webSocketInstance) << " refused. Reason: ";
+            std::cout << "Invalid formatting of user credentials in request's GET URI." << std::endl;
+        }
+
+        return ResponseCode::InvalidUserCredentials;
+    }
+
+    ResponseCode response = validateUserCredentials(username, password);
+
+    if(response == ResponseCode::Success)
+        WebSocketSubProtocol::createConnection(username, connectionData, webSocketInstance, *this);
+    else if(mVerbose)
+    {
+        std::cout << "Connection from " << getIp(webSocketInstance) << " refused. Reason: ";
         switch(response)
         {
             case ResponseCode::InvalidUserCredentials:

@@ -4,6 +4,7 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 class WebSocketSubProtocol;
+class Database;
 #include "WebSocketConnection.hpp"
 ///////////////////////////////////
 
@@ -43,9 +44,10 @@ class WebSocketServer
         ///
         /// \param port unsigned int Port to listen to
         /// \param protocols const std::vector<WebSocketSubProtocol::Ptr>& Protocols to respond to
+        /// \param db Database& Database object to connect to.
         ///
         ///
-        WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocol);
+        WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocol, Database& db);
 
         /// \brief Destructor
         ///
@@ -158,13 +160,14 @@ class WebSocketServer
         ///
         bool userIsConnected(std::string username) const;
 
-        /// \brief Check if connection is allowed to connect to the server.
+        /// \brief Validate user credentials.
         ///
-        /// \param connection const WebSocketConnection&
+        /// \param username std::string
+        /// \param password std::string
         /// \return ResponseCode
         ///
         ///
-        ResponseCode validateConnection(const WebSocketConnection& connection) const;
+        ResponseCode validateUserCredentials(std::string username, std::string password) const;
 
 
     private:
@@ -172,6 +175,7 @@ class WebSocketServer
         libwebsocket_protocols* mProtocols; ///< List of protocols to respond to
         std::map<std::string, WebSocketConnection> mClients; ///< Clients connected to this server.
         bool mVerbose; ///< If true, the server will print detailed information to the console.
+        Database& mDb;
 };
 
 

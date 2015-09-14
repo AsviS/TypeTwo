@@ -30,7 +30,9 @@ const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
     {
         /////////////////////////////////
         // Always call the standard protocol
-        WebSocketSubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
+        WebSocketSubProtocol::Result standardProtocolResult = WebSocketSubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
+        if(standardProtocolResult == WebSocketSubProtocol::Result::Fail)
+           return (int)standardProtocolResult;
         /////////////////////////////////
 
         switch(reason)

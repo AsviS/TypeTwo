@@ -6,14 +6,18 @@ $userSession = new Session('user');
 // and use it for your controller.
 $gyg->whitelistPages(
 [
-	'user',	
+	'user',
+	'chat',
 ]);
 
 	
 // Always use english.
 $renderData['lang'] = 'en';
 
+$renderData['style'] = '';
 
-define('COMMON_REQPATH', $gyg->getBaseUrl() . '/file/typetwo/common/');
+define('CONTROLLER_REQPATH', $gyg->getBaseUrl() . '/file/typetwo');
+define('COMMON_REQPATH', CONTROLLER_REQPATH . '/common/');
+
 define('CONTROLLER_ROOT', __DIR__);
 define('COMMON_PATH', __DIR__ . '/common/');

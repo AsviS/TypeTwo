@@ -27,6 +27,6 @@ else if(isset($_GET['logout']))
 }
 else if(isset($_GET['loginForm']))
 {
-	include('templates/loginForm.tpl.php');
+	include('templates/loginForm.html');
 	exit();
 }

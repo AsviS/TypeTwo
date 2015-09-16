@@ -17,5 +17,5 @@ if(isset($_POST['name']) && isset($_POST['password']))
 
 
 ob_start();
-include(__DIR__ . '/templates/create.tpl.php');
+include(__DIR__ . '/templates/create.html');
 $renderData['content'] = ob_get_clean();

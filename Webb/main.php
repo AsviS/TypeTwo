@@ -52,19 +52,29 @@ $renderData['page'] = isset($request['args'][0]) ? $request['args'][0] : null;
 $renderData['args'] = $request['argCount'] > 1 ? array_splice($request['args'], 1) : null;
 
 
-// If null, go to home page.
+$page = null;
+// If null, go to user page.
 if($renderData['page'] === null)
 {
-	include("pages/user/main.php");
-	$renderData['title'] = null;
-	$renderData['description'] = 'User section';
+	$page = 'user';
 }
 // Else if page is not whitelisted, go 404 and die.
 else if(!$gyg->pageIsWhitelisted($renderData['page']))
 	httpStatus::send('404');
 // Else, go to page.
 else
-	include("pages/{$renderData['page']}/main.php");
+	$page = $renderData['page'];
+
+$pageMainPath = CONTROLLER_ROOT . "/pages/{$page}/main.php";
+	
+if(!file_exists($pageMainPath))
+	httpStatus::send('404');
+else
+{
+	define('PAGE_ROOT', CONTROLLER_ROOT . "/pages/{$page}");
+	define('PAGE_REQPATH', CONTROLLER_REQPATH . "/pages/{$page}");
+	include($pageMainPath);
+}
 	
 extract($renderData);
-include(__DIR__ . '/common/templates/main.tpl.php');
+include(__DIR__ . '/common/templates/main.html');

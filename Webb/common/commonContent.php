@@ -29,11 +29,11 @@ $renderData['scripts'] =
 
 
 // Main template.
-$renderData['templatePath'] = __DIR__ . "/templates/main.tpl.php";
+$renderData['templatePath'] = __DIR__ . "/templates/main.html";
 
 ////////////////////////////////
 // Above
 $renderData['above'] = include('above.php');
 ////////////////////////////////
 
-$renderData['style'] = "@import url(" . COMMON_REQPATH . "style/login.css)";
+$renderData['style'] .= "@import url(" . COMMON_REQPATH . "style/login.css);";

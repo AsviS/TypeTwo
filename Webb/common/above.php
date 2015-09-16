@@ -5,7 +5,7 @@
  */
 
 ob_start();
-include(__DIR__ . '/templates/above.tpl.php');
+include(__DIR__ . '/templates/above.html');
 $above = ob_get_clean();
 
 return $above;

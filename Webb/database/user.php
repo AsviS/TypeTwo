@@ -70,4 +70,18 @@ class UserTable
 		return $stmt->execute();
 	}
 	
+	public function getUsers($startIndex = 0, $endIndex = 10)
+	{
+		$stmt = $this->mDb->prepare("CALL user_get(?, ?)");
+		$stmt->bind_param('ii', $startIndex, $endIndex);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		
+		$users = [];
+		while($row = mysqli_fetch_assoc($result))
+			$users[] = $row;
+			
+		return $users;
+	}
+	
 };

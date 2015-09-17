@@ -1,5 +1,11 @@
 <?php
-
+/*
+ * Page's main file.
+ *
+ * Control is redirected here when the controller
+ * receives this page's ID as second argument.
+ */
+ 
 if(isset($_POST['name']) && isset($_POST['password']))
 {
 	include_once(CONTROLLER_ROOT . "/database/user.php");
@@ -15,7 +21,6 @@ if(isset($_POST['name']) && isset($_POST['password']))
 	
 }
 
-
 ob_start();
-include(__DIR__ . '/templates/create.html');
-$renderData['content'] = ob_get_clean();
+include(PAGE_ROOT . '/templates/registerForm.html');
+return ob_get_clean();

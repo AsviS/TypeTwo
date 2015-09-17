@@ -1,6 +1,7 @@
 <?php if($userSession->isLoggedIn()): ?>
 	<a id='above-logout' href='/typetwo/user/logout'>Logout</a>
-	<p><?=$_SESSION['user']?></p>
+	<a id='above-user'	href='/typetwo/user/profile'><?=$_SESSION['user']?></a>
 <?php else: ?>
 	<a id='above-login' href='/typetwo/user/login'>Login</a>
+	<a id='above-register' href='/typetwo/user/register'>Register</a>
 <?php endif; ?>

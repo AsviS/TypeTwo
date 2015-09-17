@@ -2,6 +2,6 @@
 
 include(PAGE_ROOT . '/config.php');
 
-extract($renderData);
+extract($config);
 include(PAGE_ROOT . '/templates/index.html');
 exit();

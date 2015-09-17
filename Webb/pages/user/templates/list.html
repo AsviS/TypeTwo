@@ -1,0 +1,18 @@
+<p>User list</p>
+<?php if($users): ?>
+	<table>
+		<tr>
+		<?php foreach($columns as $column): ?>
+			<th><?=$column?></th>
+		<?php endforeach; ?>
+		</tr>
+		
+		<?php foreach($users as $user): ?>
+			<tr>
+				<?php foreach($user as $columnData): ?>
+					<td><?=$columnData?></td>
+				<?Php endforeach; ?>
+			</tr>
+		<?php endforeach; ?>
+	</table> 
+<?php endif;

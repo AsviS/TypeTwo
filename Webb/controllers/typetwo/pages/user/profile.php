@@ -2,7 +2,7 @@
 
 if(!$userSession->isLoggedIn())
 {
-	header('Location: http://mikael.hernvall.com/typetwo');
+	header("Location: {$gyg->getBaseUrl()}/typetwo");
 	exit();
 }
 

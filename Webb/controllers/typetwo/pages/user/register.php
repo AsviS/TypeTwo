@@ -16,7 +16,7 @@ if(isset($_POST['name']) && isset($_POST['password']))
 	if($userTable->createUser($_POST['name'], $hashedPassword, $salt, $_POST['name'] . '@mail.com'))
 		$userSession->login($_POST['name']);
 		
-	header("Location: http://mikael.hernvall.com/typetwo/user/");
+	header("Location: {$gyg->getBaseUrl()}/typetwo/user");
 	exit;
 	
 }

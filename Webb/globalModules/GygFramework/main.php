@@ -181,9 +181,6 @@ Class GygFramework
 
 		// Parse the request into $this->request array.
 		$this->parseRequest($request);
-
-		define('CONTROLLER_REQPATH', $this->getBaseUrl() . "/file/{$this->request['controller']}");
-		define('CONTROLLER_ROOT', $this->controllersPath . "/{$this->request['controller']}");
 		
 		// Return path to main file of requested controller.
 		return $this->getControllerMainPath($this->request['controller']);

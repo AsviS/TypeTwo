@@ -1,6 +1,11 @@
 <?php
+define('CONTROLLER_REQPATH', "/file/typetwo");
+define('CONTROLLER_ROOT', __DIR__);
+
 define('COMMON_REQPATH', CONTROLLER_REQPATH . '/common/');
 define('COMMON_PATH', __DIR__ . '/common/');
+
+
 
 
 $userSession = new GygUserSession('user');

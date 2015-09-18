@@ -66,9 +66,9 @@ $(document).ready(function()
 		
 		$('#user-login').click(login);
 		$('#user-login-name')
-						.on('keypress', function(e){onEnterPress(e)})
+						.on('keypress', function(e){onEnterPress(e);})
 						.focus();
-		$('#user-login-password').on('keypress', function(e){onEnterPress(e)});
+		$('#user-login-password').on('keypress', function(e){onEnterPress(e);});
 		
 		
 	}

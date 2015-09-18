@@ -7,21 +7,21 @@ window.onload = function(){
 
 	buttonConn.onclick = function (event){
 		joinRoom();	
-	}
+	};
 
 	document.getElementById("passfield").onkeypress = function (event) {
 		if(event.keyCode == 13){
 			joinRoom();
 		};
-	}
+	};
 
 	buttonSend.onclick = function (event) {
 		sendMessage();
-	}
+	};
 
 	setInterval(checkColor(), 1000);
 
-}
+};
 
 function checkColor(){
 	document.getElementById("colorText").style.color = document.getElementById("textColor").value;
@@ -38,25 +38,25 @@ function joinRoom(){
 		textbox.focus();
 		document.getElementById("connectButton").innerHTML="Disconnect";
 		document.getElementById("connectButton").value="Disconnect";
-	}
+	};
 
 	socket.onclose = function (event){
 		addMessage("Connection closed.");
 		document.getElementById("connectButton").innerHTML="Connect";
 		document.getElementById("connectButton").value="Connect";
-	}
+	};
 
 	socket.onmessage = function (event) {
 		if (typeof event.data === "string"){
 			addMessage(event.data);
 		};
-	}
+	};
 
 	textbox.onkeypress = function (event) {
 		if(event.keyCode == 13){
 			sendMessage();
 		};
-	}
+	};
 }
 
 function addMessage (mess){

@@ -4,7 +4,7 @@ How to install and configure for WAMP
 ## WAMP
 1. Install WAMP.
 2. Put the contents of this directory into the "www" directory located in the WAMP installation directory, **OR** see the [Set the Document Root directory to the repository's "Webb" directory (Optional)](https://github.com/MickeMakaron/TypeTwo/blob/master/Webb/README.md#set-the-document-root-directory-to-the-repositorys-webb-directory-optional) section. 
-3. Try starting WAMP. If the tray icon does not turn green (meaning the server is online), try opening the port 80.
+3. Try starting WAMP. Connect to the server via "localhost:80" in the browser. If the page does not load, check if the tray icon does not turn green (meaning the server is online). If not, try opening the port 80.
 
 ## Configuration 
 For the website to function properly, some changes needs to be made to the server's configuration file. Edit the file _wamp\bin\apache\apache2.4.9\conf\httpd.conf_ in a text editor and make the following changes:

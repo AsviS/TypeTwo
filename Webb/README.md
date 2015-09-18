@@ -12,7 +12,7 @@ For the website to function properly, some changes needs to be made to the serve
 ### mod_rewrite ###
 To enable the mod_rewrite module, uncomment the line that says **"#LoadModule rewrite_module modules/mod_rewrite.so"**. To uncomment it, remove the hash sign at the start of the line.
 
-Go to the _<Directory>_ tag. It should look something like **<Directory "C:/wamp/www/">**, depending on where WAMP was installed. After the line that says "AllowOverride all", insert the following lines:
+Go to the _\<Directory\>_ tag. It should look something like **<Directory "C:/wamp/www/">**, depending on where WAMP was installed. After the line that says "AllowOverride all", insert the following lines:
 
     RewriteEngine On
     RewriteCond %{REQUEST_FILENAME} !-f

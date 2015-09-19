@@ -1,3 +1,1 @@
-extlib/* linguist-vendored=true
-Webb/common/js/jquery.js linguist-vendored=false
-Webb/globalModules/exceptionf/jquery.js linguist-vendored=false
+extlib/* linguist-vendored

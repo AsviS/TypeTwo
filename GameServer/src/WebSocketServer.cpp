@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <ctime>
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -22,6 +23,7 @@
 WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocols, Database& db)
 : mVerbose(false)
 , mDb(db)
+, mNumProtocols(protocols.size())
 {
     lws_set_log_level
     (
@@ -77,16 +79,20 @@ void WebSocketServer::initializeProtocols(const std::vector<const WebSocketSubPr
 
 ///////////////////////////////////
 
-void WebSocketServer::addClient(WebSocketConnection client)
+void WebSocketServer::addClient(WebSocketConnection* client)
 {
-    mClients.insert(std::make_pair(client.getUsername(), client));
-}
+    auto it = mClients.find(client->getUsername());
 
-///////////////////////////////////
+    if(it != mClients.end())
+    {
+        if(mVerbose)
+            std::cout << "'" << client->getUsername() << "' already logged in at " << client->getIp() << ". Kicking existing user." << std::endl;
 
-bool WebSocketServer::userIsConnected(std::string username) const
-{
-    return mClients.find(username) != mClients.end();
+        it->second->silentClose();
+        it->second = client;
+    }
+    else
+        mClients[client->getUsername()] = client;
 }
 
 ///////////////////////////////////
@@ -96,10 +102,16 @@ void WebSocketServer::removeClient(std::string username)
     mClients.erase(username);
 }
 
+///////////////////////////////////
+
+void WebSocketServer::removeClient(std::map<std::string, WebSocketConnection*>::iterator it)
+{
+    mClients.erase(it);
+}
 
 ///////////////////////////////////
 
-const std::map<std::string, WebSocketConnection>& WebSocketServer::getClients() const
+const std::map<std::string, WebSocketConnection*>& WebSocketServer::getClients() const
 {
     return mClients;
 }
@@ -117,7 +129,9 @@ WebSocketServer::~WebSocketServer()
 void WebSocketServer::run()
 {
     while(true)
+    {
         libwebsocket_service(mContext, 50);
+    }
 }
 
 ///////////////////////////////////
@@ -125,9 +139,6 @@ void WebSocketServer::run()
 
 WebSocketServer::ResponseCode WebSocketServer::validateUserCredentials(std::string username, std::string password) const
 {
-    if(userIsConnected(username))
-        return ResponseCode::UserAlreadyLoggedIn;
-
     std::string hashedPassword;
     std::string salt;
 
@@ -138,6 +149,7 @@ WebSocketServer::ResponseCode WebSocketServer::validateUserCredentials(std::stri
         return ResponseCode::Success;
     else
         return ResponseCode::InvalidUserCredentials;
+
 
     return ResponseCode::Success;
 }
@@ -160,7 +172,7 @@ std::string WebSocketServer::getIp(libwebsocket* webSocketInstance) const
 
 ///////////////////////////////////
 
-WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance) const
+WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance)
 {
     std::string username, password;
     if(!WebSocketSubProtocol::getUserCredentials(webSocketInstance, username, password))
@@ -186,12 +198,8 @@ WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* con
             case ResponseCode::InvalidUserCredentials:
                 std::cout << "Invalid user credentials" << std::endl;
                 break;
-
-            case ResponseCode::UserAlreadyLoggedIn:
-                std::cout << "User is already logged in" << std::endl;
-
-                default:
-                    break;
+            default:
+                break;
         }
     }
 
@@ -202,18 +210,18 @@ WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* con
 
 void WebSocketServer::handleConnectionOpen(void* connectionData)
 {
-    WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
+    WebSocketConnection* connection = &WebSocketSubProtocol::getConnection(connectionData);
     addClient(connection);
 
     if(mVerbose)
-        std::cout << "'" << connection.getUsername() << "' has connected from " << connection.getIp() << "." << std::endl;
+        std::cout << "'" << connection->getUsername() << "' has connected from " << connection->getIp() << "." << std::endl;
 }
 
 ///////////////////////////////////
 
 void WebSocketServer::handleConnectionClosed(void* connectionData)
 {
-    WebSocketConnection connection = WebSocketSubProtocol::getConnection(connectionData);
+    WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
     removeClient(connection.getUsername());
 
     if(mVerbose)
@@ -231,18 +239,18 @@ void WebSocketServer::handleConnectionClosed(void* connectionData)
 
 void WebSocketServer::broadcastString(std::string message, std::list<std::string> excludeUsers) const
 {
-    for(const std::pair<std::string, WebSocketConnection>& client : mClients)
+    for(const std::pair<std::string, WebSocketConnection*>& client : mClients)
     {
         if(excludeUsers.size() > 0)
         {
-            auto found = std::find(excludeUsers.begin(), excludeUsers.end(), client.second.getUsername());
+            auto found = std::find(excludeUsers.begin(), excludeUsers.end(), client.second->getUsername());
             if(found == excludeUsers.end())
-                client.second.sendString(message);
+                client.second->sendString(message);
             else
                 excludeUsers.erase(found);
         }
         else
-            client.second.sendString(message);
+            client.second->sendString(message);
     }
 
 }
@@ -256,4 +264,24 @@ void WebSocketServer::broadcastLines(std::vector<std::string> lines) const
         stream << line << '\n';
 
     broadcastString(stream.str());
+}
+
+///////////////////////////////////
+
+void WebSocketServer::closeDeadConnections()
+{
+    time_t currentTime;
+    time(&currentTime);
+
+    auto it = mClients.begin();
+    while(it != mClients.end())
+    {
+        if(currentTime - it->second->getLastAliveTime() > 60)
+        {
+            it->second->silentClose();
+            removeClient(it++);
+        }
+        else
+            it++;
+    }
 }

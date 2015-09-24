@@ -64,10 +64,10 @@ class WebSocketServer
 
         /// \brief Get all active client connections of this server.
         ///
-        /// \return const std::map<std::string, WebSocketConnection>&
+        /// \return const std::map<std::string, WebSocketConnection*>&
         ///
         ///
-        const std::map<std::string, WebSocketConnection>& getClients() const;
+        const std::map<std::string, WebSocketConnection*>& getClients() const;
 
         /// \brief Handle connection request from client
         ///
@@ -76,7 +76,7 @@ class WebSocketServer
         /// \return ResponseCode
         ///
         ///
-        ResponseCode handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance) const;
+        ResponseCode handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance);
 
         /// \brief Handle connection open event from client
         ///
@@ -142,7 +142,7 @@ class WebSocketServer
         /// \return void
         ///
         ///
-        void addClient(WebSocketConnection client);
+        void addClient(WebSocketConnection* client);
 
         /// \brief Remove a client connection from the server's client map.
         ///
@@ -152,13 +152,14 @@ class WebSocketServer
         ///
         void removeClient(std::string username);
 
-        /// \brief Check if user is connected to this server.
+        /// \brief Remove a client connection from the server's client map with an iterator.
         ///
-        /// \param username std::string Username of user
-        /// \return bool True if a user by the given username is already connected to the server, else false.
+        /// \param std::map<std::string
+        /// \param it WebSocketConnection*>::iterator Iterator pointing to the client.
+        /// \return void
         ///
         ///
-        bool userIsConnected(std::string username) const;
+        void removeClient(std::map<std::string, WebSocketConnection*>::iterator it);
 
         /// \brief Validate user credentials.
         ///
@@ -170,10 +171,18 @@ class WebSocketServer
         ResponseCode validateUserCredentials(std::string username, std::string password) const;
 
 
+        /// \brief Close all connections that are dead.
+        ///
+        /// \return void
+        ///
+        ///
+        void closeDeadConnections();
+
     private:
         libwebsocket_context*   mContext;   ///< WebSocket context
         libwebsocket_protocols* mProtocols; ///< List of protocols to respond to
-        std::map<std::string, WebSocketConnection> mClients; ///< Clients connected to this server.
+        unsigned int            mNumProtocols; ///< Number of protocols.
+        std::map<std::string, WebSocketConnection*> mClients; ///< Clients connected to this server.
         bool mVerbose; ///< If true, the server will print detailed information to the console.
         Database& mDb; ///< Database connection
 };

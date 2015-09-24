@@ -85,6 +85,17 @@ WebSocketSubProtocol::Result WebSocketSubProtocol::performStandardProtocol(libwe
             if(WebSocketSubProtocol::getServer(context).handleConnectionRequest(connectionData, webSocketInstance) != WebSocketServer::ResponseCode::Success)
                 return Result::Fail;
             break;
+
+        case LWS_CALLBACK_RECEIVE:
+            WebSocketSubProtocol::getConnection(connectionData).updateAliveTime();
+            return Result::NoAction;
+
+        case LWS_CALLBACK_PROTOCOL_DESTROY:
+            {
+                unsigned char* derp = new unsigned char[1];
+                libwebsocket_write(webSocketInstance, derp, 1, LWS_WRITE_CLOSE);
+                return Result::Fail;
+            }
         default:
             return Result::NoAction;
     }

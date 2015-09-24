@@ -8,6 +8,7 @@
 ///////////////////////////////////
 // STD C++
 #include <sstream>
+#include <ctime>
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -23,6 +24,7 @@ WebSocketConnection::WebSocketConnection(std::string username, libwebsocket* web
 , mIp(mServer.getIp(mWebSocketInstance))
 , mUsername(username)
 {
+    updateAliveTime();
 }
 
 ///////////////////////////////////
@@ -64,4 +66,34 @@ void WebSocketConnection::sendLines(std::vector<std::string> lines) const
         stream << line << '\n';
 
     sendString(stream.str());
+}
+
+///////////////////////////////////
+
+void WebSocketConnection::updateAliveTime()
+{
+    time(&mLastAliveTime);
+}
+
+///////////////////////////////////
+
+time_t WebSocketConnection::getLastAliveTime() const
+{
+    return mLastAliveTime;
+}
+
+///////////////////////////////////
+
+void WebSocketConnection::close()
+{
+    unsigned char message;
+    libwebsocket_write(mWebSocketInstance, &message, 0, LWS_WRITE_CLOSE);
+}
+
+///////////////////////////////////
+
+void WebSocketConnection::silentClose()
+{
+    libwebsocket_rx_flow_control(mWebSocketInstance, 0);
+    close();
 }

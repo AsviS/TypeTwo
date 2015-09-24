@@ -17,6 +17,7 @@ $gyg->whitelistPages(
 [
 	'user',
 	'chat',
+	'game'
 ]);
 
 $config =
@@ -29,7 +30,7 @@ $config =
 			'typetwo'
 		],
 	'description'	=> 'Massively multiplayer online grand strategy in space',
-	'defaultPage'	=> 'user',
+	'defaultPage'	=> 'game',
 	
 	'favicon' 		=> null,
 	'stylesheet' 	=> null,

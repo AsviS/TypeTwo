@@ -11,12 +11,12 @@
 		<link rel = "shortcut icon" href = "<?=@$favicon?>"/>
 		<link rel = "stylesheet" type = "text/css" href="<?=@$stylesheet?>"/>
 		
+		<?php foreach($scripts as $script): ?>
+			<script type = "text/javascript" src="<?=@$script?>"></script>
+		<?php endforeach; ?>
+		
 		
 		<style type = "text/css"><?=$style?></style>
-		
-		<?php foreach($scripts as $script): ?>
-		<script type = "text/javascript" src="<?=@$script?>"></script>
-		<?php endforeach; ?>
 	</head>
 
 <body>
@@ -28,5 +28,7 @@
 		</div>
 	</div>
 </body>
+
+
 
 </html>

@@ -10,6 +10,8 @@ function loadGameScripts(&$scripts)
 
 loadGameScripts($config['scripts']);
 */
-ob_start();
+///ob_start();
 include(PAGE_ROOT . '/templates/main.html');
-$config['content'] = ob_get_clean();
+//$config['content'] = ob_get_clean();
+
+exit();

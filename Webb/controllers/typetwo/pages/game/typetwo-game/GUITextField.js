@@ -19,7 +19,7 @@ var GUITextField = function()
 		
 		
 		render: function(ct)
-		{
+		{			
 			ct.fillStyle = 'white';
 			ct.fillRect(this.bounds.left, this.bounds.top, this.bounds.width, this.bounds.height);
 			
@@ -79,7 +79,17 @@ var GUITextField = function()
 			return true;
 		},
 		
+		activate: function()
+		{
+			this._isActivated = true;
+            $('#field').trigger('focus');
+		},
 		
+		deactivate: function()
+		{
+			this._isActivated = false;
+            $('#field').trigger('blur');
+		},
 	});
 
 

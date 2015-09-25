@@ -8,8 +8,6 @@ var MainMenuState = function()
 		this._canvas = canvas;
 		this._width = canvas.width;
 		this._height = canvas.height;
-		
-
 		var buttonSize = new Vector(this._width/3, this._height/10);
 		var centerX = this._width/2 - buttonSize.x/2;
 		var self = this;

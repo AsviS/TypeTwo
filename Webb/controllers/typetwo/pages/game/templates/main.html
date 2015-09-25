@@ -1,3 +1,5 @@
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no;user-scalable=0;"/>
+
 <script type = "text/javascript" src="../../../common/js/jquery.js"></script>
 <script type = "text/javascript" src="../../../common/js/login.js"></script>
 
@@ -17,6 +19,7 @@
 <script type = "text/javascript" src="../typetwo-game/AnimationFrame.js"></script>
 <script type = "text/javascript" src="../typetwo-game/Canvas2D.js"></script>
 <script type = "text/javascript" src="../typetwo-game/GUIText.js"></script>
+<script type = "text/javascript" src="../typetwo-game/GUIProgressBar.js"></script>
 <script type = "text/javascript" src="../typetwo-game/GUITextField.js"></script>
 <script type = "text/javascript" src="../typetwo-game/MainMenuState.js"></script>
 <script type = "text/javascript" src="../typetwo-game/ConnectionBarState.js"></script>
@@ -34,8 +37,10 @@
 
 
 
+<body style="margin: 0; padding: 0;">
+	<canvas id="typetwo-canvas" title="">
+		HTML5 Canvas is not supported by your browser or JavaScript is disabled.
+	</canvas>
+	<input id="field" type="text" style="z-index:-1; position:absolute; left:-10px; top:0; width:0px; height:0px; padding: 0; margin: 0;"/>
+</body>
 
-
-<canvas id="typetwo-canvas" title="" width="500px" height="500px" style="margin:auto;">
-	HTML5 Canvas is not supported by your browser or JavaScript is disabled.
-</canvas>

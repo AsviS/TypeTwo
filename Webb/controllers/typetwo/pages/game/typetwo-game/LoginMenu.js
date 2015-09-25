@@ -18,8 +18,8 @@ var LoginMenu = function()
 			config.webSocket.order.onThisOpen(function(){stateStack.pop(); stateStack.push(new AboutMenuState(stateStack, canvas));});
 		};
 		
-		var username = new GUITextField(new Rect(50, 50, 250, 50), login);
-		var password = new GUITextField(new Rect(50, 120, 250, 50), login, true);
+		var username = new GUITextField(new Rect(width / 4, height / 6, width / 2, height / 10), login);
+		var password = new GUITextField(new Rect(width / 4, height / 3, width / 2, height / 10), login, true);
 		
 		
 		
@@ -29,8 +29,8 @@ var LoginMenu = function()
 			password,
 			new Button
 			(
-				new Vector(50, 200), 
-				new Vector(150, 50), 
+				new Vector(width * 3 / 8, height  / 2), 
+				new Vector(width / 4, height / 10), 
 				"Log in", 
 				canvas.fontSize,
 				login

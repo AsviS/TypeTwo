@@ -6,6 +6,7 @@ var GUIContainer = function()
 	{
 		this._guiElements = guiElements || this._guiElements;
 		this._bounds = bounds;
+		this._select(this._guiElements[0]);
 	}
 
 	GUIContainer.prototype =
@@ -25,7 +26,6 @@ var GUIContainer = function()
 		handleInput: function()
 		{
 			this._updateElements();
-
 			if(Input.mouse.isPressed(Input.mouse.LEFT))
 			{
 				if(this._hasSelection())
@@ -33,7 +33,28 @@ var GUIContainer = function()
 				else
 					this._deactivate();
 			}
-			else if(this._hasActivation())
+			else if(Input.mouse.isPressed(Input.mouse.TAP))
+			{
+				var foundTarget = false;
+				for(var i = 0; i < this._guiElements.length; i++)
+				{
+					var element = this._guiElements[i];
+					if(element.isSelectable() && utility.contains(element.bounds.left, element.bounds.top, element.bounds.width, element.bounds.height, Input.mouse.position.x, Input.mouse.position.y))
+					{
+						this._select(element);
+						this._activate();
+						foundTarget = true;
+					}
+				}
+				
+				if(!foundTarget)
+				{
+					this._deactivate();
+					this._deselect();
+				}
+			}
+			
+			if(this._hasActivation())
 			{
 				this._activation.handleInput();
 				if(!this._activation.isActivated())
@@ -56,6 +77,8 @@ var GUIContainer = function()
 			
 			// If we got here, it means that the cursor is not on any element.
 			this._deselect();
+			
+					
 		},
 		
 		_select: function(element)

@@ -60,6 +60,7 @@ var Input = function()
 		LEFT: 0,
 		MIDDLE: 1,
 		RIGHT: 2,
+		TAP: 3,
 		position: new Vector(),
 		
 		isDown: function(button)
@@ -102,6 +103,7 @@ var Input = function()
 		return true;
 	};
 
+
 	var onMouseUp = function(event)
 	{
 		delete downButtons[event.button];
@@ -112,6 +114,13 @@ var Input = function()
 	{
 		var absPos = utility.getAbsPos(canvasId);
 		my.mouse.position = new Vector(event.pageX - absPos[0], event.pageY - absPos[1]);
+	};
+	
+	
+	var onTap = function(event, canvasId)
+	{
+		backBuffer.pressedButtons.push(my.mouse.TAP);
+		updateMousePos({pageX: event.originalEvent.touches[0].pageX, pageY: event.originalEvent.touches[0].pageY}, canvasId);
 	};
 
 	my.bindInput = function(canvasId)
@@ -130,8 +139,9 @@ var Input = function()
 			.on('mousedown', onMouseDown)
 			.on('mouseup', onMouseUp)
 			.on('mousemove', function(event) { updateMousePos(event, canvasId); });
-		
-			
+		$(document).on('touchstart', function(event){onTap(event, canvasId);});
+
+
 		$(document).focus(function()
 		{
 			window.renderAll = true;

@@ -32,7 +32,7 @@ class WebSocketServer
     public:
         /// \brief Response codes for connection requests
         ///
-        enum ResponseCode
+        enum class ResponseCode
         {
             Success,                ///< Connection request is OK
             UserAlreadyLoggedIn,    ///< A user of the connection's username is already connected to the server.

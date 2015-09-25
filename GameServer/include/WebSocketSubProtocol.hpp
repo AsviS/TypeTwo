@@ -27,7 +27,7 @@ class WebSocketSubProtocol
     public:
         /// \brief Tri-state boolean for standard protocol result
         ///
-        enum Result
+        enum class Result
         {
             Success,    ///< Request was processed and valid
             Fail,       ///< Request was processed and invalid

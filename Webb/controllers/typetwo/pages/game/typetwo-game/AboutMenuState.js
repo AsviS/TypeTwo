@@ -26,8 +26,7 @@ var AboutMenuState = function()
 					"You are now logged in.",
 					"Gz!",
 				],
-				new Vector(width/12, height/12),
-				width/24
+				new Vector(width/12, height/12)
 			)
 		];
 		

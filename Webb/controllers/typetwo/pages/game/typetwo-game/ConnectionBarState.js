@@ -6,9 +6,7 @@ var ConnectionBarState = function()
 	{
 		this._stateStack = stateStack;
 		this._canvas = canvas;
-		this._width = canvas.width;
-		this._height = canvas.height;
-		this._timeOut = timeOut;
+		this._bounds = new Rect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
 		this._socket = socket;
 		
 		socket.onThisOpen(function()
@@ -17,17 +15,21 @@ var ConnectionBarState = function()
 			stateStack.pop();
 		});
 		
-		
-		var loadingBarMaxWidth = this._width/2;
-		this._loadingBar = 
-		{
-			left: this._width/2 - loadingBarMaxWidth/2,
-			top: this._height*(4/6),
-			height: this._height/20,
-			width: 0,
-			step: loadingBarMaxWidth/this._timeOut,
-			maxWidth: loadingBarMaxWidth,
-		};
+		this._loadingBar = new GUIProgressBar(new Rect(canvas.width / 4, canvas.height * 4 / 6, canvas.width / 2, canvas.height / 20));
+		this._guiContainer = new GUIContainer
+		(
+			[
+				this._loadingBar,
+				new GUIText
+				(
+					["Connecting..."], 
+					new Vector(canvas.width / 4 + 10, canvas.height * 4 / 6), 
+					new GUIText.FontSettings(undefined, undefined, undefined, 'white', undefined)
+				)
+			], 
+			new Rect(0, 0, canvas.width, canvas.height)
+		);
+		this._loadingIncrement = 1 / timeOut;
 	}
 						
 
@@ -35,31 +37,30 @@ var ConnectionBarState = function()
 	{
 		_stateStack:		null,
 		_canvas: 			null,
-		_width:				0,
-		_height:			0,
-		_timeOut: 			0,
-		_timeElapsed:		0,
-		_timeoutCallback:	function(){},
+		_guiContainer:		null,
+		_bounds:			new Rect(),
 		_loadingBar:		{},
+		_loadingIncrement: 	0,
 		_socket:			null,
+		_button:			null,
+		_text:				'Connecting...',
 
 		update: function(dt)
 		{								
 			if(this._socket.status === Socket.statusID.CLOSED)
 			{
 				console.log("Cannot connect.");
-				
+				this._stateStack.pop();
 			}
-			else if(this._timeElapsed < this._timeOut)
-			{
-				this._loadingBar.width += dt * this._loadingBar.step;
-				this._timeElapsed += dt;
-			}
-			else
+			else if(this._loadingBar.isFinished())
 			{
 				console.log("Connection timed out.");
 				this._socket.disconnect();
 				this._stateStack.pop();
+			}
+			else
+			{
+				this._loadingBar.increment(dt * this._loadingIncrement);
 			}
 			
 			return false;
@@ -69,29 +70,15 @@ var ConnectionBarState = function()
 		{
 			ct.fillStyle = 'black';
 			ct.fillRect(0, 0, this._width, this._height);
-
-			ct.fillStyle = 'white';
-			ct.textBaseline = "top";
-			var text = 'Connecting...';
-			ct.fillText(text, this._width/2 - text.length * this._canvas.fontSize/4, this._height/2);
-
 			
-			ct.fillStyle = 'orange';
-			ct.fillRect(this._loadingBar.left, this._loadingBar.top, this._loadingBar.width, this._loadingBar.height);
+			this._guiContainer.render(ct);
 			
-			
-			ct.beginPath();
-			ct.rect(this._loadingBar.left, this._loadingBar.top, this._loadingBar.maxWidth, this._loadingBar.height);
-			ct.lineWidth = 5;
-			ct.strokeStyle = 'gray';
-			ct.stroke();	
-			
-			return false;
+			return true;
 		},
 		
 		handleInput: function(dt)
 		{
-			return false;
+			return true;
 		},
 	};
 

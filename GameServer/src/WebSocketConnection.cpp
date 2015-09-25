@@ -86,8 +86,8 @@ time_t WebSocketConnection::getLastAliveTime() const
 
 void WebSocketConnection::close()
 {
-    unsigned char message;
-    libwebsocket_write(mWebSocketInstance, &message, 0, LWS_WRITE_CLOSE);
+    unsigned char* message = new unsigned char();
+    libwebsocket_write(mWebSocketInstance, message, 0, LWS_WRITE_CLOSE);
 }
 
 ///////////////////////////////////

@@ -5,9 +5,10 @@ var Canvas2D = function()
 	{
 		this._canvas = document.getElementById(canvasId);
 		this.context = this._canvas.getContext('2d');
-		
-		this.width = this._canvas.getAttribute('width').replace('px','');
-		this.height = this._canvas.getAttribute('height').replace('px','');
+	
+		this.width = this._canvas.width = $(document).width();
+		this.height = this._canvas.height = $(document).height();
+
 		this.fontSize = this.width < this.height ? this.width/25 : this.height/25;
 		this.context.font = 'bold ' + this.fontSize + 'px sans-serif';
 		

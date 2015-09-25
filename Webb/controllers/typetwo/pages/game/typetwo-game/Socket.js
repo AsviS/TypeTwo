@@ -49,6 +49,9 @@ var Socket = function()
 		
 		init: function(username, password, stateStack, canvas)
 		{
+			if(this.status === Socket.statusID.CONNECTING)
+				return;
+			
 			this.username = username;
 			this.password = password;
 			this.disconnect();

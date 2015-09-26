@@ -9,12 +9,9 @@ var Canvas2D = function()
 		this.width = this._canvas.width = $(document).width();
 		this.height = this._canvas.height = $(document).height();
 
-		this.fontSize = this.width < this.height ? this.width/25 : this.height/25;
-		this.context.font = 'bold ' + this.fontSize + 'px sans-serif';
-		
 		Input.bindInput(canvasId);
 	}
-
+	
 
 	Canvas2D.prototype =
 	{

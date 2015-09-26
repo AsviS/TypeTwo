@@ -4,7 +4,10 @@ var GUITextField = function()
 {
 	function GUITextField(bounds, submitCallback, isHidden)
 	{
-		this.bounds = bounds;
+		GUIElement.call(this);
+		
+		this.setBounds(bounds);
+
 		this._submitCallback = submitCallback || this._submitCallback;
 		this._isHidden = (isHidden === true || isHidden === false) ? isHidden : this._isHidden;
 	}
@@ -18,35 +21,35 @@ var GUITextField = function()
 		_textMask: '',
 		
 		
-		render: function(ct)
+		_renderCurrent: function(ct, transform)
 		{			
 			ct.fillStyle = 'white';
-			ct.fillRect(this.bounds.left, this.bounds.top, this.bounds.width, this.bounds.height);
+			ct.fillRect(transform.x, transform.y, this._bounds.width, this._bounds.height);
 			
 			if(this.text.length > 0)
 			{
 				ct.fillStyle = 'black';
 				ct.textBaseline = "middle";
 				if(this._isHidden)
-					ct.fillText(new Array(this.text.length + 1).join("*"), this.bounds.left + ct.lineWidth * 5, this.bounds.top + this.bounds.height / 2);
+					ct.fillText(new Array(this.text.length + 1).join("*"), transform.x + ct.lineWidth * 5, transform.y + this._bounds.height / 2);
 				else
-					ct.fillText(this.text, this.bounds.left + ct.lineWidth * 5, this.bounds.top + this.bounds.height / 2);
+					ct.fillText(this.text, transform.x + ct.lineWidth * 5, transform.y + this._bounds.height / 2);
 			}
 
 			if(this._isActivated)
 			{
 				ct.strokeStyle = 'black';
-				ct.strokeRect(this.bounds.left, this.bounds.top, this.bounds.width, this.bounds.height);
+				ct.strokeRect(transform.x, transform.y, this._bounds.width, this._bounds.height);
 			}
 			else if(this._isSelected)
 			{
 				ct.strokeStyle = 'gray';
-				ct.strokeRect(this.bounds.left, this.bounds.top, this.bounds.width, this.bounds.height);
+				ct.strokeRect(transform.x, transform.y, this._bounds.width, this._bounds.height);
 			}
 				
 		},
 		
-		handleInput: function()
+		_handleInputCurrent: function()
 		{
 			this.text += Input.getText().replace(/[\n\t\r]+/g, '');
 			

@@ -4,7 +4,8 @@ var MainMenuState = function()
 {
 	function MainMenuState(stateStack, canvas)
 	{
-		this._stateStack = stateStack;
+		MenuState.call(this, stateStack);
+		
 		this._canvas = canvas;
 		this._width = canvas.width;
 		this._height = canvas.height;
@@ -28,12 +29,7 @@ var MainMenuState = function()
 	}
 
 	$.extend(MainMenuState.prototype, MenuState.prototype,
-	{
-		_stateStack: null,
-		_width: 0,
-		_height: 0,
-		_guiContainer: new GUIContainer(),
-		
+	{		
 		render: function(ct)
 		{
 			this.drawBackground(ct);

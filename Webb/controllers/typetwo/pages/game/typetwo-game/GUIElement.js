@@ -2,22 +2,14 @@ var GUIElement = function()
 {
 	function GUIElement()
 	{
+		SceneNode.call(this);
 	}
 
 	GUIElement.prototype = 
 	{
 		_isSelected: false,
 		_isActivated: false,
-		bounds: new Rect(),
-		
-		render: function(ct)
-		{
-		},
-		
-		handleInput: function()
-		{
-		},
-	
+			
 		select: function()
 		{
 			this._isSelected = true;
@@ -53,6 +45,8 @@ var GUIElement = function()
 			return this._isActivated;
 		},
 	};
+	
+	$.extend(GUIElement.prototype, SceneNode.prototype);
 
 
 	return GUIElement;

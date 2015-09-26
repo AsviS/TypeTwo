@@ -4,17 +4,15 @@ var MainMenu = function()
 {
 	function MainMenu(stateStack, canvas)
 	{
-		$.extend(this, new MainMenuState(stateStack, canvas));
-		
-		var width = canvas.width;
-		var height = canvas.height;
-		var buttonSize = new Vector(width/3, height/10);
-		var centerX = width/2 - buttonSize.x/2;
+		MainMenuState.call(this, stateStack, canvas);
+
+		var buttonSize = new Vector(this._width/3, this._height/10);
+		var centerX = this._width/2 - buttonSize.x/2;
 		var buttons = 
 		[
 			new Button
 			(
-				new Vector(centerX - buttonSize.x/1.5, height/2), 
+				new Vector(centerX - buttonSize.x/1.5, this._height/2), 
 				buttonSize, 
 				'Singleplayer', 
 				canvas.fontSize, 
@@ -22,7 +20,7 @@ var MainMenu = function()
 			),
 			new Button
 			(
-				new Vector(centerX + buttonSize.x/1.5, height/2), 
+				new Vector(centerX + buttonSize.x/1.5, this._height/2), 
 				buttonSize, 
 				'Multiplayer', 
 				canvas.fontSize, 
@@ -30,7 +28,7 @@ var MainMenu = function()
 			),
 			new Button
 			(
-				new Vector(centerX, height*(4/6)),
+				new Vector(centerX, this._height*(4/6)),
 				buttonSize, 
 				'About', 
 				canvas.fontSize, 
@@ -40,6 +38,8 @@ var MainMenu = function()
 		
 		this._guiContainer = new GUIContainer(buttons, new Rect());
 	}
+	
+	$.extend(MainMenu.prototype, MainMenuState.prototype);
 
 	return MainMenu;
 }();

@@ -5,15 +5,15 @@ var GUIProgressBar = function()
 
 	function GUIProgressBar(bounds)
 	{
-		this._bounds = bounds;
+		GUIElement.call(this);
+		this.setBounds(bounds);
 	}
 
 	$.extend(GUIProgressBar.prototype, GUIElement.prototype,
 	{
-		_bounds: new Rect(),
 		_progress: 0,
 		
-		render: function(ct)
+		_renderCurrent: function(ct)
 		{
 			ct.fillStyle = 'orange';
 			ct.fillRect(this._bounds.left, this._bounds.top, this._progress, this._bounds.height);

@@ -1,14 +1,16 @@
 'use strict';
 var State = function()
 {
-	function State()
+	function State(stateStack)
 	{
-		
+		this._stateStack = stateStack;
 	}
 
 
 	State.prototype =
 	{
+		_stateStack: null,
+		
 		update: function(dt)
 		{
 		},
@@ -20,7 +22,6 @@ var State = function()
 		handleInput: function(dt)
 		{
 		},
-
 	};
 
 

@@ -4,28 +4,28 @@ var GUIContainer = function()
 {
 	function GUIContainer(guiElements, bounds)
 	{
-		this._guiElements = guiElements || this._guiElements;
+		SceneNode.call(this);
+
+		if(guiElements)
+			for(var i = 0; i < guiElements.length; i++)
+				this.attachChild(guiElements[i]);
+
 		this._bounds = bounds;
-		this._select(this._guiElements[0]);
 	}
 
-	GUIContainer.prototype =
+	$.extend(GUIContainer.prototype, SceneNode.prototype,
 	{
-		_guiElements: 	[],
 		_selection:		null,
 		_activation:	null,
-		_bounds: new Rect(),
 		
-		render: function(ct)
+
+		_updateCurrent: function(dt)
 		{
-			for(var i = 0; i < this._guiElements.length; i++)
-				this._guiElements[i].render(ct);
+			this._updateElements(dt);
 		},
-		
-		
+
 		handleInput: function()
 		{
-			this._updateElements();
 			if(Input.mouse.isPressed(Input.mouse.LEFT))
 			{
 				if(this._hasSelection())
@@ -36,10 +36,10 @@ var GUIContainer = function()
 			else if(Input.mouse.isPressed(Input.mouse.TAP))
 			{
 				var foundTarget = false;
-				for(var i = 0; i < this._guiElements.length; i++)
+				for(var i = 0; i < this._children.length; i++)
 				{
-					var element = this._guiElements[i];
-					if(element.isSelectable() && utility.contains(element.bounds.left, element.bounds.top, element.bounds.width, element.bounds.height, Input.mouse.position.x, Input.mouse.position.y))
+					var element = this._children[i];
+					if(element.isSelectable() && element.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
 					{
 						this._select(element);
 						this._activate();
@@ -65,10 +65,10 @@ var GUIContainer = function()
 		
 		_updateElements: function()
 		{
-			for(var i = 0; i < this._guiElements.length; i++)
+			for(var i = 0; i < this._children.length; i++)
 			{
-				var element = this._guiElements[i];
-				if(element.isSelectable() && utility.contains(element.bounds.left, element.bounds.top, element.bounds.width, element.bounds.height, Input.mouse.position.x, Input.mouse.position.y))
+				var element = this._children[i];
+				if(element.isSelectable() && element.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
 				{
 					this._select(element);
 					return;
@@ -77,8 +77,6 @@ var GUIContainer = function()
 			
 			// If we got here, it means that the cursor is not on any element.
 			this._deselect();
-			
-					
 		},
 		
 		_select: function(element)
@@ -129,7 +127,7 @@ var GUIContainer = function()
 		{
 			return (this._activation !== null);
 		}
-	};
+	});
 
 	return GUIContainer;
 }();

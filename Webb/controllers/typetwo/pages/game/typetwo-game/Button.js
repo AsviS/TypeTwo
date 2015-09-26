@@ -1,17 +1,20 @@
 'use strict';
 var Button = function()
 {
-	function Button(position, size, text, fontSize, callback, disabled)
+	function Button(bounds, text, callback, disabled)
 	{
-
-		this.x = position.x || 0;
-		this.y = position.y || 0;
-		this.width = size.x || 0;
-		this.height = size.y || 0;
-		this.bounds = new Rect(this.x, this.y, this.width, this.height);
+		GUIElement.call(this);
 		
-		this.text = text || '';
-		this.textPos = new Vector(this.x + this.width/2 - this.text.length * fontSize/4, this.y + this.height/2 - fontSize/2);
+		this.setBounds(bounds);
+
+		this._text = new GUIText(text);
+		var guiTextBounds = this._text.getBounds();
+	
+		this._text.setOrigin(guiTextBounds.width / 2, guiTextBounds.height / 2);
+		this._text.setPosition(this._bounds.width / 2, this._bounds.height / 2);
+
+		this.attachChild(this._text);
+		
 		this.callback = callback || function(){return false;};
 		this.disabled = disabled === true ? true : false;
 		
@@ -19,33 +22,34 @@ var Button = function()
 			this.disable();
 		else
 			this.enable();
+			
+		this.deselect();
 	}
 
 	$.extend(Button.prototype, GUIElement.prototype,
 	{
-		render: function(ct)
+		_text: undefined,
+		
+		_renderCurrent: function(ct, transform)
 		{
 			ct.beginPath();
-			ct.rect(this.x, this.y, this.width, this.height);
+			ct.rect(transform.x, transform.y, this._bounds.width, this._bounds.height);
 			ct.fillStyle = this.color;
 			ct.fill();
 			ct.lineWidth = 5;
 			ct.strokeStyle = this.borderColor;
 			ct.stroke();	
-			
-			ct.fillStyle = this.textColor;
-			ct.textBaseline = "top";
-			ct.fillText(this.text, this.textPos.x, this.textPos.y);
 		},
 	
 		select: function()
 		{			
 			if(this.isSelectable())
 			{
-				this.color = 'white';
+				this.color = this.isActivated() ? 'silver' : 'white';
 				this.borderColor = 'gray';
-				this.textColor = 'gray';
+				this._text.setColor('gray');
 			}
+			
 		},
 		
 		deselect: function()
@@ -54,7 +58,7 @@ var Button = function()
 			{
 				this.color = 'gray';
 				this.borderColor = 'silver';
-				this.textColor = 'white';
+				this._text.setColor('white');
 			}
 		},
 		
@@ -63,7 +67,7 @@ var Button = function()
 			this.disabled = false;
 			this.color = 'gray';
 			this.borderColor = 'silver';
-			this.textColor = 'white';
+			this._text.setColor('white');
 		},
 		
 		disable: function()
@@ -71,7 +75,7 @@ var Button = function()
 			this.disabled = true;
 			this.color = 'silver';
 			this.borderColor = 'gray';
-			this.textColor = 'gray';
+			this._text.setColor('gray');
 		},
 		
 		isSelectable: function()
@@ -81,11 +85,33 @@ var Button = function()
 		
 		activate: function()
 		{
+			this.color = 'silver';
 			if(this.isSelectable())
+				this._isActivated = true;
+		},
+		
+		deactivate: function()
+		{
+			this._isActivated = false;
+		},
+		
+		_handleInputCurrent: function()
+		{
+			if(this.isActivated())
 			{
-				this.callback();
+				if(!Input.mouse.isDown(Input.mouse.LEFT))
+				{
+					this.deactivate();
+					
+					if(this.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
+					{
+						this.select();
+						this.callback();
+					}
+						
+				}
 			}
-		}
+		},
 	});
 	
 	return Button;

@@ -1,14 +1,15 @@
 'use strict';
 var MenuState = function()
 {
-	function MenuState()
+	function MenuState(stateStack)
 	{
+		State.call(this, stateStack);
+		
+		this._guiContainer = new GUIContainer();
 	}
 
 	$.extend(MenuState.prototype, State.prototype,
 	{
-		_guiContainer: new GUIContainer(),
-		
 		render: function(ct)
 		{
 			this._guiContainer.render(ct);
@@ -16,6 +17,7 @@ var MenuState = function()
 				
 		update: function(dt)
 		{
+			this._guiContainer.update(dt);
 			return false;
 		},
 		

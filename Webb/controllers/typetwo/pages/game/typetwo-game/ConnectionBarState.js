@@ -4,9 +4,9 @@ var ConnectionBarState = function()
 {
 	function ConnectionBarState(stateStack, canvas, timeOut, socket)
 	{
-		this._stateStack = stateStack;
+		State.call(this, stateStack);
+
 		this._canvas = canvas;
-		this._bounds = new Rect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
 		this._socket = socket;
 		
 		socket.onThisOpen(function()
@@ -16,16 +16,16 @@ var ConnectionBarState = function()
 		});
 		
 		this._loadingBar = new GUIProgressBar(new Rect(canvas.width / 4, canvas.height * 4 / 6, canvas.width / 2, canvas.height / 20));
+		
+		var text = new GUIText(["Connecting..."]);
+		text.setPosition(canvas.width / 4 + 10, canvas.height * 4 / 6);
+		text.setColor('white');
+		
 		this._guiContainer = new GUIContainer
 		(
 			[
 				this._loadingBar,
-				new GUIText
-				(
-					["Connecting..."], 
-					new Vector(canvas.width / 4 + 10, canvas.height * 4 / 6), 
-					new GUIText.FontSettings(undefined, undefined, undefined, 'white', undefined)
-				)
+				text,
 			], 
 			new Rect(0, 0, canvas.width, canvas.height)
 		);
@@ -33,17 +33,13 @@ var ConnectionBarState = function()
 	}
 						
 
-	ConnectionBarState.prototype =
+	$.extend(ConnectionBarState.prototype, State.prototype,
 	{
-		_stateStack:		null,
 		_canvas: 			null,
-		_guiContainer:		null,
-		_bounds:			new Rect(),
-		_loadingBar:		{},
-		_loadingIncrement: 	0,
 		_socket:			null,
-		_button:			null,
-		_text:				'Connecting...',
+		_guiContainer:		null,
+		_loadingBar:		null,
+		_loadingIncrement: 	0,
 
 		update: function(dt)
 		{								
@@ -63,7 +59,7 @@ var ConnectionBarState = function()
 				this._loadingBar.increment(dt * this._loadingIncrement);
 			}
 			
-			return false;
+			return true;
 		},
 	
 		render: function(ct)
@@ -78,9 +74,9 @@ var ConnectionBarState = function()
 		
 		handleInput: function(dt)
 		{
-			return true;
+			return false;
 		},
-	};
+	});
 
 	return ConnectionBarState;
 }();

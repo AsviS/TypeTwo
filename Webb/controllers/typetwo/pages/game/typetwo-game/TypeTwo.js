@@ -1,19 +1,16 @@
 'use strict';
-
 var TypeTwo = function()
 {
-	function TypeTwo(canvasId)
+	function TypeTwo()
 	{
-		this._canvas = new Canvas2D(canvasId);
+		config.init();
 		this._stateStack = new StateStack();
-		this._stateStack.push(new LoginMenu(this._stateStack, this._canvas));
-		//this._stateStack.push(new MainMenu(this._stateStack, this._canvas));
-		//this._socket = new Socket("mikael.hernvall.com", 8080, "order", this._stateStack, this._canvas);
+		this._stateStack.push(new LoginMenu(this._stateStack, config.canvas));
+		FramerateIndicator.enable();
 	}
 
 	TypeTwo.prototype =
 	{
-		_canvas: 				null,
 		_stateStack:			null,
 		TIME_PER_FRAME: 		1/60,
 		_socket:				null,
@@ -24,7 +21,7 @@ var TypeTwo = function()
 			var timeOfLastUpdate = Date.now();
 			var timePerFrame = this.TIME_PER_FRAME;
 			var stateStack = this._stateStack;
-			var canvasContext = this._canvas.context;
+			var canvasContext = config.canvas.context;
 			var gameLoop = function()
 			{
 				dt += (Date.now() - timeOfLastUpdate) / 1000;
@@ -40,6 +37,7 @@ var TypeTwo = function()
 				}
 
 				stateStack.render(canvasContext);
+				FramerateIndicator.update();
 				requestAnimFrame(gameLoop);
 			};
 			

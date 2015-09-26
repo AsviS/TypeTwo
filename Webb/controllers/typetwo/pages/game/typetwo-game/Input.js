@@ -42,6 +42,7 @@ var Input = function()
 		W:      	87,
 		ESC: 		27,
 		BACKSPACE: 	8,
+		PARAGRAPH: 	0,
 		
 		
 		isDown: function(keyCode) 

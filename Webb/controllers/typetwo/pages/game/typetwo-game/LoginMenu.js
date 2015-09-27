@@ -6,42 +6,29 @@ var LoginMenu = function()
 	{
 		MainMenuState.call(this, stateStack, canvas);
 		
-		var width = this._width;
-		var height = this._height;
-		var buttonSize = new Vector(width/3, height/10);
-		var centerX = width/2 - buttonSize.x/2;
-		
-		var self = this;
 		var login = function()
 		{
 			
 			config.webSocket.order.init(username.text, password.text, stateStack, canvas);
-			config.webSocket.order.onThisOpen(function(){stateStack.pop(); stateStack.push(new AboutMenuState(stateStack, canvas));});
+			config.webSocket.order.onThisOpen(function(){stateStack.pop(); stateStack.push(new LoggedInMenuState(stateStack, canvas));});
 		};
 		
-		var username = new GUITextField(new Rect(0, 0, width / 2, height / 10), login);
-		var password = new GUITextField(new Rect(0, 0, width / 2, height / 10), login, true);
+		var username = new GUITextField(new Rect(0, 0, this._width / 2, this._height / 10), login);
+		var password = new GUITextField(username.getBounds(), login, true);
+		var loginButton = new Button(new Rect(0, 0, this._width / 4, this._height / 10), ["Log in"], login);
 		
-		username.setOriginVector(username.getSize().div(2));
-		username.setPosition(width / 2, height / 6);
-		
-		password.setOriginVector(password.getSize().div(2));
-		password.setPosition(width / 2, height / 3);
+		this._guiContainer = new GUIContainer([username, password, loginButton], new Rect(0, 0, this._width, this._height));
 		
 		
-		var guiElements = 
-		[
-			username,
-			password,
-			new Button
-			(
-				new Rect(width * 3 / 8, height  / 2, width / 4, height / 10),
-				["Log in"], 
-				login
-			)
-		];
-
-		this._guiContainer = new GUIContainer(guiElements, new Rect(0, 0, width, height));
+		username.floatTo('center', 'center');
+		username.moveY(-username._bounds.height * 3);
+		
+		password.setPositionVector(username.getPosition());
+		password.moveY(password._bounds.height * 1.5);
+		
+		loginButton.floatTo('center');
+		loginButton.setPositionY(password.getPosition().y);
+		loginButton.moveY(password._bounds.height * 1.5);
 	}
 	
 	$.extend(LoginMenu.prototype, MainMenuState.prototype);

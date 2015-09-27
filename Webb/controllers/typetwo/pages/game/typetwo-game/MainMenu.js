@@ -32,7 +32,7 @@ var MainMenu = function()
 				buttonSize, 
 				'About', 
 				canvas.fontSize, 
-				function(){stateStack.push(new AboutMenuState(stateStack, canvas));}
+				function(){stateStack.push(new LoggedInMenuState(stateStack, canvas));}
 			)
 		];
 		

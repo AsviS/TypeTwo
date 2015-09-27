@@ -40,6 +40,27 @@ void UserProvider::getCredentials(std::string username, std::string& hashedPassw
     }
     catch(otl_exception& e)
     {
-        std::cout << e.msg << std::endl;
+        std::cout << "Database error: " << e.msg << std::endl;
+    }
+}
+
+///////////////////////////////////
+
+unsigned int UserProvider::getId(std::string username)
+{
+    try
+    {
+        otl_stream output(1, "CALL user_get_id(:f1<char[17],in>, :f2<int,out>)", mDb.getConnection());
+        output.set_commit(0);
+        output << username.c_str();
+
+        int userId;
+        output >> userId;
+
+        return userId;
+    }
+    catch(otl_exception& e)
+    {
+        std::cout << "Database error: " << e.msg << std::endl;
     }
 }

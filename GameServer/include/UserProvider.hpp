@@ -33,6 +33,9 @@ class UserProvider
         ///
         void getCredentials(std::string username, std::string& hashedPassword, std::string& salt);
 
+
+        unsigned int getId(std::string username);
+
     private:
         Database& mDb; ///< Database connection
 };

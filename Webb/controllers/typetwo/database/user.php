@@ -39,8 +39,6 @@ class UserTable
 								ini_get("mysqli.default_pw"),
 								"typetwo"
 								);
-		
-		//$this->mDb = new mysqli("localhost", "typetwo", "lethal type two diabetes", "typetwo");
 	}
 	
 	public function getCredentials($username)

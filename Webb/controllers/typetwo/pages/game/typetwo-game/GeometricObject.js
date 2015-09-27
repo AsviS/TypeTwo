@@ -16,14 +16,23 @@ var GeometricObject = function()
 		
 		setPosition: function(x, y)
 		{
+			this.setPositionX(x);
+			this.setPositionY(y);
+		},
+		
+		setPositionX: function(x)
+		{
 			this._bounds.left = x - this._origin.x;
+		},
+		
+		setPositionY: function(y)
+		{
 			this._bounds.top = y - this._origin.y;
 		},
 		
 		setPositionVector: function(vector)
 		{
-			this._bounds.left = vector.x - this._origin.x;
-			this._bounds.top = vector.y - this._origin.y;
+			this.setPosition(vector.x, vector.y);
 		},
 		
 		setOrigin: function(x, y)
@@ -36,6 +45,33 @@ var GeometricObject = function()
 		{
 			this._origin.x = vector.x;
 			this._origin.y = vector.y;
+		},
+		
+		moveX: function(x)
+		{
+			this._bounds.left += x;
+		},
+		
+		moveY: function(y)
+		{
+			this._bounds.top += y;
+		},
+		
+		move: function(x, y)
+		{
+			this.moveX(x);
+			this.moveY(y);
+		},
+		
+		moveVector: function(vector)
+		{
+			this.move(vector.x, vector.y);
+		},
+		
+		centerOrigin: function()
+		{
+			this._origin.x = this._bounds.width / 2;
+			this._origin.y = this._bounds.height / 2;
 		},
 		
 		setSize: function(width, height)
@@ -71,6 +107,11 @@ var GeometricObject = function()
 		getSize: function()
 		{
 			return new Vector(this._bounds.width, this._bounds.height);
+		},
+		
+		getOrigin: function()
+		{
+			return this._origin;
 		},
 	};
 

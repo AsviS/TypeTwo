@@ -17,7 +17,6 @@
 //////////////////////////////////
 
 
-
 WebSocketConnection::WebSocketConnection(std::string username, libwebsocket* webSocketInstance, const WebSocketServer& server)
 : mServer(server)
 , mWebSocketInstance(webSocketInstance)
@@ -48,6 +47,19 @@ const WebSocketServer& WebSocketConnection::getServer() const
     return mServer;
 }
 
+///////////////////////////////////
+
+int WebSocketConnection::getProtocolId() const
+{
+    return libwebsockets_get_protocol(mWebSocketInstance)->protocol_index;
+}
+
+///////////////////////////////////
+
+std::string WebSocketConnection::getProtocolName() const
+{
+    return std::string(libwebsockets_get_protocol(mWebSocketInstance)->name);
+}
 
 ///////////////////////////////////
 

@@ -55,6 +55,22 @@ class WebSocketConnection
         ///
         const WebSocketServer& getServer() const;
 
+
+        /// \brief Get this connection's protocol's ID
+        ///
+        /// \return int Protocol ID of this connection.
+        ///
+        ///
+        int getProtocolId() const;
+
+
+        /// \brief Get this connection's protocol's name
+        ///
+        /// \return std::string Protocol name of this connection.
+        ///
+        ///
+        std::string getProtocolName() const;
+
         /// \brief Send string to client.
         ///
         /// \param str std::string

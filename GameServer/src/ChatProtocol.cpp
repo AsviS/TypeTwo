@@ -42,7 +42,8 @@ const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
                 WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
                 connection.getServer().broadcastString
                 (
-                    "'" + connection.getUsername() + "' connected"
+                    "'" + connection.getUsername() + "' connected",
+                    connection.getProtocolId()
                 );
                 break;
             }
@@ -52,7 +53,8 @@ const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
                 WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
                 connection.getServer().broadcastString
                 (
-                    "'" + connection.getUsername() + "' disconnected"
+                    "'" + connection.getUsername() + "' disconnected",
+                    connection.getProtocolId()
                 );
                 break;
             }
@@ -62,7 +64,8 @@ const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
                 WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
                 connection.getServer().broadcastString
                 (
-                    connection.getUsername() + ": " + WebSocketSubProtocol::messageToString(messageData, messageLength)
+                    connection.getUsername() + ": " + WebSocketSubProtocol::messageToString(messageData, messageLength),
+                    connection.getProtocolId()
                 );
                 break;
             }

@@ -23,7 +23,6 @@
 WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocols, Database& db)
 : mVerbose(false)
 , mDb(db)
-, mNumProtocols(protocols.size())
 {
     lws_set_log_level
     (
@@ -39,8 +38,8 @@ WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebS
 
     info.port = port;
 
-    initializeProtocols(protocols);
-    info.protocols = mProtocols;
+
+    info.protocols =  initializeProtocols(protocols);
     info.extensions = libwebsocket_get_internal_extensions();
     info.gid = -1;
     info.uid = -1;
@@ -55,13 +54,13 @@ WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebS
 
 ///////////////////////////////////
 
-void WebSocketServer::initializeProtocols(const std::vector<const WebSocketSubProtocol*>& protocols)
+libwebsocket_protocols* WebSocketServer::initializeProtocols(const std::vector<const WebSocketSubProtocol*>& protocols)
 {
 
     unsigned int size = protocols.size() + 2;
-    mProtocols = new libwebsocket_protocols[size];
+    libwebsocket_protocols* libwebsocketProtocols = new libwebsocket_protocols[size];
 
-    mProtocols[0] =
+    libwebsocketProtocols[0] =
     {
         "http-only",
         [](libwebsocket_context * context, libwebsocket* webSocketInstance, libwebsocket_callback_reasons reason, void* connectionData, void* in, size_t len)
@@ -72,48 +71,53 @@ void WebSocketServer::initializeProtocols(const std::vector<const WebSocketSubPr
     };
 
     for(unsigned int i = 1; i < size - 1; i++)
-        mProtocols[i] = protocols[i - 1]->toLibWebSocketProtocol();
+        libwebsocketProtocols[i] = protocols[i - 1]->toLibWebSocketProtocol();
 
-    mProtocols[size - 1] = {nullptr, nullptr, 0};
+    libwebsocketProtocols[size - 1] = {nullptr, nullptr, 0};
+
+    mClients.resize(size);
+
+    return libwebsocketProtocols;
 }
 
 ///////////////////////////////////
 
 void WebSocketServer::addClient(WebSocketConnection* client)
 {
-    auto it = mClients.find(client->getUsername());
+    std::unordered_map<std::string, WebSocketConnection*>& clients = mClients[client->getProtocolId()];
+    auto it = clients.find(client->getUsername());
 
-    if(it != mClients.end())
+    if(it != clients.end())
     {
         if(mVerbose)
-            std::cout << "'" << client->getUsername() << "' already logged in at " << client->getIp() << ". Kicking existing user." << std::endl;
+            std::cout << "'" << client->getUsername() << "' already logged in at " << client->getIp() << " with the same protocol. Kicking existing user." << std::endl;
 
         it->second->silentClose();
         it->second = client;
     }
     else
-        mClients[client->getUsername()] = client;
+        clients[client->getUsername()] = client;
 }
 
 ///////////////////////////////////
 
-void WebSocketServer::removeClient(std::string username)
+void WebSocketServer::removeClient(WebSocketConnection& client)
 {
-    mClients.erase(username);
+    mClients[client.getProtocolId()].erase(client.getUsername());
 }
 
 ///////////////////////////////////
 
-void WebSocketServer::removeClient(std::map<std::string, WebSocketConnection*>::iterator it)
+void WebSocketServer::removeClient(std::unordered_map<std::string, WebSocketConnection*>::iterator it)
 {
-    mClients.erase(it);
+    mClients[it->second->getProtocolId()].erase(it);
 }
 
 ///////////////////////////////////
 
-const std::map<std::string, WebSocketConnection*>& WebSocketServer::getClients() const
+const std::unordered_map<std::string, WebSocketConnection*>& WebSocketServer::getClients(unsigned int protocolId) const
 {
-    return mClients;
+    return mClients[protocolId];
 }
 
 ///////////////////////////////////
@@ -121,7 +125,6 @@ const std::map<std::string, WebSocketConnection*>& WebSocketServer::getClients()
 WebSocketServer::~WebSocketServer()
 {
     libwebsocket_context_destroy(mContext);
-    delete[] mProtocols;
 }
 
 ///////////////////////////////////
@@ -214,7 +217,7 @@ void WebSocketServer::handleConnectionOpen(void* connectionData)
     addClient(connection);
 
     if(mVerbose)
-        std::cout << "'" << connection->getUsername() << "' has connected from " << connection->getIp() << "." << std::endl;
+        std::cout << "'" << connection->getUsername() << "' has connected from " << connection->getIp() << " with the '" << connection->getProtocolName() << "' protocol." << std::endl;
 }
 
 ///////////////////////////////////
@@ -222,7 +225,7 @@ void WebSocketServer::handleConnectionOpen(void* connectionData)
 void WebSocketServer::handleConnectionClosed(void* connectionData)
 {
     WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
-    removeClient(connection.getUsername());
+    removeClient(connection);
 
     if(mVerbose)
         std::cout << "'" << connection.getUsername() << "' has disconnected." << std::endl;
@@ -237,9 +240,9 @@ void WebSocketServer::handleConnectionClosed(void* connectionData)
 
 ///////////////////////////////////
 
-void WebSocketServer::broadcastString(std::string message, std::list<std::string> excludeUsers) const
+void WebSocketServer::broadcastString(std::string message, unsigned int protocolId, std::list<std::string> excludeUsers) const
 {
-    for(const std::pair<std::string, WebSocketConnection*>& client : mClients)
+    for(const std::pair<std::string, WebSocketConnection*>& client : mClients[protocolId])
     {
         if(excludeUsers.size() > 0)
         {
@@ -257,13 +260,13 @@ void WebSocketServer::broadcastString(std::string message, std::list<std::string
 
 ///////////////////////////////////
 
-void WebSocketServer::broadcastLines(std::vector<std::string> lines) const
+void WebSocketServer::broadcastLines(std::vector<std::string> lines, unsigned int protocolId, std::list<std::string> excludeUsers) const
 {
     std::ostringstream stream;
     for(std::string& line : lines)
         stream << line << '\n';
 
-    broadcastString(stream.str());
+    broadcastString(stream.str(), protocolId, excludeUsers);
 }
 
 ///////////////////////////////////
@@ -273,15 +276,19 @@ void WebSocketServer::closeDeadConnections()
     time_t currentTime;
     time(&currentTime);
 
-    auto it = mClients.begin();
-    while(it != mClients.end())
+    for(std::unordered_map<std::string, WebSocketConnection*>& protocol : mClients)
     {
-        if(currentTime - it->second->getLastAliveTime() > 60)
+        auto it = protocol.begin();
+        while(it != protocol.end())
         {
-            it->second->silentClose();
-            removeClient(it++);
+            if(currentTime - it->second->getLastAliveTime() > 60)
+            {
+                it->second->silentClose();
+                removeClient(it++);
+            }
+            else
+                it++;
         }
-        else
-            it++;
     }
+
 }

@@ -10,7 +10,7 @@ class Database;
 
 ///////////////////////////////////
 // STD C++
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <list>
 ///////////////////////////////////
@@ -62,12 +62,13 @@ class WebSocketServer
         ///
         void run();
 
-        /// \brief Get all active client connections of this server.
+        /// \brief Get all active client connections of this server of a specific protocol.
         ///
-        /// \return const std::map<std::string, WebSocketConnection*>&
+        /// \param protocolId unsigned int ID of protocol.
+        /// \return const std::unordered_map<std::string, WebSocketConnection*>&
         ///
         ///
-        const std::map<std::string, WebSocketConnection*>& getClients() const;
+        const std::unordered_map<std::string, WebSocketConnection*>& getClients(unsigned int protocolId) const;
 
         /// \brief Handle connection request from client
         ///
@@ -110,31 +111,34 @@ class WebSocketServer
         ///  If true, the server will print detailed information to the console.
         void setVerbose(bool flag);
 
-        /// \brief Broadcast a string to all connections connected to this server
+        /// \brief Broadcast a string to all connections of a specific protocol connected to this server
         ///
         /// \param message std::string Mesage to send
+        /// \param protocolId unsigned int ID of protocol to broadcast to.
         /// \param excludeUsers std::list<std::string> Optional parameter. A list of usernames to exclude from the broadcast.
         /// \return void
         ///
         ///
-        void broadcastString(std::string message, std::list<std::string> excludeUsers = std::list<std::string>()) const;
+        void broadcastString(std::string message, unsigned int protocolId, std::list<std::string> excludeUsers = std::list<std::string>()) const;
 
         /// \brief Broadcast lines to all connections connected to this server
         ///
         /// \param lines std::vector<std::string> Lines to send
+        /// \param protocolId unsigned int ID of protocol to broadcast to.
+        /// \param excludeUsers std::list<std::string> Optional parameter. A list of usernames to exclude from the broadcast.
         /// \return void
         ///
         ///
-        void broadcastLines(std::vector<std::string> lines) const;
+        void broadcastLines(std::vector<std::string> lines, unsigned int protocolId, std::list<std::string> excludeUsers) const;
 
     private:
         /// \brief Initialize mProtocols member
         ///
         /// \param protocols const std::vector<WebSocketSubProtocol::Ptr>& Protocols to initialize.
-        /// \return void
+        /// \return libwebsocket_protocols*
         ///
         ///  Adds the given protocols to the mProtocols protocol list.
-        void initializeProtocols(const std::vector<const WebSocketSubProtocol*>& protocols);
+        libwebsocket_protocols* initializeProtocols(const std::vector<const WebSocketSubProtocol*>& protocols);
 
         /// \brief Add a client connection to the server's client map.
         ///
@@ -146,20 +150,20 @@ class WebSocketServer
 
         /// \brief Remove a client connection from the server's client map.
         ///
-        /// \param username std::string Username of client connection.
+        /// \param client WebSocketConnection& Client to remove.
         /// \return void
         ///
         ///
-        void removeClient(std::string username);
+        void removeClient(WebSocketConnection& client);
 
         /// \brief Remove a client connection from the server's client map with an iterator.
         ///
-        /// \param std::map<std::string
+        /// \param std::unordered_map<std::string
         /// \param it WebSocketConnection*>::iterator Iterator pointing to the client.
         /// \return void
         ///
         ///
-        void removeClient(std::map<std::string, WebSocketConnection*>::iterator it);
+        void removeClient(std::unordered_map<std::string, WebSocketConnection*>::iterator it);
 
         /// \brief Validate user credentials.
         ///
@@ -180,9 +184,7 @@ class WebSocketServer
 
     private:
         libwebsocket_context*   mContext;   ///< WebSocket context
-        libwebsocket_protocols* mProtocols; ///< List of protocols to respond to
-        unsigned int            mNumProtocols; ///< Number of protocols.
-        std::map<std::string, WebSocketConnection*> mClients; ///< Clients connected to this server.
+        std::vector<std::unordered_map<std::string, WebSocketConnection*>> mClients; ///< Clients connected to this server. Each index of the vector represents the connection's protocol index.
         bool mVerbose; ///< If true, the server will print detailed information to the console.
         Database& mDb; ///< Database connection
 };

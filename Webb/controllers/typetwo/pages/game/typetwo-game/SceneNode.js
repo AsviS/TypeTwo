@@ -12,6 +12,9 @@ var SceneNode = function()
 
 	SceneNode.prototype =
 	{		
+		_children: null,
+		_parent: null,
+		
 		update: function(dt)
 		{
 			this._updateCurrent(dt);
@@ -76,7 +79,49 @@ var SceneNode = function()
 			ct.closePath();
 			ct.stroke();
 		},
+		
+		floatTo: function(whereX, whereY)
+		{
+			if(!this._parent)
+				return;
 
+			this.setOrigin(0, 0);
+			switch(whereX)
+			{
+				case 'center':
+					this.setPositionX((this._parent._bounds.width - this._bounds.width) / 2);
+					break;
+				
+				case 'left':
+					this.setPositionX(0);
+					break;
+					
+				case 'right':
+					this.setPositionX(this._parent._bounds.width - this._bounds.width);
+					break;
+					
+				default:
+					break;
+			}
+			
+			switch(whereY)
+			{
+				case 'center':
+					this.setPositionY((this._parent._bounds.height - this._bounds.height) / 2);
+					break;
+				
+				case 'top':
+					this.setPositionY(0);
+					break;
+					
+				case 'bottom':
+					this.setPositionY(this._parent._bounds.height - this._bounds.height);
+					break;
+					
+				default:
+					break;
+			}
+		},
 		
 		attachChild: function(sceneNode)
 		{

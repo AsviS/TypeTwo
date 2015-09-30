@@ -6,6 +6,10 @@ var Socket = function()
 		this.host = host;
 		this.port = port;
 		this.protocol = protocol;
+		this._messagesFrontBuffer = [];
+		this._messagesBackBuffer = [];
+		this._messagesBuffer1 = [];
+		this._messagesBuffer2 = [];
 	}
 	
 	Socket.statusID = 
@@ -30,6 +34,11 @@ var Socket = function()
 		password: '',
 		status: Socket.statusID.UNINITIALIZED,
 		_thisOpenCallbacks: [],
+		
+		_messagesFrontBuffer: null,
+		_messagesBackBuffer: null,
+		_messagesBuffer1: null,
+		_messagesBuffer2: null,
 		
 		connect: function(user, success, fail)
 		{
@@ -57,7 +66,7 @@ var Socket = function()
 			this.disconnect();
 	
 			var url = 'ws://' + this.host + ':' + this.port + "/" + this.username + '/' + this.password;
-			this.websocket = new WebSocket(url, this.protocol);
+			this.websocket = new WebSocket(url, this.protocol.getName());
 			
 			this.status = Socket.statusID.CONNECTING;
 			stateStack.push(new ConnectionBarState(stateStack, canvas, 5, this));
@@ -78,7 +87,15 @@ var Socket = function()
 			
 			this.websocket.onmessage = function(event) 
 			{		
-				console.log("Received message: " + event.data);
+				var data = self.protocol.parseMessage(event.data);
+				
+				if(data)
+				{
+					if(data.id > 0)
+						WebSocketQueryManager.onQueryResponse(data.id, data);
+					else
+						self._messagesBackBuffer.push(data);	
+				}
 			};
 	
 			this.websocket.onclose = function() 
@@ -90,11 +107,26 @@ var Socket = function()
 			return true;
 		},
 		
-		send: function(obj)
+		send: function(string)
 		{
 			if(this.status === Socket.statusID.OPEN)
 			{
-				this.websocket.send(JSON.stringify(obj));
+				this.websocket.send("0\n" + string);
+				return true;
+			}
+			else
+			{
+				console.log('could not send');
+				return false;
+			}
+		},
+		
+		sendQuery: function(string, success, fail, timeOut)
+		{
+			if(this.status === Socket.statusID.OPEN)
+			{
+				var id = WebSocketQueryManager.pushQuery(success, fail, timeOut);
+				this.websocket.send(id + "\n" + string);
 				return true;
 			}
 			else
@@ -107,7 +139,28 @@ var Socket = function()
 		onThisOpen: function(callback)
 		{
 			this._thisOpenCallbacks.push(callback);
-		}
+		},
+		
+		getMessages: function()
+		{
+			return this._messagesFrontBuffer;
+		},
+		
+		swapMessagesBuffer: function()
+		{
+			this._messagesFrontBuffer.length = 0;
+			
+			if(this._messagesFrontBuffer == this._messagesBuffer1)
+			{
+				this._messagesFrontBuffer = this._messagesBuffer2;
+				this._messagesBackBuffer = this._messagesBuffer1;
+			}
+			else
+			{
+				this._messagesFrontBuffer = this._messagesBuffer1;
+				this._messagesBackBuffer = this._messagesBuffer2;
+			}
+		},
 	};
 
 	return Socket;

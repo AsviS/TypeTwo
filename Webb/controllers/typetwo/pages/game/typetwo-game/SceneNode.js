@@ -30,10 +30,6 @@ var SceneNode = function()
 			
 			this._renderCurrent(ct, transform);
 			this._renderChildren(ct, transform);
-			
-			// Debug
-			this.drawGlobalBounds(ct, transform);
-			this.drawMedians(ct, transform);
 		},
 		
 		handleInput: function(dt)

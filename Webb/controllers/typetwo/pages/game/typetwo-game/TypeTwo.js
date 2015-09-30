@@ -34,6 +34,8 @@ var TypeTwo = function()
 					stateStack.handleInput(timePerFrame);
 					
 					stateStack.update(timePerFrame);
+					
+					WebSocketQueryManager.update();
 				}
 
 				stateStack.render(canvasContext);

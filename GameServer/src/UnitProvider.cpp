@@ -56,6 +56,41 @@ std::vector<UnitType> UnitProvider::getUnitTypes()
 
 ///////////////////////////////////
 
+std::string UnitProvider::getUnitsAsWebSocketString(unsigned int userId)
+{
+    try
+    {
+        otl_stream output(1, "CALL unit_getby_userid(:f1<int,in>)", mDb.getConnection(), otl_implicit_select);
+        //output.set_commit(0);
+        output.set_all_column_types(otl_all_num2str | otl_all_date2str);
+        output << (int)userId;
+
+        std::stringstream stream;
+        int numColumns;
+        otl_column_desc* columns = output.describe_select(numColumns);
+        for(int i = 0; i < numColumns - 1; i++)
+            stream << columns[i].dbtype << ' ' << columns[i].name << ',';
+
+        stream << columns[numColumns - 1].dbtype << ' ' << columns[numColumns - 1].name;
+
+        char* buffer = new char(100);
+        while(!output.eof())
+        {
+            output >> buffer;
+            stream << '\n' << buffer;
+        }
+
+        return stream.str();
+    }
+    catch(otl_exception& e)
+    {
+        std::cout << "Database error: " << e.msg << std::endl;
+    }
+}
+
+
+///////////////////////////////////
+
 std::vector<Unit> UnitProvider::getUnits(unsigned int userId)
 {
     try

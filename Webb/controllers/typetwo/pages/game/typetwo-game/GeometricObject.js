@@ -101,7 +101,7 @@ var GeometricObject = function()
 		
 		getBounds: function()
 		{
-			return this._bounds;
+			return new Rect(this._bounds.left, this._bounds.top, this._bounds.width, this._bounds.height);
 		},
 		
 		getSize: function()
@@ -111,7 +111,7 @@ var GeometricObject = function()
 		
 		getOrigin: function()
 		{
-			return this._origin;
+			return new Vector(this._origin.x, this._origin.y);
 		},
 	};
 

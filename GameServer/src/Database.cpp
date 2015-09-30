@@ -42,5 +42,6 @@ Database::~Database()
 
 otl_connect& Database::getConnection()
 {
+    mConnection.commit();
     return mConnection;
 }

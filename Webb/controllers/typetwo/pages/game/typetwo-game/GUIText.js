@@ -95,6 +95,12 @@ var GUIText = function()
 			this._fontSettings.color = color;
 		},
 		
+		setText: function(text)
+		{
+			this._text = text || '';
+			this._updateSize();
+		},
+		
 	});
 
 	return GUIText;

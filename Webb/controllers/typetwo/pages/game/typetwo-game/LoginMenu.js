@@ -10,6 +10,7 @@ var LoginMenu = function()
 		{
 			
 			config.webSocket.order.init(username.text, password.text, stateStack, canvas);
+			config.webSocket.fetchData.init(username.text, password.text, stateStack, canvas);
 			config.webSocket.order.onThisOpen(function(){stateStack.pop(); stateStack.push(new LoggedInMenuState(stateStack, canvas));});
 		};
 		

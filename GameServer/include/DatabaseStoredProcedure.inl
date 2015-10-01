@@ -36,10 +36,9 @@ DatabaseStoredProcedure<Params...>::DatabaseStoredProcedure(std::string name,
 ///////////////////////////////////
 
 template <typename... Params>
-std::unique_ptr<DatabaseStream> DatabaseStoredProcedure<Params...>::call(Params... params, bool toString = false) const
+std::unique_ptr<DatabaseStream> DatabaseStoredProcedure<Params...>::call(Params... params, bool toString) const
 {
     std::unique_ptr<DatabaseStream> dbStream;
-    std::cout << mQueryString << std::endl;
     try
     {
         otl_stream& stream = *new otl_stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);

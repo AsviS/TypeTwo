@@ -139,14 +139,13 @@ void WebSocketServer::run()
 
 ///////////////////////////////////
 
-
+#include "DatabaseStoredProcedures.hpp"
 WebSocketServer::ResponseCode WebSocketServer::validateUserCredentials(std::string username, std::string password) const
 {
     std::string hashedPassword;
     std::string salt;
 
-    UserProvider userProvider(mDb);
-    userProvider.getCredentials(username, hashedPassword, salt);
+    DatabaseStoredProcedures::GET_USER_CREDENTIALS.call(username, hashedPassword, salt, false);
 
     if(sha512(password + salt) == hashedPassword)
         return ResponseCode::Success;

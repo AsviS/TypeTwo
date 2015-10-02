@@ -3,17 +3,11 @@
 #include "WebSocketSubProtocol.hpp"
 #include "WebSocketSubProtocols.hpp"
 #include "WebSocketServer.hpp"
-#include "UserProvider.hpp"
-#include "UnitProvider.hpp"
-#include "DatabaseConnections.hpp"
-
 #include "DatabaseStoredProcedures.hpp"
-#include "DatabaseStream.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
 // STD C++
-#include <iostream>
 #include <sstream>
 ///////////////////////////////////
 
@@ -54,8 +48,8 @@ const WebSocketSubProtocol& WebSocketSubProtocols::FETCH_DATA = WebSocketSubProt
                 WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
 
                 int userId;
-                DatabaseStoredProcedures::GET_USER_ID.call(connection.getUsername(), userId, false);
-                std::string units = DatabaseStoredProcedures::GET_UNITS.call(userId, true)->getFetchDataProtocolString();
+                DatabaseStoredProcedures::GET_USER_ID.call(connection.getUsername(), userId);
+                std::string units = DatabaseStoredProcedures::GET_UNITS.callAsFetchDataProtocol(userId);
                 connection.sendString(id + '\n' + units);
             }
         }

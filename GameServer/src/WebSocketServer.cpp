@@ -145,7 +145,7 @@ WebSocketServer::ResponseCode WebSocketServer::validateUserCredentials(std::stri
     std::string hashedPassword;
     std::string salt;
 
-    DatabaseStoredProcedures::GET_USER_CREDENTIALS.call(username, hashedPassword, salt, false);
+    DatabaseStoredProcedures::GET_USER_CREDENTIALS.call(username, hashedPassword, salt);
 
     if(sha512(password + salt) == hashedPassword)
         return ResponseCode::Success;

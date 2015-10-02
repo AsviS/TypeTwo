@@ -4,7 +4,6 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 #include "DatabaseConnections.hpp"
-#include "DatabaseStream.hpp"
 #include "DatabaseStoredProcedureParameter.hpp"
 ///////////////////////////////////
 
@@ -14,17 +13,27 @@
 #include <memory>
 ///////////////////////////////////
 
+#define STORED_PROCEDURE_CTOR ResultSetTypes
 
-template<typename... Params>
-class DatabaseStoredProcedure
+namespace DatabaseStoredProcedure
 {
+template<typename... ParamTypes>
+struct ParameterTypes
+{
+template <typename... ResultTypes>
+class ResultSetTypes
+{
+    private:
+
     public:
         typedef DatabaseStoredProcedureParameter Param;
 
-        DatabaseStoredProcedure(std::string name, std::vector<Param> parameters, bool returnsResultSet = false, bool requiresCommit = false, Database& database = DatabaseConnections::DEFAULT);
+
+        STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool returnsResultSet = false, bool requiresCommit = false, Database& database = DatabaseConnections::DEFAULT);
 
 
-        std::unique_ptr<DatabaseStream> call(Params... params, bool toString = false) const;
+        std::vector<std::tuple<ResultTypes...>> call(ParamTypes... params) const;
+        std::string callAsFetchDataProtocol(ParamTypes... params) const;
 
     private:
         std::string compileQueryString(std::string name, std::vector<Param> parameters);
@@ -34,7 +43,6 @@ class DatabaseStoredProcedure
 
         template <typename CurrentParam>
         void executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam) const;
-
 
         template <typename CurrentParam, typename... RemainingParams>
         void executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam, RemainingParams&... remainingParams) const;
@@ -49,8 +57,13 @@ class DatabaseStoredProcedure
         bool mRequiresCommit;
         Database& mDatabase;
 };
+};
+}
 
 #include "DatabaseStoredProcedure.inl"
+
+#undef STORED_PROCEDURE_CTOR
+
 
 #endif // TYPETWO_DATABASESTOREDPROCEDURE_HPP
 

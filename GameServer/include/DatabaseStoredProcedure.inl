@@ -1,9 +1,4 @@
 ///////////////////////////////////
-// TypeTwo internal headers
-#include "DatabaseStream.hpp"
-///////////////////////////////////
-
-///////////////////////////////////
 // STD C++
 #include <iostream>
 #include <sstream>
@@ -17,53 +12,146 @@
 #include "otlv4.h"
 ///////////////////////////////////
 
-template <typename... Params>
-DatabaseStoredProcedure<Params...>::DatabaseStoredProcedure(std::string name,
-                                                 std::vector<Param> parameters,
-                                                 bool returnsResultSet,
-                                                 bool requiresCommit,
-                                                 Database& database)
+#define STORED_PROCEDURE DatabaseStoredProcedure::ParameterTypes<ParamTypes...>::ResultSetTypes<ResultTypes...>
+#define STORED_PROCEDURE_TEMPLATES template <typename... ParamTypes> template <typename... ResultTypes>
+
+STORED_PROCEDURE_TEMPLATES
+STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool returnsResultSet, bool requiresCommit, Database& database)
 : mQueryString(compileQueryString(name, parameters))
 , mParameters(parameters)
-, mReturnsResultSet(returnsResultSet)
+, mReturnsResultSet(sizeof...(ResultTypes) > 0)
 , mRequiresCommit(requiresCommit)
 , mDatabase(database)
 {
-    if(sizeof...(Params) != mParameters.size())
-        throw std::logic_error("Invalid stored procedure. The template parameter count does not match the size of the 'parameters' parameter in the constructor.");
+    if(sizeof...(ParamTypes) != mParameters.size())
+        throw std::logic_error
+        (
+            "Invalid stored procedure with name '" + name +
+            "'. The template parameter count does not match" +
+            " the size of the 'parameters' parameter in the constructor."
+        );
 }
 
-///////////////////////////////////
-
-template <typename... Params>
-std::unique_ptr<DatabaseStream> DatabaseStoredProcedure<Params...>::call(Params... params, bool toString) const
+namespace DatabaseStoredProcedure
 {
-    std::unique_ptr<DatabaseStream> dbStream;
+    template <size_t index>
+    class getRow
+    {
+        public:
+        template <typename... ResultTypes>
+        static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+        {
+            stream >> std::get<sizeof...(ResultTypes) - 1 - index>(tuple);
+            getRow<index - 1>::go(tuple, stream);
+        }
+    };
+
+    template <>
+    class getRow<0>
+    {
+        public:
+        template <typename... ResultTypes>
+        static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+        {
+            stream >> std::get<sizeof...(ResultTypes) - 1>(tuple);
+        }
+    };
+
+    template <>
+    class getRow<-1>
+    {
+        public:
+        template <typename... ResultTypes>
+        static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+        {
+        }
+    };
+}
+
+
+STORED_PROCEDURE_TEMPLATES
+std::vector<std::tuple<ResultTypes...>> STORED_PROCEDURE::call(ParamTypes... params) const
+{
+    std::vector<std::tuple<ResultTypes...>> resultSet;
     try
     {
-        otl_stream& stream = *new otl_stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);
+        otl_stream stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);
         stream.set_commit(mRequiresCommit);
-        if(toString)
-            stream.set_all_column_types(otl_all_num2str | otl_all_date2str);
-
+        stream.set_all_column_types(otl_all_date2str);
 
         executeInputParameters(stream, 0, params...);
         executeOutputParameters(stream, 0, params...);
 
-        dbStream = std::unique_ptr<DatabaseStream>(new DatabaseStream(&stream));
+        if(mReturnsResultSet)
+            while(!stream.eof())
+            {
+                std::tuple<ResultTypes...> row;
+                getRow<sizeof...(ResultTypes) - 1>::go(row, stream);
+                resultSet.push_back(row);
+            }
     }
     catch(otl_exception& e)
     {
         std::cout << "Database error: " << e.msg << std::endl;
     }
 
-    return dbStream;
+    return resultSet;
+}
+
+
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) const
+{
+    std::string str;
+    try
+    {
+
+        otl_stream stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);
+        stream.set_commit(mRequiresCommit);
+        stream.set_all_column_types(otl_all_num2str | otl_all_date2str);
+
+        executeInputParameters(stream, 0, params...);
+        executeOutputParameters(stream, 0, params...);
+
+        std::stringstream strStream;
+        int numColumns;
+        otl_column_desc* columns = stream.describe_select(numColumns);
+
+        if(numColumns > 0)
+        {
+            for(int i = 0; i < numColumns - 1; i++)
+                strStream << columns[i].dbtype << ' ' << columns[i].name << ',';
+
+            strStream << columns[numColumns - 1].dbtype << ' ' << columns[numColumns - 1].name;
+
+            str = strStream.str();
+        }
+
+        str.reserve(str.size() +  stream.get_dirty_buf_len());
+
+        if(mReturnsResultSet)
+            while(!stream.eof())
+            {
+                std::string buffer;
+                stream >> buffer;
+                str.append(1, '\n').append(buffer);
+            }
+    }
+    catch(otl_exception& e)
+    {
+        std::cout << "Database error: " << e.msg << std::endl;
+    }
+
+    return str;
 }
 
 ///////////////////////////////////
 
-template <typename... Params>
-std::string DatabaseStoredProcedure<Params...>::compileQueryString(std::string name, std::vector<Param> parameters)
+STORED_PROCEDURE_TEMPLATES
+std::string STORED_PROCEDURE::compileQueryString(std::string name, std::vector<Param> parameters)
 {
     std::stringstream params;
 
@@ -81,9 +169,9 @@ std::string DatabaseStoredProcedure<Params...>::compileQueryString(std::string n
 
 ///////////////////////////////////
 
-template <typename... Params>
+STORED_PROCEDURE_TEMPLATES
 template <typename CurrentParam, typename... RemainingParams>
-void DatabaseStoredProcedure<Params...>::executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam, RemainingParams... remainingParams) const
+void STORED_PROCEDURE::executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam, RemainingParams... remainingParams) const
 {
     if(mParameters[currentIndex].direction == Param::Direction::P_IN ||
        mParameters[currentIndex].direction == Param::Direction::P_INOUT)
@@ -95,9 +183,9 @@ void DatabaseStoredProcedure<Params...>::executeInputParameters(otl_stream& stre
 
 ///////////////////////////////////
 
-template <typename... Params>
+STORED_PROCEDURE_TEMPLATES
 template <typename CurrentParam>
-void DatabaseStoredProcedure<Params...>::executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam) const
+void STORED_PROCEDURE::executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam) const
 {
     if(mParameters[currentIndex].direction == Param::Direction::P_IN ||
        mParameters[currentIndex].direction == Param::Direction::P_INOUT)
@@ -108,9 +196,9 @@ void DatabaseStoredProcedure<Params...>::executeInputParameters(otl_stream& stre
 
 ///////////////////////////////////
 
-template <typename... Params>
+STORED_PROCEDURE_TEMPLATES
 template <typename CurrentParam, typename... RemainingParams>
-void DatabaseStoredProcedure<Params...>::executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam, RemainingParams&... remainingParams) const
+void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam, RemainingParams&... remainingParams) const
 {
     if(mParameters[currentIndex].direction == Param::Direction::P_OUT ||
        mParameters[currentIndex].direction == Param::Direction::P_INOUT)
@@ -123,9 +211,9 @@ void DatabaseStoredProcedure<Params...>::executeOutputParameters(otl_stream& str
 
 ///////////////////////////////////
 
-template <typename... Params>
+STORED_PROCEDURE_TEMPLATES
 template <typename CurrentParam>
-void DatabaseStoredProcedure<Params...>::executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam) const
+void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam) const
 {
     if(mParameters[currentIndex].direction == Param::Direction::P_OUT ||
        mParameters[currentIndex].direction == Param::Direction::P_INOUT)
@@ -133,3 +221,7 @@ void DatabaseStoredProcedure<Params...>::executeOutputParameters(otl_stream& str
         stream >> currentParam;
     }
 }
+
+
+#undef STORED_PROCEDURE
+#undef STORED_PROCEDURE_TEMPLATES

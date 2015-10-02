@@ -4,7 +4,7 @@
 ///////////////////////////////////
 
 
-const DatabaseStoredProcedure<int> DatabaseStoredProcedures::GET_UNITS
+const DatabaseStoredProcedure::ParameterTypes<int>::ResultSetTypes<int, int, int> DatabaseStoredProcedures::GET_UNITS
 (
     "unit_getby_userid",
     {
@@ -13,7 +13,20 @@ const DatabaseStoredProcedure<int> DatabaseStoredProcedures::GET_UNITS
     true
 );
 
-const DatabaseStoredProcedure<std::string, std::string&, std::string&> DatabaseStoredProcedures::GET_USER_CREDENTIALS
+const DatabaseStoredProcedure
+::ParameterTypes<int, int>
+::ResultSetTypes<int, std::string, std::string, std::string, std::string>
+DatabaseStoredProcedures::GET_ALL_USERS
+(
+    "user_get",
+    {
+        Param(Type::INT, Dir::P_IN),
+        Param(Type::INT, Dir::P_IN)
+    },
+    true
+);
+
+const DatabaseStoredProcedure::ParameterTypes<std::string, std::string&, std::string&>::ResultSetTypes<> DatabaseStoredProcedures::GET_USER_CREDENTIALS
 (
     "user_get_credentials",
     {
@@ -23,7 +36,7 @@ const DatabaseStoredProcedure<std::string, std::string&, std::string&> DatabaseS
     }
 );
 
-const DatabaseStoredProcedure<std::string, int&> DatabaseStoredProcedures::GET_USER_ID
+const DatabaseStoredProcedure::ParameterTypes<std::string, int&>::ResultSetTypes<> DatabaseStoredProcedures::GET_USER_ID
 {
     "user_get_id",
     {

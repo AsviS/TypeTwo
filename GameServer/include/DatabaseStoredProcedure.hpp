@@ -29,7 +29,7 @@ class ResultSetTypes
         typedef DatabaseStoredProcedureParameter Param;
 
 
-        STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool returnsResultSet = false, bool requiresCommit = false, Database& database = DatabaseConnections::DEFAULT);
+        STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool requiresCommit = false, Database& database = DatabaseConnections::DEFAULT);
 
 
         std::vector<std::tuple<ResultTypes...>> call(ParamTypes... params) const;

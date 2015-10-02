@@ -16,7 +16,7 @@
 #define STORED_PROCEDURE_TEMPLATES template <typename... ParamTypes> template <typename... ResultTypes>
 
 STORED_PROCEDURE_TEMPLATES
-STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool returnsResultSet, bool requiresCommit, Database& database)
+STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool requiresCommit, Database& database)
 : mQueryString(compileQueryString(name, parameters))
 , mParameters(parameters)
 , mReturnsResultSet(sizeof...(ResultTypes) > 0)

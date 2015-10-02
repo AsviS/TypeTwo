@@ -9,8 +9,7 @@ const DatabaseStoredProcedure::ParameterTypes<int>::ResultSetTypes<int, int, int
     "unit_getby_userid",
     {
         Param(Type::INT, Dir::P_IN)
-    },
-    true
+    }
 );
 
 const DatabaseStoredProcedure
@@ -22,8 +21,7 @@ DatabaseStoredProcedures::GET_ALL_USERS
     {
         Param(Type::INT, Dir::P_IN),
         Param(Type::INT, Dir::P_IN)
-    },
-    true
+    }
 );
 
 const DatabaseStoredProcedure::ParameterTypes<std::string, std::string&, std::string&>::ResultSetTypes<> DatabaseStoredProcedures::GET_USER_CREDENTIALS

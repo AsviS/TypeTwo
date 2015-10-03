@@ -31,10 +31,13 @@ class ResultSetTypes
         typedef StoredProcedureParameter Param;
 
 
-        STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool requiresCommit = false, Connection& database = Connections::DEFAULT);
+        STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters = {}, bool requiresCommit = false, Connection& database = Connections::DEFAULT);
 
+        void call(ParamTypes... params) const;
 
-        std::vector<std::tuple<ResultTypes...>> call(ParamTypes... params) const;
+        template <typename RowType>
+        std::vector<RowType> call(ParamTypes... params) const;
+
         std::string callAsFetchDataProtocol(ParamTypes... params) const;
 
     private:
@@ -46,11 +49,16 @@ class ResultSetTypes
         template <typename CurrentParam>
         void executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam) const;
 
+        void executeInputParameters(otl_stream& stream, unsigned int currentIndex) const;
+
+
         template <typename CurrentParam, typename... RemainingParams>
         void executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam, RemainingParams&... remainingParams) const;
 
         template <typename CurrentParam>
         void executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam) const;
+
+        void executeOutputParameters(otl_stream& stream, unsigned int currentIndex) const;
 
     private:
         std::string mQueryString;

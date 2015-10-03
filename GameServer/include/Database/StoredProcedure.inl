@@ -1,4 +1,9 @@
 ///////////////////////////////////
+// TypeTwo internal headers
+#include "Database/Row.hpp"
+///////////////////////////////////
+
+///////////////////////////////////
 // STD C++
 #include <iostream>
 #include <sstream>
@@ -71,12 +76,29 @@ namespace Database
     }
 }
 
+STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::call(ParamTypes... params) const
+{
+    try
+    {
+        otl_stream stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);
+        stream.set_commit(mRequiresCommit);
+        stream.set_all_column_types(otl_all_date2str);
 
+        executeInputParameters(stream, 0, params...);
+        executeOutputParameters(stream, 0, params...);
+    }
+    catch(otl_exception& e)
+    {
+        std::cout << "Database error: " << e.msg << std::endl;
+    }
+}
 
 STORED_PROCEDURE_TEMPLATES
-std::vector<std::tuple<ResultTypes...>> STORED_PROCEDURE::call(ParamTypes... params) const
+template <typename RowType>
+std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
 {
-    std::vector<std::tuple<ResultTypes...>> resultSet;
+    std::vector<RowType> resultSet;
     try
     {
         otl_stream stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);
@@ -89,9 +111,9 @@ std::vector<std::tuple<ResultTypes...>> STORED_PROCEDURE::call(ParamTypes... par
         if(mReturnsResultSet)
             while(!stream.eof())
             {
-                std::tuple<ResultTypes...> row;
-                getRow<sizeof...(ResultTypes) - 1>::go(row, stream);
-                resultSet.push_back(row);
+                std::tuple<ResultTypes...> rowData;
+                getRow<sizeof...(ResultTypes) - 1>::go(rowData, stream);
+                resultSet.push_back(RowType(rowData));
             }
     }
     catch(otl_exception& e)
@@ -201,6 +223,13 @@ void STORED_PROCEDURE::executeInputParameters(otl_stream& stream, unsigned int c
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::executeInputParameters(otl_stream& stream, unsigned int currentIndex) const
+{
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
 template <typename CurrentParam, typename... RemainingParams>
 void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam, RemainingParams&... remainingParams) const
 {
@@ -224,6 +253,13 @@ void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, unsigned int 
     {
         stream >> currentParam;
     }
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, unsigned int currentIndex) const
+{
 }
 
 

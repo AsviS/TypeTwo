@@ -6,44 +6,51 @@
 #include <tuple>
 ///////////////////////////////////
 
+#define                                         \
+DATABASE_ROW_CONSTRUCTOR(NAME, ...)                      \
+template <typename... RowDataTypes>             \
+NAME(const std::tuple<RowDataTypes...>& data)   \
+{                                               \
+    std::tie(__VA_ARGS__) = data;               \
+}
+
+
+#define                                                 \
+DATABASE_ROW_CUSTOM_CONSTRUCTOR(NAME, PARAM_TYPES, PARAM_NAMES)  \
+NAME(const std::tuple<PARAM_TYPES>& data)               \
+{                                                       \
+    std::tie(PARAM_NAMES) = data;                       \
+}
+
+#define DATABASE_ROW_PARAMS(...) __VA_ARGS__
+#define DATABASE_ROW_NAMES(...) __VA_ARGS__
 
 namespace Database
 {
 namespace Row
 {
-    #define                                             \
-    ROW_BEGIN(NAME, ...)                                \
-    struct NAME                                         \
-    {                                                   \
-        template <typename... RowDataTypes>             \
-        NAME(const std::tuple<RowDataTypes...>& data)   \
-        {                                               \
-            std::tie(__VA_ARGS__) = data;               \
-        }
+    #define CONSTRUCTOR DATABASE_ROW_CONSTRUCTOR
+    #define CUSTOM_CONSTRUCTOR DATABASE_ROW_CUSTOM_CONSTRUCTOR
+    #define PARAMS DATABASE_ROW_PARAMS
+    #define NAMES DATABASE_ROW_NAMES
 
-    #define ROW_END };
+    ///////////////////////////////////
+    // Declare rows below
+    ///////////////////////////////////
 
-    #define \
-    CUSTOM_UNPACK(NAME, PARAM_TYPES, PARAM_NAMES)\
-    NAME(const std::tuple<PARAM_TYPES>& data)\
-    {\
-        std::tie(PARAM_NAMES) = data;\
-    }
+    struct Unit
+    {
+        CONSTRUCTOR(Unit, id, unitTypeId, hp)
 
-    #define PARAMS(...) __VA_ARGS__
-    #define NAMES(...) __VA_ARGS__
-
-///////////////////////////////////
-// Declare rows below
-///////////////////////////////////
-
-    ROW_BEGIN(Unit, id, unitTypeId, hp)
         int id;
         int unitTypeId;
         int hp;
-    ROW_END
+    };
 
-    ROW_BEGIN(UnitType, id, name, maxHp, damage, movementSpeed, attackRange, attackSpeed)
+    struct UnitType
+    {
+        CONSTRUCTOR(UnitType, id, name, maxHp, damage, movementSpeed, attackRange, attackSpeed)
+
         unsigned int id;
         std::string name;
         int maxHp;
@@ -51,16 +58,16 @@ namespace Row
         int movementSpeed;
         int attackRange;
         int attackSpeed;
-    ROW_END
+    };
 
+    ///////////////////////////////////
+    // Declare rows above
+    ///////////////////////////////////
 
-///////////////////////////////////
-// Declare rows above
-///////////////////////////////////
-
-    #undef ROW_BEGIN
-    #undef ROW_END
-    #undef CUSTOM_UNPACK
+    #undef CONSTRUCTOR
+    #undef CUSTOM_CONSTRUCTOR
+    #undef PARAMS
+    #undef NAMES
 }
 }
 

@@ -2,21 +2,20 @@
 // TypeTwo internal headers
 #include "Database/StoredProcedures.hpp"
 using namespace Database;
+
+#define PARAMS DATABASE_STORED_PROCEDURE_PARAMS
+#define RETURNS DATABASE_STORED_PROCEDURE_RETURNS
+#define PROCEDURE DATABASE_STORED_PROCEDURE
+#define PARAM DATABASE_STORED_PROCEDURE_PARAM
 ///////////////////////////////////
 
-#define PARAMS(...) __VA_ARGS__
-#define RETURNS(...) __VA_ARGS__
-#define PARAM(TYPE, DIRECTION) StoredProcedureParameter(StoredProcedureParameter::Type::TYPE, StoredProcedureParameter::Direction::P_##DIRECTION)
 
-#define \
-STORED_PROCEDURE(NAME, PARAM_TYPES, RETURN_TYPES)\
-const StoredProcedure::ParameterTypes<PARAM_TYPES>::ResultSetTypes<RETURN_TYPES> StoredProcedures::NAME\
 
 ///////////////////////////////////
 // Instantiate stored procedures below
 ///////////////////////////////////
 
-STORED_PROCEDURE(GET_UNITS,
+PROCEDURE(StoredProcedures::GET_UNITS,
                  PARAMS(int),
                  RETURNS(int, int, int))
 (
@@ -28,7 +27,7 @@ STORED_PROCEDURE(GET_UNITS,
 
 ///////////////////////////////////
 
-STORED_PROCEDURE(GET_ALL_UNIT_TYPES,
+DATABASE_STORED_PROCEDURE(StoredProcedures::GET_ALL_UNIT_TYPES,
                  PARAMS(),
                  RETURNS(unsigned int, std::string, int, int, int, int, int))
 (
@@ -37,7 +36,7 @@ STORED_PROCEDURE(GET_ALL_UNIT_TYPES,
 
 ///////////////////////////////////
 
-STORED_PROCEDURE(GET_ALL_USERS,
+PROCEDURE(StoredProcedures::GET_ALL_USERS,
                  PARAMS(int, int),
                  RETURNS(int, std::string, std::string, std::string, std::string))
 (
@@ -50,7 +49,7 @@ STORED_PROCEDURE(GET_ALL_USERS,
 
 ///////////////////////////////////
 
-STORED_PROCEDURE(GET_USER_CREDENTIALS,
+PROCEDURE(StoredProcedures::GET_USER_CREDENTIALS,
                  PARAMS(std::string, std::string&, std::string&),
                  RETURNS())
 (
@@ -64,7 +63,7 @@ STORED_PROCEDURE(GET_USER_CREDENTIALS,
 
 ///////////////////////////////////
 
-STORED_PROCEDURE(GET_USER_ID,
+PROCEDURE(StoredProcedures::GET_USER_ID,
                  PARAMS(std::string, int&),
                  RETURNS())
 (
@@ -79,7 +78,10 @@ STORED_PROCEDURE(GET_USER_ID,
 // Instantiate stored procedures above
 ///////////////////////////////////
 
+///////////////////////////////////
+// TypeTwo internal headers
 #undef PARAMS
-#undef PARAM
 #undef RETURNS
-#undef STORED_PROCEDURE
+#undef PROCEDURE
+#undef PARAM
+///////////////////////////////////

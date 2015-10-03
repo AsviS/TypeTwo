@@ -13,6 +13,17 @@
 #include <memory>
 ///////////////////////////////////
 
+#define DATABASE_STORED_PROCEDURE_PARAMS(...) __VA_ARGS__
+#define DATABASE_STORED_PROCEDURE_RETURNS(...) __VA_ARGS__
+
+#define DATABASE_STORED_PROCEDURE_PARAM(TYPE, DIRECTION) \
+Database::StoredProcedureParameter(Database::StoredProcedureParameter::Type::TYPE, Database::StoredProcedureParameter::Direction::P_##DIRECTION)
+
+#define \
+DATABASE_STORED_PROCEDURE(NAME, PARAM_TYPES, RETURN_TYPES) \
+const Database::StoredProcedure::ParameterTypes<PARAM_TYPES>::ResultSetTypes<RETURN_TYPES> NAME
+
+
 #define STORED_PROCEDURE_CTOR ResultSetTypes
 
 namespace Database

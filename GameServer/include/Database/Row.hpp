@@ -23,6 +23,16 @@ namespace Row
 
     #define ROW_END };
 
+    #define \
+    CUSTOM_UNPACK(NAME, PARAM_TYPES, PARAM_NAMES)\
+    NAME(const std::tuple<PARAM_TYPES>& data)\
+    {\
+        std::tie(PARAM_NAMES) = data;\
+    }
+
+    #define PARAMS(...) __VA_ARGS__
+    #define NAMES(...) __VA_ARGS__
+
 ///////////////////////////////////
 // Declare rows below
 ///////////////////////////////////
@@ -50,6 +60,7 @@ namespace Row
 
     #undef ROW_BEGIN
     #undef ROW_END
+    #undef CUSTOM_UNPACK
 }
 }
 

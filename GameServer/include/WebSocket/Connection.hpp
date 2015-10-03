@@ -1,9 +1,12 @@
-#ifndef TYPETWO_WEBSOCKETCONNECTION_HPP
-#define TYPETWO_WEBSOCKETCONNECTION_HPP
+#ifndef TYPETWO_WEBSOCKET_CONNECTION_HPP
+#define TYPETWO_WEBSOCKET_CONNECTION_HPP
 
 ///////////////////////////////////
 // TypeTwo internal headers
-class WebSocketServer;
+namespace WebSocket
+{
+    class Server;
+}
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -19,10 +22,11 @@ struct libwebsocket;
 struct libwebsocket_context;
 ///////////////////////////////////
 
-
+namespace WebSocket
+{
 /// \brief A WebSocket connection to a client
 ///
-class WebSocketConnection
+class Connection
 {
     public:
         /// \brief Constructor
@@ -32,7 +36,7 @@ class WebSocketConnection
         /// \param server const WebSocketServer& Server to bind to.
         ///
         ///
-        WebSocketConnection(std::string username, libwebsocket* webSocketInstance, const WebSocketServer& server);
+        Connection(std::string username, libwebsocket* webSocketInstance, const Server& server);
 
         /// \brief Get connection's username
         ///
@@ -53,7 +57,7 @@ class WebSocketConnection
         /// \return const WebSocketServer&
         ///
         ///
-        const WebSocketServer& getServer() const;
+        const Server& getServer() const;
 
 
         /// \brief Get this connection's protocol's ID
@@ -120,12 +124,13 @@ class WebSocketConnection
         void silentClose();
 
     private:
-        const WebSocketServer& mServer; ///< The server this connection is connected to
+        const Server& mServer; ///< The server this connection is connected to
         libwebsocket* mWebSocketInstance; ///< LWS instance
         std::string mIp; ///< IP adress of client
         std::string mUsername; ///< Username of connection
         time_t  mLastAliveTime; ///< Last time connection showed a sign of being alive.
 };
+}
 
-#endif // TYPETWO_WEBSOCKETCONNECTION_HPP
+#endif // TYPETWO_WEBSOCKET_CONNECTION_HPP
 

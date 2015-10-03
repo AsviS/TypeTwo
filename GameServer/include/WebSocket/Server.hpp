@@ -1,11 +1,13 @@
-#ifndef TYPETWO_WEBSOCKETSERVER_HPP
-#define TYPETWO_WEBSOCKETSERVER_HPP
+#ifndef TYPETWO_WEBSOCKET_SERVER_HPP
+#define TYPETWO_WEBSOCKET_SERVER_HPP
 
 ///////////////////////////////////
 // TypeTwo internal headers
-class WebSocketSubProtocol;
-class Database;
-#include "WebSocketConnection.hpp"
+namespace WebSocket
+{
+    class SubProtocol;
+    class Connection;
+}
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -19,15 +21,17 @@ class Database;
 // libwebsockets
 struct libwebsocket_context;
 struct libwebsocket_protocols;
+struct libwebsocket;
 ///////////////////////////////////
 
-
+namespace WebSocket
+{
 /// \brief WebSocket server
 ///
 /// Creates a WebSocket server that listens to
 /// a designated port and responds to designated
 /// subprotocols.
-class WebSocketServer
+class Server
 {
     public:
         /// \brief Response codes for connection requests
@@ -44,16 +48,15 @@ class WebSocketServer
         ///
         /// \param port unsigned int Port to listen to
         /// \param protocols const std::vector<WebSocketSubProtocol::Ptr>& Protocols to respond to
-        /// \param db Database& Database object to connect to.
         ///
         ///
-        WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocol, Database& db);
+        Server(unsigned int port, const std::vector<const SubProtocol*>& protocol);
 
         /// \brief Destructor
         ///
         ///
         ///
-        ~WebSocketServer();
+        ~Server();
 
         /// \brief Start the server.
         ///
@@ -68,7 +71,7 @@ class WebSocketServer
         /// \return const std::unordered_map<std::string, WebSocketConnection*>&
         ///
         ///
-        const std::unordered_map<std::string, WebSocketConnection*>& getClients(unsigned int protocolId) const;
+        const std::unordered_map<std::string, Connection*>& getClients(unsigned int protocolId) const;
 
         /// \brief Handle connection request from client
         ///
@@ -138,7 +141,7 @@ class WebSocketServer
         /// \return libwebsocket_protocols*
         ///
         ///  Adds the given protocols to the mProtocols protocol list.
-        libwebsocket_protocols* initializeProtocols(const std::vector<const WebSocketSubProtocol*>& protocols);
+        libwebsocket_protocols* initializeProtocols(const std::vector<const SubProtocol*>& protocols);
 
         /// \brief Add a client connection to the server's client map.
         ///
@@ -146,7 +149,7 @@ class WebSocketServer
         /// \return void
         ///
         ///
-        void addClient(WebSocketConnection* client);
+        void addClient(Connection* client);
 
         /// \brief Remove a client connection from the server's client map.
         ///
@@ -154,7 +157,7 @@ class WebSocketServer
         /// \return void
         ///
         ///
-        void removeClient(WebSocketConnection& client);
+        void removeClient(Connection& client);
 
         /// \brief Remove a client connection from the server's client map with an iterator.
         ///
@@ -163,7 +166,7 @@ class WebSocketServer
         /// \return void
         ///
         ///
-        void removeClient(std::unordered_map<std::string, WebSocketConnection*>::iterator it);
+        void removeClient(std::unordered_map<std::string, Connection*>::iterator it);
 
         /// \brief Validate user credentials.
         ///
@@ -184,11 +187,10 @@ class WebSocketServer
 
     private:
         libwebsocket_context*   mContext;   ///< WebSocket context
-        std::vector<std::unordered_map<std::string, WebSocketConnection*>> mClients; ///< Clients connected to this server. Each index of the vector represents the connection's protocol index.
+        std::vector<std::unordered_map<std::string, Connection*>> mClients; ///< Clients connected to this server. Each index of the vector represents the connection's protocol index.
         bool mVerbose; ///< If true, the server will print detailed information to the console.
-        Database& mDb; ///< Database connection
 };
+}
 
 
-
-#endif // TYPETWO_WEBSOCKETSERVER_HPP
+#endif // TYPETWO_WEBSOCKET_SERVER_HPP

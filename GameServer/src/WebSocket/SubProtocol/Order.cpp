@@ -1,8 +1,10 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "WebSocketSubProtocol.hpp"
-#include "WebSocketSubProtocols.hpp"
-#include "WebSocketServer.hpp"
+#include "WebSocket/SubProtocol.hpp"
+#include "WebSocket/SubProtocols.hpp"
+#include "WebSocket/Server.hpp"
+#include "WebSocket/Connection.hpp"
+using namespace WebSocket;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -43,10 +45,10 @@ struct Order
     unsigned int    quantity;   ///< How many items to order
 };
 
-const WebSocketSubProtocol& WebSocketSubProtocols::ORDER = WebSocketSubProtocol
+const SubProtocol& SubProtocols::ORDER = SubProtocol
 (
     "order",
-    sizeof(WebSocketConnection*),
+    sizeof(Connection*),
     [](libwebsocket_context* context,
                    libwebsocket* webSocketInstance,
                    libwebsocket_callback_reasons reason,
@@ -56,14 +58,14 @@ const WebSocketSubProtocol& WebSocketSubProtocols::ORDER = WebSocketSubProtocol
     {
         /////////////////////////////////
         // Always call the standard protocol
-        WebSocketSubProtocol::Result result = WebSocketSubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
-        if(result != WebSocketSubProtocol::Result::NoAction)
+        SubProtocol::Result result = SubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
+        if(result != SubProtocol::Result::NoAction)
             return (int)result;
         /////////////////////////////////
 
         if(reason == LWS_CALLBACK_RECEIVE)
         {
-            std::stringstream message(WebSocketSubProtocol::messageToString(messageData, messageLength));
+            std::stringstream message(SubProtocol::messageToString(messageData, messageLength));
 
             Order order;
             std::getline(message, order.item);
@@ -74,7 +76,7 @@ const WebSocketSubProtocol& WebSocketSubProtocols::ORDER = WebSocketSubProtocol
                     << "Item: " << order.item << std::endl
                     << "Quantity: " << order.quantity << std::endl;
 
-            WebSocketSubProtocol::getConnection(connectionData).sendString(output.str());
+            SubProtocol::getConnection(connectionData).sendString(output.str());
         }
 
         return 0;

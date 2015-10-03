@@ -1,10 +1,13 @@
-#ifndef TYPETWO_WEBSOCKETSUBPROTOCOL_HPP
-#define TYPETWO_WEBSOCKETSUBPROTOCOL_HPP
+#ifndef TYPETWO_WEBSOCKET_SUBPROTOCOL_HPP
+#define TYPETWO_WEBSOCKET_SUBPROTOCOL_HPP
 
 ///////////////////////////////////
 // TypeTwo internal headers
-class WebSocketServer;
-class WebSocketConnection;
+namespace WebSocket
+{
+    class Server;
+    class Connection;
+}
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -17,12 +20,15 @@ class WebSocketConnection;
 #include "libwebsockets.h"
 ///////////////////////////////////
 
+
+namespace WebSocket
+{
 /// \brief Base class for a WebSocket subprotocol
 ///
 /// A WebSocket subprotocol can be explained as a
 /// connection type. A connection is bound to one
 /// subprotocol only during its entire lifetime.
-class WebSocketSubProtocol
+class SubProtocol
 {
     public:
         /// \brief Tri-state boolean for standard protocol result
@@ -42,7 +48,7 @@ class WebSocketSubProtocol
         /// \param callback callback_function* Callback function invoked when receiving message from client
         ///
         ///
-        WebSocketSubProtocol(std::string name, int sessionDataSize, callback_function* callback);
+        SubProtocol(std::string name, int sessionDataSize, callback_function* callback);
 
 
         /// \brief Get libwebsocket_protocol representation of this subprotocol
@@ -59,7 +65,7 @@ class WebSocketSubProtocol
         /// \return WebSocketServer&
         ///
         ///
-        static WebSocketServer& getServer(libwebsocket_context* context);
+        static Server& getServer(libwebsocket_context* context);
 
         /// \brief Get WebSocketConnection object stored in connection data.
         ///
@@ -67,7 +73,7 @@ class WebSocketSubProtocol
         /// \return WebSocketConnection&
         ///
         ///
-        static WebSocketConnection& getConnection(void* connectionData);
+        static Connection& getConnection(void* connectionData);
 
         /// \brief Create WebSocketConnection object and store it in connectionData
         ///
@@ -78,7 +84,7 @@ class WebSocketSubProtocol
         /// \return WebSocketConnection&
         ///
         ///
-        static WebSocketConnection& createConnection(std::string username, void* connectionData, libwebsocket* webSocketInstance, const WebSocketServer& server);
+        static Connection& createConnection(std::string username, void* connectionData, libwebsocket* webSocketInstance, const Server& server);
 
 
         /// \brief Convert message data to STD string
@@ -120,5 +126,6 @@ class WebSocketSubProtocol
         const unsigned int        M_SESSION_DATA_SIZE;     ///< Size of session data. Each connecting client gets data bound to it.
         const callback_function*  M_CALLBACK;              ///< Callback function called when receiving messages from client.
 };
+}
 
-#endif // TYPETWO_WEBSOCKETSUBPROTOCOL_HPP
+#endif // TYPETWO_WEBSOCKET_SUBPROTOCOL_HPP

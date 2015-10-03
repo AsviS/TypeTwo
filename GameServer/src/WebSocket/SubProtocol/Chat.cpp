@@ -1,8 +1,10 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "WebSocketSubProtocol.hpp"
-#include "WebSocketSubProtocols.hpp"
-#include "WebSocketServer.hpp"
+#include "WebSocket/SubProtocol.hpp"
+#include "WebSocket/SubProtocols.hpp"
+#include "WebSocket/Server.hpp"
+#include "WebSocket/Connection.hpp"
+using namespace WebSocket;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -17,10 +19,10 @@
 ///////////////////////////////////
 
 
-const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
+const SubProtocol& SubProtocols::CHAT = SubProtocol
 (
     "chat",
-    sizeof(WebSocketConnection*),
+    sizeof(Connection*),
     [](libwebsocket_context* context,
                    libwebsocket* webSocketInstance,
                    libwebsocket_callback_reasons reason,
@@ -30,8 +32,8 @@ const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
     {
         /////////////////////////////////
         // Always call the standard protocol
-        WebSocketSubProtocol::Result standardProtocolResult = WebSocketSubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
-        if(standardProtocolResult == WebSocketSubProtocol::Result::Fail)
+        SubProtocol::Result standardProtocolResult = SubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
+        if(standardProtocolResult == SubProtocol::Result::Fail)
            return (int)standardProtocolResult;
         /////////////////////////////////
 
@@ -39,7 +41,7 @@ const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
         {
             case LWS_CALLBACK_ESTABLISHED:
             {
-                WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
+                Connection& connection = SubProtocol::getConnection(connectionData);
                 connection.getServer().broadcastString
                 (
                     "'" + connection.getUsername() + "' connected",
@@ -50,7 +52,7 @@ const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
 
             case LWS_CALLBACK_CLOSED:
             {
-                WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
+                Connection& connection = SubProtocol::getConnection(connectionData);
                 connection.getServer().broadcastString
                 (
                     "'" + connection.getUsername() + "' disconnected",
@@ -61,10 +63,10 @@ const WebSocketSubProtocol& WebSocketSubProtocols::CHAT = WebSocketSubProtocol
 
             case LWS_CALLBACK_RECEIVE:
             {
-                WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
+                Connection& connection = SubProtocol::getConnection(connectionData);
                 connection.getServer().broadcastString
                 (
-                    connection.getUsername() + ": " + WebSocketSubProtocol::messageToString(messageData, messageLength),
+                    connection.getUsername() + ": " + SubProtocol::messageToString(messageData, messageLength),
                     connection.getProtocolId()
                 );
                 break;

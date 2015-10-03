@@ -1,5 +1,5 @@
-#ifndef TYPETWO_DATABASESTOREDPROCEDUREPARAMETER_HPP
-#define TYPETWO_DATABASESTOREDPROCEDUREPARAMETER_HPP
+#ifndef TYPETWO_DATABASE_STORED_PROCEDURE_PARAMETER_HPP
+#define TYPETWO_DATABASE_STORED_PROCEDURE_PARAMETER_HPP
 
 
 ///////////////////////////////////
@@ -7,8 +7,9 @@
 #include <string>
 ///////////////////////////////////
 
-
-struct DatabaseStoredProcedureParameter
+namespace Database
+{
+struct StoredProcedureParameter
 {
     enum class Type
     {
@@ -27,7 +28,7 @@ struct DatabaseStoredProcedureParameter
     };
 
 
-    DatabaseStoredProcedureParameter(Type type, Direction direction);
+    StoredProcedureParameter(Type type, Direction direction);
     std::string toString();
     std::string typeToString(Type type);
     std::string directionToString(Direction direction);
@@ -35,6 +36,8 @@ struct DatabaseStoredProcedureParameter
     Type type;
     Direction direction;
 };
+}
 
-#endif // TYPETWO_DATABASESTOREDPROCEDUREPARAMETER_HPP
+
+#endif // TYPETWO_DATABASE_STORED_PROCEDURE_PARAMETER_HPP
 

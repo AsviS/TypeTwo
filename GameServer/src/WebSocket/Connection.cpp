@@ -1,8 +1,9 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "WebSocketConnection.hpp"
-#include "WebSocketServer.hpp"
+#include "WebSocket/Connection.hpp"
+#include "WebSocket/Server.hpp"
 #include "utility.hpp"
+using namespace WebSocket;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -17,7 +18,7 @@
 //////////////////////////////////
 
 
-WebSocketConnection::WebSocketConnection(std::string username, libwebsocket* webSocketInstance, const WebSocketServer& server)
+Connection::Connection(std::string username, libwebsocket* webSocketInstance, const Server& server)
 : mServer(server)
 , mWebSocketInstance(webSocketInstance)
 , mIp(mServer.getIp(mWebSocketInstance))
@@ -28,42 +29,42 @@ WebSocketConnection::WebSocketConnection(std::string username, libwebsocket* web
 
 ///////////////////////////////////
 
-std::string WebSocketConnection::getUsername() const
+std::string Connection::getUsername() const
 {
     return mUsername;
 }
 
 ///////////////////////////////////
 
-std::string WebSocketConnection::getIp() const
+std::string Connection::getIp() const
 {
     return mIp;
 }
 
 ///////////////////////////////////
 
-const WebSocketServer& WebSocketConnection::getServer() const
+const Server& Connection::getServer() const
 {
     return mServer;
 }
 
 ///////////////////////////////////
 
-int WebSocketConnection::getProtocolId() const
+int Connection::getProtocolId() const
 {
     return libwebsockets_get_protocol(mWebSocketInstance)->protocol_index;
 }
 
 ///////////////////////////////////
 
-std::string WebSocketConnection::getProtocolName() const
+std::string Connection::getProtocolName() const
 {
     return std::string(libwebsockets_get_protocol(mWebSocketInstance)->name);
 }
 
 ///////////////////////////////////
 
-void WebSocketConnection::sendString(std::string str) const
+void Connection::sendString(std::string str) const
 {
     unsigned char* response = (unsigned char*)stringToChar(str);
     libwebsocket_write(mWebSocketInstance, response, str.size(), LWS_WRITE_TEXT);
@@ -71,7 +72,7 @@ void WebSocketConnection::sendString(std::string str) const
 
 ///////////////////////////////////
 
-void WebSocketConnection::sendLines(std::vector<std::string> lines) const
+void Connection::sendLines(std::vector<std::string> lines) const
 {
     std::ostringstream stream;
     for(std::string& line : lines)
@@ -82,21 +83,21 @@ void WebSocketConnection::sendLines(std::vector<std::string> lines) const
 
 ///////////////////////////////////
 
-void WebSocketConnection::updateAliveTime()
+void Connection::updateAliveTime()
 {
     time(&mLastAliveTime);
 }
 
 ///////////////////////////////////
 
-time_t WebSocketConnection::getLastAliveTime() const
+time_t Connection::getLastAliveTime() const
 {
     return mLastAliveTime;
 }
 
 ///////////////////////////////////
 
-void WebSocketConnection::close()
+void Connection::close()
 {
     unsigned char* message = new unsigned char();
     libwebsocket_write(mWebSocketInstance, message, 0, LWS_WRITE_CLOSE);
@@ -104,7 +105,7 @@ void WebSocketConnection::close()
 
 ///////////////////////////////////
 
-void WebSocketConnection::silentClose()
+void Connection::silentClose()
 {
     libwebsocket_rx_flow_control(mWebSocketInstance, 0);
     close();

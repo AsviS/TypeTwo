@@ -1,9 +1,10 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "WebSocketSubProtocol.hpp"
-#include "WebSocketConnection.hpp"
-#include "WebSocketServer.hpp"
+#include "WebSocket/SubProtocol.hpp"
+#include "WebSocket/Connection.hpp"
+#include "WebSocket/Server.hpp"
 #include "utility.hpp"
+using namespace WebSocket;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -13,7 +14,7 @@
 ///////////////////////////////////
 
 
-WebSocketSubProtocol::WebSocketSubProtocol(std::string name, int sessionDataSize, callback_function* callback)
+SubProtocol::SubProtocol(std::string name, int sessionDataSize, callback_function* callback)
 : M_NAME(name)
 , M_SESSION_DATA_SIZE(sessionDataSize)
 , M_CALLBACK(callback)
@@ -22,7 +23,7 @@ WebSocketSubProtocol::WebSocketSubProtocol(std::string name, int sessionDataSize
 
 ///////////////////////////////////
 
-libwebsocket_protocols WebSocketSubProtocol::toLibWebSocketProtocol() const
+libwebsocket_protocols SubProtocol::toLibWebSocketProtocol() const
 {
     return
     {
@@ -34,60 +35,60 @@ libwebsocket_protocols WebSocketSubProtocol::toLibWebSocketProtocol() const
 
 ///////////////////////////////////
 
-WebSocketServer& WebSocketSubProtocol::getServer(libwebsocket_context* context)
+Server& SubProtocol::getServer(libwebsocket_context* context)
 {
-    return *((WebSocketServer*)libwebsocket_context_user(context));
+    return *((Server*)libwebsocket_context_user(context));
 }
 
 ///////////////////////////////////
 
-WebSocketConnection& WebSocketSubProtocol::getConnection(void* connectionData)
+Connection& SubProtocol::getConnection(void* connectionData)
 {
-    WebSocketConnection* connection = (*(WebSocketConnection**)connectionData);
+    Connection* connection = (*(Connection**)connectionData);
 
     if(connection == nullptr)
         throw std::runtime_error("DEVELOPMENT ERROR: \nA connection has been established without having its connection data initialized. This may be caused by an invalid protocol that does not use the standard protocol properly. See existing protocols for examples. \n");
 
-    return *(*(WebSocketConnection**)connectionData);
+    return *(*(Connection**)connectionData);
 }
 
 ///////////////////////////////////
 
-WebSocketConnection& WebSocketSubProtocol::createConnection(std::string username, void* connectionData, libwebsocket* webSocketInstance, const WebSocketServer& server)
+Connection& SubProtocol::createConnection(std::string username, void* connectionData, libwebsocket* webSocketInstance, const Server& server)
 {
-    WebSocketConnection* connection = new WebSocketConnection(username, webSocketInstance, server);
-    *(WebSocketConnection**)connectionData = connection;
+    Connection* connection = new Connection(username, webSocketInstance, server);
+    *(Connection**)connectionData = connection;
     return *connection;
 }
 
 ///////////////////////////////////
 
-std::string WebSocketSubProtocol::messageToString(void* messageData, size_t messageLength)
+std::string SubProtocol::messageToString(void* messageData, size_t messageLength)
 {
     return std::string(static_cast<char*>(messageData), messageLength);
 }
 
 ///////////////////////////////////
 
-WebSocketSubProtocol::Result WebSocketSubProtocol::performStandardProtocol(libwebsocket_context* context, libwebsocket* webSocketInstance, libwebsocket_callback_reasons reason, void* connectionData)
+SubProtocol::Result SubProtocol::performStandardProtocol(libwebsocket_context* context, libwebsocket* webSocketInstance, libwebsocket_callback_reasons reason, void* connectionData)
 {
     switch(reason)
     {
         case LWS_CALLBACK_ESTABLISHED:
-            WebSocketSubProtocol::getServer(context).handleConnectionOpen(connectionData);
+            SubProtocol::getServer(context).handleConnectionOpen(connectionData);
             break;
 
         case LWS_CALLBACK_CLOSED:
-            WebSocketSubProtocol::getServer(context).handleConnectionClosed(connectionData);
+            SubProtocol::getServer(context).handleConnectionClosed(connectionData);
             break;
 
         case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
-            if(WebSocketSubProtocol::getServer(context).handleConnectionRequest(connectionData, webSocketInstance) != WebSocketServer::ResponseCode::Success)
+            if(SubProtocol::getServer(context).handleConnectionRequest(connectionData, webSocketInstance) != Server::ResponseCode::Success)
                 return Result::Fail;
             break;
 
         case LWS_CALLBACK_RECEIVE:
-            WebSocketSubProtocol::getConnection(connectionData).updateAliveTime();
+            SubProtocol::getConnection(connectionData).updateAliveTime();
             return Result::NoAction;
 
         case LWS_CALLBACK_PROTOCOL_DESTROY:
@@ -105,7 +106,7 @@ WebSocketSubProtocol::Result WebSocketSubProtocol::performStandardProtocol(libwe
 
 ///////////////////////////////////
 
-bool WebSocketSubProtocol::getUserCredentials(libwebsocket* webSocketInstance, std::string& username, std::string& password)
+bool SubProtocol::getUserCredentials(libwebsocket* webSocketInstance, std::string& username, std::string& password)
 {
     lws_token_indexes token = WSI_TOKEN_GET_URI;
     int size = lws_hdr_total_length(webSocketInstance, token);

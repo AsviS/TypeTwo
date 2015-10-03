@@ -1,10 +1,10 @@
-#ifndef TYPETWO_DATABASESTOREDPROCEDURE_HPP
-#define TYPETWO_DATABASESTOREDPROCEDURE_HPP
+#ifndef TYPETWO_DATABASE_STORED_PROCEDURE_HPP
+#define TYPETWO_DATABASE_STORED_PROCEDURE_HPP
 
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "DatabaseConnections.hpp"
-#include "DatabaseStoredProcedureParameter.hpp"
+#include "Database/Connections.hpp"
+#include "Database/StoredProcedureParameter.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -15,7 +15,9 @@
 
 #define STORED_PROCEDURE_CTOR ResultSetTypes
 
-namespace DatabaseStoredProcedure
+namespace Database
+{
+namespace StoredProcedure
 {
 template<typename... ParamTypes>
 struct ParameterTypes
@@ -26,10 +28,10 @@ class ResultSetTypes
     private:
 
     public:
-        typedef DatabaseStoredProcedureParameter Param;
+        typedef StoredProcedureParameter Param;
 
 
-        STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool requiresCommit = false, Database& database = DatabaseConnections::DEFAULT);
+        STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool requiresCommit = false, Connection& database = Connections::DEFAULT);
 
 
         std::vector<std::tuple<ResultTypes...>> call(ParamTypes... params) const;
@@ -55,15 +57,16 @@ class ResultSetTypes
         std::vector<Param> mParameters;
         bool mReturnsResultSet;
         bool mRequiresCommit;
-        Database& mDatabase;
+        Connection& mDatabase;
 };
 };
 }
+}
 
-#include "DatabaseStoredProcedure.inl"
+#include "Database/StoredProcedure.inl"
 
 #undef STORED_PROCEDURE_CTOR
 
 
-#endif // TYPETWO_DATABASESTOREDPROCEDURE_HPP
+#endif // TYPETWO_DATABASE_STORED_PROCEDURE_HPP
 

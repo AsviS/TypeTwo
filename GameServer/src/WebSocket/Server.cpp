@@ -1,9 +1,11 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "WebSocketServer.hpp"
-#include "WebSocketSubProtocol.hpp"
-#include "UserProvider.hpp"
+#include "WebSocket/Server.hpp"
+#include "WebSocket/Connection.hpp"
+#include "WebSocket/SubProtocol.hpp"
+#include "Database/StoredProcedures.hpp"
 #include "utility.hpp"
+using namespace WebSocket;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -20,9 +22,8 @@
 #include "libwebsockets.h"
 ///////////////////////////////////
 
-WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebSocketSubProtocol*>& protocols, Database& db)
+Server::Server(unsigned int port, const std::vector<const SubProtocol*>& protocols)
 : mVerbose(false)
-, mDb(db)
 {
     lws_set_log_level
     (
@@ -54,7 +55,7 @@ WebSocketServer::WebSocketServer(unsigned int port, const std::vector<const WebS
 
 ///////////////////////////////////
 
-libwebsocket_protocols* WebSocketServer::initializeProtocols(const std::vector<const WebSocketSubProtocol*>& protocols)
+libwebsocket_protocols* Server::initializeProtocols(const std::vector<const SubProtocol*>& protocols)
 {
 
     unsigned int size = protocols.size() + 2;
@@ -82,9 +83,9 @@ libwebsocket_protocols* WebSocketServer::initializeProtocols(const std::vector<c
 
 ///////////////////////////////////
 
-void WebSocketServer::addClient(WebSocketConnection* client)
+void Server::addClient(Connection* client)
 {
-    std::unordered_map<std::string, WebSocketConnection*>& clients = mClients[client->getProtocolId()];
+    std::unordered_map<std::string, Connection*>& clients = mClients[client->getProtocolId()];
     auto it = clients.find(client->getUsername());
 
     if(it != clients.end())
@@ -101,35 +102,35 @@ void WebSocketServer::addClient(WebSocketConnection* client)
 
 ///////////////////////////////////
 
-void WebSocketServer::removeClient(WebSocketConnection& client)
+void Server::removeClient(Connection& client)
 {
     mClients[client.getProtocolId()].erase(client.getUsername());
 }
 
 ///////////////////////////////////
 
-void WebSocketServer::removeClient(std::unordered_map<std::string, WebSocketConnection*>::iterator it)
+void Server::removeClient(std::unordered_map<std::string, Connection*>::iterator it)
 {
     mClients[it->second->getProtocolId()].erase(it);
 }
 
 ///////////////////////////////////
 
-const std::unordered_map<std::string, WebSocketConnection*>& WebSocketServer::getClients(unsigned int protocolId) const
+const std::unordered_map<std::string, Connection*>& Server::getClients(unsigned int protocolId) const
 {
     return mClients[protocolId];
 }
 
 ///////////////////////////////////
 
-WebSocketServer::~WebSocketServer()
+Server::~Server()
 {
     libwebsocket_context_destroy(mContext);
 }
 
 ///////////////////////////////////
 
-void WebSocketServer::run()
+void Server::run()
 {
     while(true)
     {
@@ -139,13 +140,12 @@ void WebSocketServer::run()
 
 ///////////////////////////////////
 
-#include "DatabaseStoredProcedures.hpp"
-WebSocketServer::ResponseCode WebSocketServer::validateUserCredentials(std::string username, std::string password) const
+Server::ResponseCode Server::validateUserCredentials(std::string username, std::string password) const
 {
     std::string hashedPassword;
     std::string salt;
 
-    DatabaseStoredProcedures::GET_USER_CREDENTIALS.call(username, hashedPassword, salt);
+    Database::StoredProcedures::GET_USER_CREDENTIALS.call(username, hashedPassword, salt);
 
     if(sha512(password + salt) == hashedPassword)
         return ResponseCode::Success;
@@ -158,7 +158,7 @@ WebSocketServer::ResponseCode WebSocketServer::validateUserCredentials(std::stri
 
 ///////////////////////////////////
 
-std::string WebSocketServer::getIp(libwebsocket* webSocketInstance) const
+std::string Server::getIp(libwebsocket* webSocketInstance) const
 {
     unsigned int BUFFER_SIZE = 50;
     char* ipBuffer = new char[BUFFER_SIZE];
@@ -174,10 +174,10 @@ std::string WebSocketServer::getIp(libwebsocket* webSocketInstance) const
 
 ///////////////////////////////////
 
-WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance)
+Server::ResponseCode Server::handleConnectionRequest(void* connectionData, libwebsocket* webSocketInstance)
 {
     std::string username, password;
-    if(!WebSocketSubProtocol::getUserCredentials(webSocketInstance, username, password))
+    if(!SubProtocol::getUserCredentials(webSocketInstance, username, password))
     {
         if(mVerbose)
         {
@@ -191,7 +191,7 @@ WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* con
     ResponseCode response = validateUserCredentials(username, password);
 
     if(response == ResponseCode::Success)
-        WebSocketSubProtocol::createConnection(username, connectionData, webSocketInstance, *this);
+        SubProtocol::createConnection(username, connectionData, webSocketInstance, *this);
     else if(mVerbose)
     {
         std::cout << "Connection from " << getIp(webSocketInstance) << " refused. Reason: ";
@@ -210,9 +210,9 @@ WebSocketServer::ResponseCode WebSocketServer::handleConnectionRequest(void* con
 
 ///////////////////////////////////
 
-void WebSocketServer::handleConnectionOpen(void* connectionData)
+void Server::handleConnectionOpen(void* connectionData)
 {
-    WebSocketConnection* connection = &WebSocketSubProtocol::getConnection(connectionData);
+    Connection* connection = &SubProtocol::getConnection(connectionData);
     addClient(connection);
 
     if(mVerbose)
@@ -221,9 +221,9 @@ void WebSocketServer::handleConnectionOpen(void* connectionData)
 
 ///////////////////////////////////
 
-void WebSocketServer::handleConnectionClosed(void* connectionData)
+void Server::handleConnectionClosed(void* connectionData)
 {
-    WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
+    Connection& connection = SubProtocol::getConnection(connectionData);
     removeClient(connection);
 
     if(mVerbose)
@@ -232,16 +232,16 @@ void WebSocketServer::handleConnectionClosed(void* connectionData)
 
 ///////////////////////////////////
 
- void WebSocketServer::setVerbose(bool flag)
+ void Server::setVerbose(bool flag)
  {
      mVerbose = flag;
  }
 
 ///////////////////////////////////
 
-void WebSocketServer::broadcastString(std::string message, unsigned int protocolId, std::list<std::string> excludeUsers) const
+void Server::broadcastString(std::string message, unsigned int protocolId, std::list<std::string> excludeUsers) const
 {
-    for(const std::pair<std::string, WebSocketConnection*>& client : mClients[protocolId])
+    for(const std::pair<std::string, Connection*>& client : mClients[protocolId])
     {
         if(excludeUsers.size() > 0)
         {
@@ -259,7 +259,7 @@ void WebSocketServer::broadcastString(std::string message, unsigned int protocol
 
 ///////////////////////////////////
 
-void WebSocketServer::broadcastLines(std::vector<std::string> lines, unsigned int protocolId, std::list<std::string> excludeUsers) const
+void Server::broadcastLines(std::vector<std::string> lines, unsigned int protocolId, std::list<std::string> excludeUsers) const
 {
     std::ostringstream stream;
     for(std::string& line : lines)
@@ -270,12 +270,12 @@ void WebSocketServer::broadcastLines(std::vector<std::string> lines, unsigned in
 
 ///////////////////////////////////
 
-void WebSocketServer::closeDeadConnections()
+void Server::closeDeadConnections()
 {
     time_t currentTime;
     time(&currentTime);
 
-    for(std::unordered_map<std::string, WebSocketConnection*>& protocol : mClients)
+    for(std::unordered_map<std::string, Connection*>& protocol : mClients)
     {
         auto it = protocol.begin();
         while(it != protocol.end())

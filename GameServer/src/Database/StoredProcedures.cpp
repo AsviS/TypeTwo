@@ -1,10 +1,11 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "DatabaseStoredProcedures.hpp"
+#include "Database/StoredProcedures.hpp"
+using namespace Database;
 ///////////////////////////////////
 
 
-const DatabaseStoredProcedure::ParameterTypes<int>::ResultSetTypes<int, int, int> DatabaseStoredProcedures::GET_UNITS
+const StoredProcedure::ParameterTypes<int>::ResultSetTypes<int, int, int> StoredProcedures::GET_UNITS
 (
     "unit_getby_userid",
     {
@@ -12,10 +13,10 @@ const DatabaseStoredProcedure::ParameterTypes<int>::ResultSetTypes<int, int, int
     }
 );
 
-const DatabaseStoredProcedure
+const StoredProcedure
 ::ParameterTypes<int, int>
 ::ResultSetTypes<int, std::string, std::string, std::string, std::string>
-DatabaseStoredProcedures::GET_ALL_USERS
+StoredProcedures::GET_ALL_USERS
 (
     "user_get",
     {
@@ -24,7 +25,7 @@ DatabaseStoredProcedures::GET_ALL_USERS
     }
 );
 
-const DatabaseStoredProcedure::ParameterTypes<std::string, std::string&, std::string&>::ResultSetTypes<> DatabaseStoredProcedures::GET_USER_CREDENTIALS
+const StoredProcedure::ParameterTypes<std::string, std::string&, std::string&>::ResultSetTypes<> StoredProcedures::GET_USER_CREDENTIALS
 (
     "user_get_credentials",
     {
@@ -34,7 +35,7 @@ const DatabaseStoredProcedure::ParameterTypes<std::string, std::string&, std::st
     }
 );
 
-const DatabaseStoredProcedure::ParameterTypes<std::string, int&>::ResultSetTypes<> DatabaseStoredProcedures::GET_USER_ID
+const StoredProcedure::ParameterTypes<std::string, int&>::ResultSetTypes<> StoredProcedures::GET_USER_ID
 {
     "user_get_id",
     {

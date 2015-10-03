@@ -1,9 +1,12 @@
-#ifndef TYPETWO_USERPROVIDER_HPP
-#define TYPETWO_USERPROVIDER_HPP
+#ifndef TYPETWO_USER_PROVIDER_HPP
+#define TYPETWO_USER_PROVIDER_HPP
 
 ///////////////////////////////////
 // TypeTwo internal headers
-class Database;
+namespace Database
+{
+    class Connection;
+}
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -18,10 +21,10 @@ class UserProvider
     public:
         /// \brief Constructor
         ///
-        /// \param db Database& Database connection
+        /// \param db DatabaseConnection& Database connection
         ///
         ///
-        UserProvider(Database& db);
+        UserProvider(Database::Connection& db);
 
         /// \brief Get user credentials
         ///
@@ -37,8 +40,8 @@ class UserProvider
         unsigned int getId(std::string username);
 
     private:
-        Database& mDb; ///< Database connection
+        Database::Connection& mDb; ///< Database connection
 };
 
 
-#endif // TYPETWO_USERPROVIDER_HPP
+#endif // TYPETWO_USER_PROVIDER_HPP

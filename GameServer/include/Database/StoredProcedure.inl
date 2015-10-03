@@ -12,11 +12,11 @@
 #include "otlv4.h"
 ///////////////////////////////////
 
-#define STORED_PROCEDURE DatabaseStoredProcedure::ParameterTypes<ParamTypes...>::ResultSetTypes<ResultTypes...>
+#define STORED_PROCEDURE Database::StoredProcedure::ParameterTypes<ParamTypes...>::ResultSetTypes<ResultTypes...>
 #define STORED_PROCEDURE_TEMPLATES template <typename... ParamTypes> template <typename... ResultTypes>
 
 STORED_PROCEDURE_TEMPLATES
-STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool requiresCommit, Database& database)
+STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool requiresCommit, Connection& database)
 : mQueryString(compileQueryString(name, parameters))
 , mParameters(parameters)
 , mReturnsResultSet(sizeof...(ResultTypes) > 0)
@@ -32,41 +32,45 @@ STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> par
         );
 }
 
-namespace DatabaseStoredProcedure
+namespace Database
 {
-    template <size_t index>
-    class getRow
+    namespace StoredProcedure
     {
-        public:
-        template <typename... ResultTypes>
-        static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+        template <size_t index>
+        class getRow
         {
-            stream >> std::get<sizeof...(ResultTypes) - 1 - index>(tuple);
-            getRow<index - 1>::go(tuple, stream);
-        }
-    };
+            public:
+            template <typename... ResultTypes>
+            static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+            {
+                stream >> std::get<sizeof...(ResultTypes) - 1 - index>(tuple);
+                getRow<index - 1>::go(tuple, stream);
+            }
+        };
 
-    template <>
-    class getRow<0>
-    {
-        public:
-        template <typename... ResultTypes>
-        static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+        template <>
+        class getRow<0>
         {
-            stream >> std::get<sizeof...(ResultTypes) - 1>(tuple);
-        }
-    };
+            public:
+            template <typename... ResultTypes>
+            static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+            {
+                stream >> std::get<sizeof...(ResultTypes) - 1>(tuple);
+            }
+        };
 
-    template <>
-    class getRow<-1>
-    {
-        public:
-        template <typename... ResultTypes>
-        static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+        template <>
+        class getRow<-1>
         {
-        }
-    };
+            public:
+            template <typename... ResultTypes>
+            static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
+            {
+            }
+        };
+    }
 }
+
 
 
 STORED_PROCEDURE_TEMPLATES

@@ -1,6 +1,7 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "DatabaseStoredProcedureParameter.hpp"
+#include "Database/StoredProcedureParameter.hpp"
+using namespace Database;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -9,7 +10,7 @@
 ///////////////////////////////////
 
 
-DatabaseStoredProcedureParameter::DatabaseStoredProcedureParameter(Type type, Direction direction)
+StoredProcedureParameter::StoredProcedureParameter(Type type, Direction direction)
 : type(type),
 direction(direction)
 {
@@ -18,14 +19,14 @@ direction(direction)
 
 ///////////////////////////////////
 
-std::string DatabaseStoredProcedureParameter::toString()
+std::string StoredProcedureParameter::toString()
 {
     return "<" + typeToString(type) + "," + directionToString(direction) + ">";
 }
 
 ///////////////////////////////////
 
-std::string DatabaseStoredProcedureParameter::typeToString(Type type)
+std::string StoredProcedureParameter::typeToString(Type type)
 {
     switch(type)
     {
@@ -39,7 +40,7 @@ std::string DatabaseStoredProcedureParameter::typeToString(Type type)
 
 ///////////////////////////////////
 
-std::string DatabaseStoredProcedureParameter::directionToString(Direction direction)
+std::string StoredProcedureParameter::directionToString(Direction direction)
 {
     switch(direction)
     {

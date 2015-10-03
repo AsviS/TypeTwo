@@ -1,9 +1,12 @@
-#ifndef TYPETWO_UNITPROVIDER_HPP
-#define TYPETWO_UNITPROVIDER_HPP
+#ifndef TYPETWO_UNIT_PROVIDER_HPP
+#define TYPETWO_UNIT_PROVIDER_HPP
 
 ///////////////////////////////////
 // TypeTwo internal headers
-class Database;
+namespace Database
+{
+    class Connection;
+}
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -69,10 +72,10 @@ class UnitProvider
     public:
         /// \brief Constructor
         ///
-        /// \param db Database& Database connection
+        /// \param db DatabaseConnection& Database connection
         ///
         ///
-        UnitProvider(Database& db);
+        UnitProvider(Database::Connection& db);
 
         std::vector<UnitType> getUnitTypes();
 
@@ -81,8 +84,8 @@ class UnitProvider
         std::string getUnitsAsWebSocketString(unsigned int userId);
 
     private:
-        Database& mDb; ///< Database connection
+        Database::Connection& mDb; ///< Database connection
 };
 
 
-#endif // TYPETWO_UNITPROVIDER_HPP
+#endif // TYPETWO_UNIT_PROVIDER_HPP

@@ -1,7 +1,8 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 #include "UserProvider.hpp"
-#include "Database.hpp"
+#include "Database/Connection.hpp"
+using namespace Database;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -15,7 +16,7 @@
 #include "otlv4.h"
 ///////////////////////////////////
 
-UserProvider::UserProvider(Database& db)
+UserProvider::UserProvider(Connection& db)
 : mDb(db)
 {
 }

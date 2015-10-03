@@ -1,9 +1,11 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "WebSocketSubProtocol.hpp"
-#include "WebSocketSubProtocols.hpp"
-#include "WebSocketServer.hpp"
-#include "DatabaseStoredProcedures.hpp"
+#include "WebSocket/SubProtocol.hpp"
+#include "WebSocket/SubProtocols.hpp"
+#include "WebSocket/Server.hpp"
+#include "Database/StoredProcedures.hpp"
+#include "WebSocket/Connection.hpp"
+using namespace WebSocket;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -16,10 +18,10 @@
 #include "libwebsockets.h"
 ///////////////////////////////////
 
-const WebSocketSubProtocol& WebSocketSubProtocols::FETCH_DATA = WebSocketSubProtocol
+const SubProtocol& SubProtocols::FETCH_DATA = SubProtocol
 (
     "fetch-data",
-    sizeof(WebSocketConnection*),
+    sizeof(Connection*),
     [](libwebsocket_context* context,
                    libwebsocket* webSocketInstance,
                    libwebsocket_callback_reasons reason,
@@ -29,14 +31,14 @@ const WebSocketSubProtocol& WebSocketSubProtocols::FETCH_DATA = WebSocketSubProt
     {
         /////////////////////////////////
         // Always call the standard protocol
-        WebSocketSubProtocol::Result result = WebSocketSubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
-        if(result == WebSocketSubProtocol::Result::Fail)
+        SubProtocol::Result result = SubProtocol::performStandardProtocol(context, webSocketInstance, reason, connectionData);
+        if(result == SubProtocol::Result::Fail)
             return (int)result;
         /////////////////////////////////
 
         if(reason == LWS_CALLBACK_RECEIVE)
         {
-            std::stringstream message(WebSocketSubProtocol::messageToString(messageData, messageLength));
+            std::stringstream message(SubProtocol::messageToString(messageData, messageLength));
 
             std::string id;
             std::string procedure;
@@ -45,11 +47,11 @@ const WebSocketSubProtocol& WebSocketSubProtocols::FETCH_DATA = WebSocketSubProt
 
             if(procedure == "getUnits")
             {
-                WebSocketConnection& connection = WebSocketSubProtocol::getConnection(connectionData);
+                Connection& connection = SubProtocol::getConnection(connectionData);
 
                 int userId;
-                DatabaseStoredProcedures::GET_USER_ID.call(connection.getUsername(), userId);
-                std::string units = DatabaseStoredProcedures::GET_UNITS.callAsFetchDataProtocol(userId);
+                Database::StoredProcedures::GET_USER_ID.call(connection.getUsername(), userId);
+                std::string units = Database::StoredProcedures::GET_UNITS.callAsFetchDataProtocol(userId);
                 connection.sendString(id + '\n' + units);
             }
         }

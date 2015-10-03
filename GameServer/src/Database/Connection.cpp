@@ -1,6 +1,7 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "Database.hpp"
+#include "Database/Connection.hpp"
+using namespace Database;
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -15,7 +16,7 @@
 ///////////////////////////////////
 
 
-Database::Database(std::string host, int port, std::string schema, std::string username, std::string password, std::string driver)
+Connection::Connection(std::string host, int port, std::string schema, std::string username, std::string password, std::string driver)
 : mConnection(*(new otl_connect()))
 {
     otl_connect::otl_initialize();
@@ -33,14 +34,14 @@ Database::Database(std::string host, int port, std::string schema, std::string u
 
 ///////////////////////////////////
 
-Database::~Database()
+Connection::~Connection()
 {
     delete &mConnection;
 }
 
 ///////////////////////////////////
 
-otl_connect& Database::getConnection()
+otl_connect& Connection::getConnection()
 {
     mConnection.commit();
     return mConnection;

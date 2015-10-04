@@ -2,86 +2,35 @@
 // TypeTwo internal headers
 #include "Database/StoredProcedures.hpp"
 using namespace Database;
-
-#define PARAMS DATABASE_STORED_PROCEDURE_PARAMS
-#define RETURNS DATABASE_STORED_PROCEDURE_RETURNS
-#define PROCEDURE DATABASE_STORED_PROCEDURE
-#define PARAM DATABASE_STORED_PROCEDURE_PARAM
 ///////////////////////////////////
 
 
+const StoredProcedure
+::ParameterTypes<int>
+::ResultSetTypes<int, int, int>
+StoredProcedures::GET_UNITS("unit_getby_userid");
 
-///////////////////////////////////
-// Instantiate stored procedures below
-///////////////////////////////////
+const StoredProcedure
+::ParameterTypes<>
+::ResultSetTypes<unsigned int, std::string, int, int, int, int, int>
+StoredProcedures::GET_ALL_UNIT_TYPES("unit_type_get");
 
-PROCEDURE(StoredProcedures::GET_UNITS,
-                 PARAMS(int),
-                 RETURNS(int, int, int))
-(
-    "unit_getby_userid",
-    {
-        PARAM(INT, IN)
-    }
-);
+const StoredProcedure
+::ParameterTypes<int, int>
+::ResultSetTypes<int, std::string, std::string, std::string, std::string>
+StoredProcedures::GET_ALL_USERS("user_get");
 
-///////////////////////////////////
+const StoredProcedure
+::ParameterTypes<std::string, std::string&, std::string&>
+::ResultSetTypes<>
+StoredProcedures::GET_USER_CREDENTIALS("user_get_credentials");
 
-DATABASE_STORED_PROCEDURE(StoredProcedures::GET_ALL_UNIT_TYPES,
-                 PARAMS(),
-                 RETURNS(unsigned int, std::string, int, int, int, int, int))
-(
-    "unit_type_get"
-);
+const StoredProcedure
+::ParameterTypes<std::string, int&>
+::ResultSetTypes<>
+StoredProcedures::GET_USER_ID("user_get_id");
 
-///////////////////////////////////
-
-PROCEDURE(StoredProcedures::GET_ALL_USERS,
-                 PARAMS(int, int),
-                 RETURNS(int, std::string, std::string, std::string, std::string))
-(
-    "user_get",
-    {
-        PARAM(INT, IN),
-        PARAM(INT, IN)
-    }
-);
-
-///////////////////////////////////
-
-PROCEDURE(StoredProcedures::GET_USER_CREDENTIALS,
-                 PARAMS(std::string, std::string&, std::string&),
-                 RETURNS())
-(
-    "user_get_credentials",
-    {
-        PARAM(CHAR, IN),
-        PARAM(CHAR, OUT),
-        PARAM(CHAR, OUT)
-    }
-);
-
-///////////////////////////////////
-
-PROCEDURE(StoredProcedures::GET_USER_ID,
-                 PARAMS(std::string, int&),
-                 RETURNS())
-(
-    "user_get_id",
-    {
-        PARAM(CHAR, IN),
-        PARAM(INT, OUT)
-    }
-);
-
-///////////////////////////////////
-// Instantiate stored procedures above
-///////////////////////////////////
-
-///////////////////////////////////
-// TypeTwo internal headers
-#undef PARAMS
-#undef RETURNS
-#undef PROCEDURE
-#undef PARAM
-///////////////////////////////////
+const Database::StoredProcedure
+::ParameterTypes<std::string>
+::ResultSetTypes<unsigned int, std::string, std::string, std::string, std::string, std::string, std::string>
+StoredProcedures::GET_USER_BY_USERNAME("user_getby_username");

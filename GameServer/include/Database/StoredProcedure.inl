@@ -1,6 +1,6 @@
 ///////////////////////////////////
 // TypeTwo internal headers
-#include "Database/Row.hpp"
+#include "Database/StoredProcedureQueryStringCompiler.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -21,60 +21,16 @@
 #define STORED_PROCEDURE_TEMPLATES template <typename... ParamTypes> template <typename... ResultTypes>
 
 STORED_PROCEDURE_TEMPLATES
-STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters, bool requiresCommit, Connection& database)
-: mQueryString(compileQueryString(name, parameters))
-, mParameters(parameters)
+STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, bool requiresCommit, Connection& database)
+: mQueryString(QueryStringCompiler<ParamTypes...>::compile(name))
 , mReturnsResultSet(sizeof...(ResultTypes) > 0)
 , mRequiresCommit(requiresCommit)
 , mDatabase(database)
 {
-    if(sizeof...(ParamTypes) != mParameters.size())
-        throw std::logic_error
-        (
-            "Invalid stored procedure with name '" + name +
-            "'. The template parameter count does not match" +
-            " the size of the 'parameters' parameter in the constructor."
-        );
+
 }
 
-namespace Database
-{
-    namespace StoredProcedure
-    {
-        template <size_t index>
-        class getRow
-        {
-            public:
-            template <typename... ResultTypes>
-            static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
-            {
-                stream >> std::get<sizeof...(ResultTypes) - 1 - index>(tuple);
-                getRow<index - 1>::go(tuple, stream);
-            }
-        };
-
-        template <>
-        class getRow<0>
-        {
-            public:
-            template <typename... ResultTypes>
-            static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
-            {
-                stream >> std::get<sizeof...(ResultTypes) - 1>(tuple);
-            }
-        };
-
-        template <>
-        class getRow<-1>
-        {
-            public:
-            template <typename... ResultTypes>
-            static void go(std::tuple<ResultTypes...>& tuple, otl_stream& stream)
-            {
-            }
-        };
-    }
-}
+///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
 void STORED_PROCEDURE::call(ParamTypes... params) const
@@ -85,14 +41,15 @@ void STORED_PROCEDURE::call(ParamTypes... params) const
         stream.set_commit(mRequiresCommit);
         stream.set_all_column_types(otl_all_date2str);
 
-        executeInputParameters(stream, 0, params...);
-        executeOutputParameters(stream, 0, params...);
+        executeParameters(stream, params...);
     }
     catch(otl_exception& e)
     {
-        std::cout << "Database error: " << e.msg << std::endl;
+        throwCallExcepton(e.msg);
     }
 }
+
+///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
 template <typename RowType>
@@ -105,26 +62,24 @@ std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
         stream.set_commit(mRequiresCommit);
         stream.set_all_column_types(otl_all_date2str);
 
-        executeInputParameters(stream, 0, params...);
-        executeOutputParameters(stream, 0, params...);
+        executeParameters(stream, params...);
 
+        auto resultSetTypesIndexSequence = std::make_index_sequence<sizeof...(ResultTypes)>{};
         if(mReturnsResultSet)
             while(!stream.eof())
             {
                 std::tuple<ResultTypes...> rowData;
-                getRow<sizeof...(ResultTypes) - 1>::go(rowData, stream);
-                resultSet.push_back(RowType(rowData));
+                getRow(rowData, stream, resultSetTypesIndexSequence);
+                resultSet.push_back(unpackRowData<RowType>(rowData, std::make_index_sequence<sizeof...(ResultTypes)>{}));
             }
     }
     catch(otl_exception& e)
     {
-        std::cout << "Database error: " << e.msg << std::endl;
+        throwCallExcepton(e.msg);
     }
 
     return resultSet;
 }
-
-
 
 ///////////////////////////////////
 
@@ -139,8 +94,7 @@ std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) cons
         stream.set_commit(mRequiresCommit);
         stream.set_all_column_types(otl_all_num2str | otl_all_date2str);
 
-        executeInputParameters(stream, 0, params...);
-        executeOutputParameters(stream, 0, params...);
+        executeParameters(stream, params...);
 
         std::stringstream strStream;
         int numColumns;
@@ -168,7 +122,7 @@ std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) cons
     }
     catch(otl_exception& e)
     {
-        std::cout << "Database error: " << e.msg << std::endl;
+        throwCallExcepton(e.msg);
     }
 
     return str;
@@ -177,90 +131,96 @@ std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) cons
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-std::string STORED_PROCEDURE::compileQueryString(std::string name, std::vector<Param> parameters)
+void STORED_PROCEDURE::throwCallExcepton(unsigned char* otlMessage) const
 {
-    std::stringstream params;
-
-    if(parameters.size() > 0)
-    {
-        unsigned int i = 0;
-        for(; i < parameters.size() - 1; i++)
-            params << ":f" << i << parameters[i].toString() << ",";
-
-        params << ":f" << i << parameters[i].toString();
-    }
-
-    return "CALL " + name + "(" + params.str() + ")";
+    std::cout << "Database error: " << otlMessage << std::endl;
+    throw std::logic_error("Procedure '" + mQueryString + "' is invalid. Either its database connection is invalid or its data types are invalid.\n" +
+                           "See the database error above for details.");
 }
 
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template <typename CurrentParam, typename... RemainingParams>
-void STORED_PROCEDURE::executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam, RemainingParams... remainingParams) const
+void STORED_PROCEDURE::executeParameters(otl_stream& stream, ParamTypes... params) const
 {
-    if(mParameters[currentIndex].direction == Param::Direction::P_IN ||
-       mParameters[currentIndex].direction == Param::Direction::P_INOUT)
-    {
-        stream << currentParam;
-    }
-    executeInputParameters(stream, currentIndex + 1, remainingParams...);
+    executeInputParameters(stream, params...);
+    executeOutputParameters(stream, 0, params...);
 }
 
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template <typename CurrentParam>
-void STORED_PROCEDURE::executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam) const
+template<typename Tuple, size_t... indices>
+void STORED_PROCEDURE::getRow(Tuple& tuple, otl_stream& stream, std::index_sequence<indices...>) const
 {
-    if(mParameters[currentIndex].direction == Param::Direction::P_IN ||
-       mParameters[currentIndex].direction == Param::Direction::P_INOUT)
-    {
-        stream << currentParam;
-    }
+    getRowColumn<indices...>(tuple, stream);
 }
 
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-void STORED_PROCEDURE::executeInputParameters(otl_stream& stream, unsigned int currentIndex) const
+template<typename RowType, size_t... indices>
+RowType STORED_PROCEDURE::unpackRowData(std::tuple<ResultTypes...>& tuple, std::index_sequence<indices...>) const
+{
+    return RowType(std::get<indices>(tuple)...);
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+template<typename Tuple>
+void STORED_PROCEDURE::getRowColumn(Tuple&, otl_stream&) const
 {
 }
 
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template <typename CurrentParam, typename... RemainingParams>
-void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam, RemainingParams&... remainingParams) const
+template<size_t index, size_t... indices, typename Tuple>
+void STORED_PROCEDURE::getRowColumn(Tuple& tuple, otl_stream& stream) const
 {
-    if(mParameters[currentIndex].direction == Param::Direction::P_OUT ||
-       mParameters[currentIndex].direction == Param::Direction::P_INOUT)
-    {
+    stream >> std::get<index>(tuple);
+    getRowColumn<indices...>(tuple, stream);
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::executeInputParameters(otl_stream&) const
+{
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+template<typename ParamType, typename... RemainingParamTypes>
+void STORED_PROCEDURE::executeInputParameters(otl_stream& stream, ParamType currentParam, RemainingParamTypes... remainingParams) const
+{
+    stream << currentParam;
+    executeInputParameters(stream, remainingParams...);
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::executeOutputParameters(otl_stream&, int currentIndex) const
+{
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+template<typename ParamType, typename... RemainingParamTypes>
+void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, int currentIndex, ParamType& currentParam, RemainingParamTypes&... remainingParams) const
+{
+    int tmp;
+    if(stream.describe_in_vars(tmp)[currentIndex].param_type > 0)
         stream >> currentParam;
-    }
 
     executeOutputParameters(stream, currentIndex + 1, remainingParams...);
 }
 
 ///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-template <typename CurrentParam>
-void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam) const
-{
-    if(mParameters[currentIndex].direction == Param::Direction::P_OUT ||
-       mParameters[currentIndex].direction == Param::Direction::P_INOUT)
-    {
-        stream >> currentParam;
-    }
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-void STORED_PROCEDURE::executeOutputParameters(otl_stream& stream, unsigned int currentIndex) const
-{
-}
 
 
 #undef STORED_PROCEDURE

@@ -4,10 +4,6 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 #include "Database/StoredProcedure.hpp"
-
-#define PARAMS DATABASE_STORED_PROCEDURE_PARAMS
-#define RETURNS DATABASE_STORED_PROCEDURE_RETURNS
-#define PROCEDURE static DATABASE_STORED_PROCEDURE
 ///////////////////////////////////
 
 
@@ -16,58 +12,36 @@ namespace Database
 class StoredProcedures
 {
     public:
-        ///////////////////////////////////
-        // Declare stored procedures below
-        // Don't forget to instantiate them in
-        // StoredProcedures.cpp
-        ///////////////////////////////////
+        static const StoredProcedure
+        ::ParameterTypes<int>
+        ::ResultSetTypes<int, int, int>
+        GET_UNITS;
 
-        PROCEDURE
-        (
-            GET_UNITS,
-            PARAMS(int),
-            RETURNS(int, int, int)
-         );
+        static const StoredProcedure
+        ::ParameterTypes<>
+        ::ResultSetTypes<unsigned int, std::string, int, int, int, int, int>
+        GET_ALL_UNIT_TYPES;
 
-        PROCEDURE
-        (
-            GET_ALL_UNIT_TYPES,
-            PARAMS(),
-            RETURNS(unsigned int, std::string, int, int, int, int, int)
-         );
+        static const StoredProcedure
+        ::ParameterTypes<int, int>
+        ::ResultSetTypes<int, std::string, std::string, std::string, std::string>
+        GET_ALL_USERS;
 
-        PROCEDURE
-        (
-            GET_ALL_USERS,
-            PARAMS(int, int),
-            RETURNS(int, std::string, std::string, std::string, std::string)
-         );
+        static const StoredProcedure
+        ::ParameterTypes<std::string, std::string&, std::string&>
+        ::ResultSetTypes<>
+        GET_USER_CREDENTIALS;
 
-        PROCEDURE
-        (
-            GET_USER_CREDENTIALS,
-            PARAMS(std::string, std::string&, std::string&),
-            RETURNS()
-         );
+        static const StoredProcedure
+        ::ParameterTypes<std::string, int&>
+        ::ResultSetTypes<>
+        GET_USER_ID;
 
-        PROCEDURE
-        (
-            GET_USER_ID,
-            PARAMS(std::string, int&),
-            RETURNS()
-         );
-
-        ///////////////////////////////////
-        // Declare stored procedures above
-        ///////////////////////////////////
+        static const Database::StoredProcedure
+        ::ParameterTypes<std::string>
+        ::ResultSetTypes<unsigned int, std::string, std::string, std::string, std::string, std::string, std::string>
+        GET_USER_BY_USERNAME;
 };
 }
-
-///////////////////////////////////
-// TypeTwo internal headers
-#undef PARAMS
-#undef RETURNS
-#undef PROCEDURE
-///////////////////////////////////
 
 #endif // TYPETWO_DATABASE_STORED_PROCEDURES_HPP

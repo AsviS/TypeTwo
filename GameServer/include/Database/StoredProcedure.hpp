@@ -4,83 +4,79 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 #include "Database/Connections.hpp"
-#include "Database/StoredProcedureParameter.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
 // STD C++
 #include <vector>
-#include <memory>
+#include <string>
+#include <utility>
 ///////////////////////////////////
-
-#define DATABASE_STORED_PROCEDURE_PARAMS(...) __VA_ARGS__
-#define DATABASE_STORED_PROCEDURE_RETURNS(...) __VA_ARGS__
-
-#define DATABASE_STORED_PROCEDURE_PARAM(TYPE, DIRECTION) \
-Database::StoredProcedureParameter(Database::StoredProcedureParameter::Type::TYPE, Database::StoredProcedureParameter::Direction::P_##DIRECTION)
-
-#define \
-DATABASE_STORED_PROCEDURE(NAME, PARAM_TYPES, RETURN_TYPES) \
-const Database::StoredProcedure::ParameterTypes<PARAM_TYPES>::ResultSetTypes<RETURN_TYPES> NAME
-
 
 #define STORED_PROCEDURE_CTOR ResultSetTypes
 
-namespace Database
+namespace Database { namespace StoredProcedure
 {
-namespace StoredProcedure
-{
-template<typename... ParamTypes>
-struct ParameterTypes
-{
-template <typename... ResultTypes>
-class ResultSetTypes
-{
-    private:
+    template<typename... ParamTypes>
+    struct ParameterTypes
+    {
+        template <typename... ResultTypes>
+        class ResultSetTypes
+        {
+            private:
+                enum class ParamDirection
+                {
+                    P_IN = 0,
+                    P_INOUT = 2,
+                };
+            public:
+                STORED_PROCEDURE_CTOR(std::string name, bool requiresCommit = false, Connection& database = Connections::DEFAULT);
 
-    public:
-        typedef StoredProcedureParameter Param;
+                void call(ParamTypes... params) const;
 
+                template <typename RowType>
+                std::vector<RowType> call(ParamTypes... params) const;
 
-        STORED_PROCEDURE_CTOR(std::string name, std::vector<Param> parameters = {}, bool requiresCommit = false, Connection& database = Connections::DEFAULT);
+                std::string callAsFetchDataProtocol(ParamTypes... params) const;
 
-        void call(ParamTypes... params) const;
+            private:
+                void throwCallExcepton(unsigned char* otlMessage) const;
+                void executeParameters(otl_stream& stream, ParamTypes... params) const;
 
-        template <typename RowType>
-        std::vector<RowType> call(ParamTypes... params) const;
+                template<typename Tuple, size_t... indices>
+                void getRow(Tuple& tuple, otl_stream& stream, std::index_sequence<indices...>) const;
 
-        std::string callAsFetchDataProtocol(ParamTypes... params) const;
-
-    private:
-        std::string compileQueryString(std::string name, std::vector<Param> parameters);
-
-        template <typename CurrentParam, typename... RemainingParams>
-        void executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam, RemainingParams... remainingParams) const;
-
-        template <typename CurrentParam>
-        void executeInputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam currentParam) const;
-
-        void executeInputParameters(otl_stream& stream, unsigned int currentIndex) const;
+                template<typename RowType, size_t... indices>
+                RowType unpackRowData(std::tuple<ResultTypes...>& tuple, std::index_sequence<indices...>) const;
 
 
-        template <typename CurrentParam, typename... RemainingParams>
-        void executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam, RemainingParams&... remainingParams) const;
 
-        template <typename CurrentParam>
-        void executeOutputParameters(otl_stream& stream, unsigned int currentIndex, CurrentParam& currentParam) const;
+                template<typename Tuple>
+                void getRowColumn(Tuple&, otl_stream&) const;
 
-        void executeOutputParameters(otl_stream& stream, unsigned int currentIndex) const;
+                template<size_t index, size_t... indices, typename Tuple>
+                void getRowColumn(Tuple& tuple, otl_stream& stream) const;
 
-    private:
-        std::string mQueryString;
-        std::vector<Param> mParameters;
-        bool mReturnsResultSet;
-        bool mRequiresCommit;
-        Connection& mDatabase;
-};
-};
-}
-}
+
+                void executeInputParameters(otl_stream&) const;
+
+                template<typename ParamType, typename... RemainingParamTypes>
+                void executeInputParameters(otl_stream& stream, ParamType currentParam, RemainingParamTypes... remainingParams) const;
+
+
+                void executeOutputParameters(otl_stream&, int) const;
+
+                template<typename ParamType, typename... RemainingParamTypes>
+                void executeOutputParameters(otl_stream& stream, int currentIndex, ParamType& currentParam, RemainingParamTypes&... remainingParams) const;
+
+            private:
+                std::string mQueryString;
+                bool mReturnsResultSet;
+                bool mRequiresCommit;
+                Connection& mDatabase;
+        };
+    };
+}}
 
 #include "Database/StoredProcedure.inl"
 

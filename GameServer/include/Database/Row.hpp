@@ -3,44 +3,20 @@
 
 ///////////////////////////////////
 // STD C++
-#include <tuple>
+#include <string>
 ///////////////////////////////////
-
-#define                                         \
-DATABASE_ROW_CONSTRUCTOR(NAME, ...)                      \
-template <typename... RowDataTypes>             \
-NAME(const std::tuple<RowDataTypes...>& data)   \
-{                                               \
-    std::tie(__VA_ARGS__) = data;               \
-}
-
-
-#define                                                 \
-DATABASE_ROW_CUSTOM_CONSTRUCTOR(NAME, PARAM_TYPES, PARAM_NAMES)  \
-NAME(const std::tuple<PARAM_TYPES>& data)               \
-{                                                       \
-    std::tie(PARAM_NAMES) = data;                       \
-}
-
-#define DATABASE_ROW_PARAMS(...) __VA_ARGS__
-#define DATABASE_ROW_NAMES(...) __VA_ARGS__
 
 namespace Database
 {
 namespace Row
 {
-    #define CONSTRUCTOR DATABASE_ROW_CONSTRUCTOR
-    #define CUSTOM_CONSTRUCTOR DATABASE_ROW_CUSTOM_CONSTRUCTOR
-    #define PARAMS DATABASE_ROW_PARAMS
-    #define NAMES DATABASE_ROW_NAMES
-
-    ///////////////////////////////////
-    // Declare rows below
-    ///////////////////////////////////
-
     struct Unit
     {
-        CONSTRUCTOR(Unit, id, unitTypeId, hp)
+        Unit(int id, int unitTypeId, int hp)
+        : id(id)
+        , unitTypeId(unitTypeId)
+        , hp(hp)
+        {}
 
         int id;
         int unitTypeId;
@@ -49,7 +25,15 @@ namespace Row
 
     struct UnitType
     {
-        CONSTRUCTOR(UnitType, id, name, maxHp, damage, movementSpeed, attackRange, attackSpeed)
+        UnitType(unsigned int id, std::string name, int maxHp, int damage, int movementSpeed, int attackRange, int attackSpeed)
+        : id(id)
+        , name(name)
+        , maxHp(maxHp)
+        , damage(damage)
+        , movementSpeed(movementSpeed)
+        , attackRange(attackRange)
+        , attackSpeed(attackSpeed)
+        {}
 
         unsigned int id;
         std::string name;
@@ -60,14 +44,34 @@ namespace Row
         int attackSpeed;
     };
 
-    ///////////////////////////////////
-    // Declare rows above
-    ///////////////////////////////////
+    struct User
+    {
+        User(int id, std::string username, std::string email, std::string timeCreated, std::string lastLoginTime)
+        : id(id)
+        , username(username)
+        , email(email)
+        , timeCreated(timeCreated)
+        , lastLoginTime(lastLoginTime)
+        {}
 
-    #undef CONSTRUCTOR
-    #undef CUSTOM_CONSTRUCTOR
-    #undef PARAMS
-    #undef NAMES
+        User(int id, std::string username, std::string password, std::string salt, std::string email, std::string timeCreated, std::string lastLoginTime)
+        : id(id)
+        , username(username)
+        , password(password)
+        , salt(salt)
+        , email(email)
+        , timeCreated(timeCreated)
+        , lastLoginTime(lastLoginTime)
+        {}
+
+        unsigned int id;
+        std::string username,
+                    password,
+                    salt,
+                    email,
+                    timeCreated,
+                    lastLoginTime;
+    };
 }
 }
 

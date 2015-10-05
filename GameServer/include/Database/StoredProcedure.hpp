@@ -43,10 +43,10 @@ namespace Database { namespace StoredProcedure
                 void throwCallExcepton(unsigned char* otlMessage) const;
                 void executeParameters(otl_stream& stream, ParamTypes... params) const;
 
-                template<typename Tuple, size_t... indices>
+                template<typename Tuple, unsigned int... indices>
                 void getRow(Tuple& tuple, otl_stream& stream, std::index_sequence<indices...>) const;
 
-                template<typename RowType, size_t... indices>
+                template<typename RowType, unsigned int... indices>
                 RowType unpackRowData(std::tuple<ResultTypes...>& tuple, std::index_sequence<indices...>) const;
 
 
@@ -54,7 +54,7 @@ namespace Database { namespace StoredProcedure
                 template<typename Tuple>
                 void getRowColumn(Tuple&, otl_stream&) const;
 
-                template<size_t index, size_t... indices, typename Tuple>
+                template<unsigned int index, unsigned int... indices, typename Tuple>
                 void getRowColumn(Tuple& tuple, otl_stream& stream) const;
 
 

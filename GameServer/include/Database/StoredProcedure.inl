@@ -64,13 +64,14 @@ std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
 
         executeParameters(stream, params...);
 
-        auto resultSetTypesIndexSequence = std::make_index_sequence<sizeof...(ResultTypes)>{};
+
         if(mReturnsResultSet)
             while(!stream.eof())
             {
                 std::tuple<ResultTypes...> rowData;
+                auto resultSetTypesIndexSequence = std::make_index_sequence<sizeof...(ResultTypes)>{};
                 getRow(rowData, stream, resultSetTypesIndexSequence);
-                resultSet.push_back(unpackRowData<RowType>(rowData, std::make_index_sequence<sizeof...(ResultTypes)>{}));
+                resultSet.push_back(unpackRowData<RowType>(rowData, resultSetTypesIndexSequence));
             }
     }
     catch(otl_exception& e)
@@ -150,7 +151,7 @@ void STORED_PROCEDURE::executeParameters(otl_stream& stream, ParamTypes... param
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template<typename Tuple, size_t... indices>
+template<typename Tuple, unsigned int... indices>
 void STORED_PROCEDURE::getRow(Tuple& tuple, otl_stream& stream, std::index_sequence<indices...>) const
 {
     getRowColumn<indices...>(tuple, stream);
@@ -159,7 +160,7 @@ void STORED_PROCEDURE::getRow(Tuple& tuple, otl_stream& stream, std::index_seque
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template<typename RowType, size_t... indices>
+template<typename RowType, unsigned int... indices>
 RowType STORED_PROCEDURE::unpackRowData(std::tuple<ResultTypes...>& tuple, std::index_sequence<indices...>) const
 {
     return RowType(std::get<indices>(tuple)...);
@@ -176,7 +177,7 @@ void STORED_PROCEDURE::getRowColumn(Tuple&, otl_stream&) const
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template<size_t index, size_t... indices, typename Tuple>
+template<unsigned int index, unsigned int... indices, typename Tuple>
 void STORED_PROCEDURE::getRowColumn(Tuple& tuple, otl_stream& stream) const
 {
     stream >> std::get<index>(tuple);

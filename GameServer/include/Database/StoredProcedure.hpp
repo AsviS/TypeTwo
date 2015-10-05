@@ -10,7 +10,6 @@
 // STD C++
 #include <vector>
 #include <string>
-#include <utility>
 ///////////////////////////////////
 
 #define STORED_PROCEDURE_CTOR ResultSetTypes
@@ -43,19 +42,16 @@ namespace Database { namespace StoredProcedure
                 void throwCallExcepton(unsigned char* otlMessage) const;
                 void executeParameters(otl_stream& stream, ParamTypes... params) const;
 
-                template<typename Tuple, unsigned int... indices>
-                void getRow(Tuple& tuple, otl_stream& stream, std::index_sequence<indices...>) const;
+                template<typename Type>
+                Type initializeParameterPack() const;
 
-                template<typename RowType, unsigned int... indices>
-                RowType unpackRowData(std::tuple<ResultTypes...>& tuple, std::index_sequence<indices...>) const;
+                void getColumns(otl_stream& stream) const;
 
+                template<typename CurrentColumnType, typename... RemainingColumnTypes>
+                void getColumns(otl_stream& stream, CurrentColumnType& currentColumn, RemainingColumnTypes&... remainingColumns) const;
 
-
-                template<typename Tuple>
-                void getRowColumn(Tuple&, otl_stream&) const;
-
-                template<unsigned int index, unsigned int... indices, typename Tuple>
-                void getRowColumn(Tuple& tuple, otl_stream& stream) const;
+                template<typename RowType, typename... ColumnTypes>
+                RowType getRow(otl_stream& stream, ColumnTypes... columns) const;
 
 
                 void executeInputParameters(otl_stream&) const;

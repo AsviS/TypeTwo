@@ -67,12 +67,7 @@ std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
 
         if(mReturnsResultSet)
             while(!stream.eof())
-            {
-                std::tuple<ResultTypes...> rowData;
-                auto resultSetTypesIndexSequence = std::make_index_sequence<sizeof...(ResultTypes)>{};
-                getRow(rowData, stream, resultSetTypesIndexSequence);
-                resultSet.push_back(unpackRowData<RowType>(rowData, resultSetTypesIndexSequence));
-            }
+                resultSet.push_back(getRow<RowType>(stream, initializeParameterPack<ResultTypes>()...));
     }
     catch(otl_exception& e)
     {
@@ -151,38 +146,39 @@ void STORED_PROCEDURE::executeParameters(otl_stream& stream, ParamTypes... param
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template<typename Tuple, unsigned int... indices>
-void STORED_PROCEDURE::getRow(Tuple& tuple, otl_stream& stream, std::index_sequence<indices...>) const
+template<typename Type>
+Type STORED_PROCEDURE::initializeParameterPack() const
 {
-    getRowColumn<indices...>(tuple, stream);
+    return Type();
 }
 
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template<typename RowType, unsigned int... indices>
-RowType STORED_PROCEDURE::unpackRowData(std::tuple<ResultTypes...>& tuple, std::index_sequence<indices...>) const
-{
-    return RowType(std::get<indices>(tuple)...);
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-template<typename Tuple>
-void STORED_PROCEDURE::getRowColumn(Tuple&, otl_stream&) const
+void STORED_PROCEDURE::getColumns(otl_stream& stream) const
 {
 }
 
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-template<unsigned int index, unsigned int... indices, typename Tuple>
-void STORED_PROCEDURE::getRowColumn(Tuple& tuple, otl_stream& stream) const
+template<typename CurrentColumnType, typename... RemainingColumnTypes>
+void STORED_PROCEDURE::getColumns(otl_stream& stream, CurrentColumnType& currentColumn, RemainingColumnTypes&... remainingColumns) const
 {
-    stream >> std::get<index>(tuple);
-    getRowColumn<indices...>(tuple, stream);
+    stream >> currentColumn;
+    getColumns(stream, remainingColumns...);
 }
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+template<typename RowType, typename... ColumnTypes>
+RowType STORED_PROCEDURE::getRow(otl_stream& stream, ColumnTypes... columns) const
+{
+    getColumns(stream, columns...);
+    return RowType(columns...);
+}
+
 
 ///////////////////////////////////
 

@@ -14,7 +14,7 @@ class otl_stream;
 
 namespace Database
 {
-/// \brief Database connection
+/// \brief Database connection. Wraps OTL 4 otl_connect class.
 ///
 class Connection
 {

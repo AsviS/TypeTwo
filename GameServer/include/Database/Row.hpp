@@ -8,6 +8,19 @@
 
 namespace Database
 {
+
+/// \brief Commonly used Row types
+///
+/// A Row type represents a row of data
+/// in a result set fetched from a database.
+/// These are used in conjunction with the
+/// StoredProcedure class.
+///
+/// For a Row type to be used in a stored
+/// procedure call, it must have a constructor
+/// with parameters that match the data types
+/// of the fetched rows.
+///
 namespace Row
 {
     struct Unit

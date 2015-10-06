@@ -21,10 +21,10 @@
 #define STORED_PROCEDURE_TEMPLATES template <typename... ParamTypes> template <typename... ResultTypes>
 
 STORED_PROCEDURE_TEMPLATES
-STORED_PROCEDURE::STORED_PROCEDURE_CTOR(std::string name, bool requiresCommit, Connection& database)
-: mQueryString(QueryStringCompiler<ParamTypes...>::compile(name))
-, mReturnsResultSet(sizeof...(ResultTypes) > 0)
-, mRequiresCommit(requiresCommit)
+STORED_PROCEDURE::ResultSetTypes(std::string name, bool requiresCommit, Connection& database)
+: M_QUERY_STRING(QueryStringCompiler<ParamTypes...>::compile(name))
+, M_RETURNS_RESULT_SET(sizeof...(ResultTypes) > 0)
+, M_REQUIRES_COMMIT(requiresCommit)
 , mDatabase(database)
 {
 
@@ -37,8 +37,8 @@ void STORED_PROCEDURE::call(ParamTypes... params) const
 {
     try
     {
-        otl_stream stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);
-        stream.set_commit(mRequiresCommit);
+        otl_stream stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
+        stream.set_commit(M_REQUIRES_COMMIT);
         stream.set_all_column_types(otl_all_date2str);
 
         executeParameters(stream, params...);
@@ -58,14 +58,14 @@ std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
     std::vector<RowType> resultSet;
     try
     {
-        otl_stream stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);
-        stream.set_commit(mRequiresCommit);
+        otl_stream stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
+        stream.set_commit(M_REQUIRES_COMMIT);
         stream.set_all_column_types(otl_all_date2str);
 
         executeParameters(stream, params...);
 
 
-        if(mReturnsResultSet)
+        if(M_RETURNS_RESULT_SET)
             while(!stream.eof())
                 resultSet.push_back(getRow<RowType>(stream, initializeParameterPack<ResultTypes>()...));
     }
@@ -86,8 +86,8 @@ std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) cons
     try
     {
 
-        otl_stream stream(1, mQueryString.c_str(), mDatabase.getConnection(), mReturnsResultSet);
-        stream.set_commit(mRequiresCommit);
+        otl_stream stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
+        stream.set_commit(M_REQUIRES_COMMIT);
         stream.set_all_column_types(otl_all_num2str | otl_all_date2str);
 
         executeParameters(stream, params...);
@@ -108,7 +108,7 @@ std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) cons
 
         str.reserve(str.size() +  stream.get_dirty_buf_len());
 
-        if(mReturnsResultSet)
+        if(M_RETURNS_RESULT_SET)
             while(!stream.eof())
             {
                 std::string buffer;
@@ -130,8 +130,10 @@ STORED_PROCEDURE_TEMPLATES
 void STORED_PROCEDURE::throwCallExcepton(unsigned char* otlMessage) const
 {
     std::cout << "Database error: " << otlMessage << std::endl;
-    throw std::logic_error("Procedure '" + mQueryString + "' is invalid. Either its database connection is invalid or its data types are invalid.\n" +
-                           "See the database error above for details.");
+    throw std::logic_error("Procedure '" + M_QUERY_STRING + "' is invalid. Either its database connection is invalid or its data types are invalid.\n" +
+                           "See the database error above for details.\n\n" +
+                           "If the procedure call was fetching a result set, also make sure that\n" +
+                           "the Row type used has a constructor that matches the fetched rows' data types.");
 }
 
 ///////////////////////////////////

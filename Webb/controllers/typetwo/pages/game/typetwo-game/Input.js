@@ -179,14 +179,38 @@ var Input = function()
 	};
 
 	/**
+	 * \brief Get absolute position of an element.
+	 * 
+	 * \param String elementId ID of element.
+	 * 
+	 * \returns Vector Absolute position of specified element.
+	 */
+	var getElementPosition = function(elementId)
+	{
+		var element = document.getElementById(elementId);
+	
+		var left = element.offsetLeft; 
+		var top = element.offsetTop;
+
+		while(element = element.offsetParent)
+			left += element.offsetLeft;
+
+		element = document.getElementById(elementId);
+		while(element = element.offsetParent)
+			top += element.offsetTop;
+			
+		return new Vector(left, top);
+	};
+
+	/**
 	 * \brief On mouse move event
 	 * 
 	 * \param Event event
 	 */
 	var updateMousePos = function(event, canvasId)
 	{
-		var absPos = utility.getAbsPos(canvasId);
-		my.mouse.position = new Vector(event.pageX - absPos[0], event.pageY - absPos[1]);
+		var canvasPosition = getElementPosition(canvasId);
+		my.mouse.position = new Vector(event.pageX - canvasPosition.x, event.pageY - canvasPosition.y);
 	};
 	
 	/**

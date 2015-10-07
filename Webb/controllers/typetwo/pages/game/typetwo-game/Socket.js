@@ -1,24 +1,34 @@
 'use strict';
 
-/*
+/**
  * \brief WebSocket
  */
 var Socket = function()
 {
-	/*
+	/**
 	 * \brief Constructor
+	 * 
+	 * \param String host Hostname
+	 * \param Number port Port number
+	 * \param WebSocketSubProtocol protocol Subprotocol to use
 	 */
 	function Socket(host, port, protocol)
 	{
-		this.host = host;
-		this.port = port;
-		this.protocol = protocol;
+		this._host = host;
+		this._port = port;
+		this._protocol = protocol;
+		
+		
 		this._messagesFrontBuffer = [];
 		this._messagesBackBuffer = [];
 		this._messagesBuffer1 = [];
 		this._messagesBuffer2 = [];
+		
 	}
 	
+	/**
+	 * \brief Status codes of connection
+	 */
 	Socket.statusID = 
 	{
 		UNINITIALIZED: 0,
@@ -29,96 +39,69 @@ var Socket = function()
 	
 	Socket.prototype =
 	{
-		websocket: null,
-		protocol: 'game-protocol',
-		timeout: 5000,
-		connected: false,
-		queue: [],
-		games: [],
-		isHost: false,
-		id: null,
-		username: '',
-		password: '',
-		status: Socket.statusID.UNINITIALIZED,
-		_thisOpenCallbacks: [],
+		_host: null, /**< String Hostname */
+		_port: 0, /**< Number Port number */
+		_websocket: null, /**< WebSocket WebSocket connection */
+		_protocol: null, /**< WebSocketSubProtocol Connection protocol used */
+		_status: Socket.statusID.UNINITIALIZED, /**< Socket.statusID Current connection status */
+		_onOpenCallbacks: [], /**< Array Functions to be called when connetion is opened */
 		
-		_messagesFrontBuffer: null,
-		_messagesBackBuffer: null,
-		_messagesBuffer1: null,
-		_messagesBuffer2: null,
+		_messagesFrontBuffer: null, /**< Array Front buffer of received messages. This buffer is shown to the outside. */
+		_messagesBackBuffer: null, /**< Array Back buffer of received messages. This buffer is used to store received messages. */
+		_messagesBuffer1: null, /**< Array */
+		_messagesBuffer2: null, /**< Array */
 		
-		connect: function(user, success, fail)
-		{
-			console.log('Connecting to ' + this.host + ':' + this.port);
-			this.init(user, success, fail);
-		},
-		
-		
+		/**
+		 * \brief Close connection
+		 */
 		disconnect: function()
 		{
-			if(this.websocket) 
+			if(this._websocket) 
 			{
-				this.websocket.close();
-				this.websocket = null;
+				this._websocket.close();
+				this._websocket = null;
 			}
 		},
 		
+		/**
+		 * \brief Initialize socket and connect
+		 * 
+		 * \param String username User name to connect with
+		 * \param String password Password to connect with
+		 * \param StateStack stateStack State stack to push loading states on
+		 * \param Canvas2D canvas Canvas to draw loading states on
+		 */
 		init: function(username, password, stateStack, canvas)
 		{
-			if(this.status === Socket.statusID.CONNECTING)
+			if(this._status === Socket.statusID.CONNECTING)
 				return;
-			
-			this.username = username;
-			this.password = password;
+
 			this.disconnect();
 	
-			var url = 'ws://' + this.host + ':' + this.port + "/" + this.username + '/' + this.password;
-			this.websocket = new WebSocket(url, this.protocol.getName());
+			var url = 'ws://' + this._host + ':' + this._port + "/" + username + '/' + password;
+			this._websocket = new WebSocket(url, this._protocol.getName());
 			
-			this.status = Socket.statusID.CONNECTING;
+			this._status = Socket.statusID.CONNECTING;
 			stateStack.push(new ConnectionBarState(stateStack, canvas, 5, this));
-						
+			
 			var self = this;
-			this.websocket.onopen = function()
-			{
-				self.status = Socket.statusID.OPEN;
-				
-				for(var i = 0; i < self._thisOpenCallbacks.length; i++)
-					self._thisOpenCallbacks[i]();
-					
-				self._thisOpenCallbacks.length = 0;
-			};
-	
-			
-	
-			
-			this.websocket.onmessage = function(event) 
-			{		
-				var data = self.protocol.parseMessage(event.data);
-				
-				if(data)
-				{
-					if(data.id > 0)
-						WebSocketQueryManager.onQueryResponse(data.id, data);
-					else
-						self._messagesBackBuffer.push(data);	
-				}
-			};
-	
-			this.websocket.onclose = function() 
-			{
-				console.log("Closed!");
-				self.status = Socket.statusID.CLOSED;
-			};
-			
-			return true;
+			this._websocket.onopen = function(){self._onOpen();};
+			this._websocket.onmessage = function(message){self._onMessage(message);};
+			this._websocket.onclose = function(){self._onClose();};
 		},
 		
-		send: function(string)
+		/**
+		 * \brief Send message
+		 * 
+		 * \param String message Message string to send
+		 * 
+		 * \returns True if message was sent, else false.
+		 */
+		send: function(message)
 		{
-			if(this.status === Socket.statusID.OPEN)
+			if(this._status === Socket.statusID.OPEN)
 			{
-				this.websocket.send("0\n" + string);
+				this._websocket.send("0\n" + message);
 				return true;
 			}
 			else
@@ -128,12 +111,22 @@ var Socket = function()
 			}
 		},
 		
-		sendQuery: function(string, success, fail, timeOut)
+		/**
+		 * \brief Send query
+		 * 
+		 * \param String query Query message to send
+		 * \param Function success Function to call when query received a response.
+		 * \param Function fail Function to call when query did not receive a response (timed out).
+		 * \param Number timeOut Time to wait in milliseconds before dropping the query attempt.
+		 * 
+		 * \returns True if query was sent, else false.
+		 */
+		sendQuery: function(query, success, fail, timeOut)
 		{
-			if(this.status === Socket.statusID.OPEN)
+			if(this._status === Socket.statusID.OPEN)
 			{
 				var id = WebSocketQueryManager.pushQuery(success, fail, timeOut);
-				this.websocket.send(id + "\n" + string);
+				this._websocket.send(id + "\n" + query);
 				return true;
 			}
 			else
@@ -143,16 +136,31 @@ var Socket = function()
 			}
 		},
 		
-		onThisOpen: function(callback)
+		/**
+		 * \brief Add callback on connection open
+		 * 
+		 * \param Function callback Function to call when connection is opened
+		 */
+		onOpen: function(callback)
 		{
-			this._thisOpenCallbacks.push(callback);
+			this._onOpenCallbacks.push(callback);
 		},
 		
+		/**
+		 * \brief Get received messages
+		 * 
+		 * \returns Array Messages received.
+		 */
 		getMessages: function()
 		{
 			return this._messagesFrontBuffer;
 		},
 		
+		/**
+		 * \brief Swap message buffers
+		 * 
+		 * This should be done every time before handling all messages.
+		 */
 		swapMessagesBuffer: function()
 		{
 			this._messagesFrontBuffer.length = 0;
@@ -167,6 +175,46 @@ var Socket = function()
 				this._messagesFrontBuffer = this._messagesBuffer1;
 				this._messagesBackBuffer = this._messagesBuffer2;
 			}
+		},
+		
+		/**
+		 * \brief On connection open event
+		 */
+		_onOpen: function()
+		{
+			this._status = Socket.statusID.OPEN;
+			
+			for(var i = 0; i < this._onOpenCallbacks.length; i++)
+				this._onOpenCallbacks[i]();
+				
+			this._onOpenCallbacks.length = 0;
+		},
+		
+		/**
+		 * \brief On message received event.
+		 * 
+		 * \param String message Message received
+		 */
+		_onMessage: function(message) 
+		{		
+			var data = this._protocol.parseMessage(message.data);
+			
+			if(data)
+			{
+				if(data.id > 0)
+					WebSocketQueryManager.onQueryResponse(data.id, data);
+				else
+					this._messagesBackBuffer.push(data);	
+			}
+		},
+
+		/**
+		 * \brief On connection closed event
+		 */
+		_onClose: function() 
+		{
+			console.log("Closed!");
+			this._status = Socket.statusID.CLOSED;
 		},
 	};
 

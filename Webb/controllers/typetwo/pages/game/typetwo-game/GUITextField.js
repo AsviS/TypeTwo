@@ -115,6 +115,16 @@ var GUITextField = function()
 			this._isActivated = false;
             $('#field').trigger('blur');
 		},
+		
+		/**
+		 * \brief Get text in field
+		 * 
+		 * \returns String Text in field.
+		 */
+		getText: function()
+		{
+			return this._text;
+		}
 	});
 
 

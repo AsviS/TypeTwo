@@ -20,7 +20,7 @@ var ConnectionBarState = function()
 		this._canvas = canvas;
 		this._socket = socket;
 		
-		socket.onThisOpen(function()
+		socket.onOpen(function()
 		{
 			console.log("Connected!");
 			stateStack.pop();

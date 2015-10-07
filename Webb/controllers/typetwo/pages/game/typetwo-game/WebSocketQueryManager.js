@@ -1,8 +1,22 @@
 'use strict';
 
-
+/**
+ * \brief Manages queries done on a WebSocket connection.
+ * 
+ * Since the time delay between query and response can be 
+ * quite large, the manager's job is to piece together query
+ * and response by ID numbers.
+ */
 var WebSocketQueryManager = function()
 {
+	/**
+	 * \brief Internal Query object constructor
+	 * 
+	 * \param Number id ID number of this query.
+	 * \param Function success Function to call when query received a response.
+	 * \param Function fail Function to call when query did not receive a response.
+	 * \param Number timeOut Time in milliseconds to wait before dropping the query.
+	 */
 	function Query(id, success, fail, timeOut)
 	{
 		this.id = id;
@@ -14,13 +28,16 @@ var WebSocketQueryManager = function()
 
 	Query.prototype = 
 	{
-		id: null,
-		onSuccess: null,
-		onFail: null,
-		timeOut: 5000,
-		timeCreated: null,
+		id: null, /**< Number ID of query. The ID is used to piece together query and response. */
+		onSuccess: null, /**< Function Function to call when query received a response. */
+		onFail: null, /**< Function Function to call when query did not receive a response.*/
+		timeOut: 5000, /**< Time in milliseconds to wait before dropping the query. */
+		timeCreated: null, /**< Time when query was sent */
 	};
 
+	/**
+	 * The query manager is actually a List with some extended functionality.
+	 */
 	function QueryList()
 	{
 		List.call(this);
@@ -28,8 +45,17 @@ var WebSocketQueryManager = function()
 
 	$.extend(QueryList.prototype, List.prototype,
 	{
-		_maxTimeOut: 10000,
+		_maxTimeOut: 10000, /**< Maximum time to wait in milliseconds before dropping any query */
 		
+		/**
+		 * \brief On response, scan the list for a query with matching ID number.
+		 * 
+		 * If found, execute that query's success callback.
+		 * While scanning through the list, drop any timed out queries.
+		 * 
+		 * \param Number id ID number of query.
+		 * \param Object response Response to query.
+		 */
 		onQueryResponse: function(id, response)
 		{
 			if(!this._front)
@@ -58,6 +84,15 @@ var WebSocketQueryManager = function()
 			} while(i);
 		},
 		
+		/**
+		 * \brief Add a query to the list and return its designated ID number.
+		 * 
+		 * \param Function success Function to call when query received a response.
+		 * \param Function fail Function to call when query did not receive a response.
+		 * \param Number timeOut Time in milliseconds to wait before dropping the query.
+		 * 
+		 * \returns Number The query's designated ID number.
+		 */
 		pushQuery: function(success, fail, timeOut)
 		{
 			var id = this._back ? (this._back.data.id + 1) % Number.MAX_SAFE_INTEGER : 1;
@@ -65,11 +100,21 @@ var WebSocketQueryManager = function()
 			return id;
 		},
 		
+		/**
+		 * \brief Update list.
+		 */
 		update: function()
 		{
 			this.onQueryResponse(0);
 		},
-
+	
+		/**
+		 * \brief Check if query is timed out.
+		 * 
+		 * \param Query query Query to check.
+		 * 
+		 * \returns True if query is timed out, else false.
+		 */
 		_isQueryTimedOut: function(query)
 		{
 			var lifeTime = Date.now() - query.timeCreated;

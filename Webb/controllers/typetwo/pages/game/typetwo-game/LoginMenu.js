@@ -12,9 +12,9 @@ var LoginMenu = function()
 		var login = function()
 		{
 			
-			config.webSocket.order.init(username.text, password.text, stateStack, canvas);
-			config.webSocket.fetchData.init(username.text, password.text, stateStack, canvas);
-			config.webSocket.order.onThisOpen(function(){stateStack.pop(); stateStack.push(new LoggedInMenuState(stateStack, canvas));});
+			config.webSocket.order.init(username.getText(), password.getText(), stateStack, canvas);
+			config.webSocket.fetchData.init(username.getText(), password.getText(), stateStack, canvas);
+			config.webSocket.order.onOpen(function(){stateStack.pop(); stateStack.push(new LoggedInMenuState(stateStack, canvas));});
 		};
 		
 		var username = new GUITextField(new Rect(0, 0, this._width / 2, this._height / 10), login);

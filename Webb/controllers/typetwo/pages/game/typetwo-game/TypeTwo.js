@@ -1,6 +1,17 @@
 'use strict';
+
+/**
+ * \brief Main application class
+ * 
+ * This is the entry point for the game. To start the
+ * game, simply declare a TypeTwo object and call its
+ * run function.
+ */
 var TypeTwo = function()
 {
+	/**
+	 * \brief Constructor
+	 */
 	function TypeTwo()
 	{
 		config.init();
@@ -11,10 +22,12 @@ var TypeTwo = function()
 
 	TypeTwo.prototype =
 	{
-		_stateStack:			null,
-		TIME_PER_FRAME: 		1/60,
-		_socket:				null,
+		_stateStack:			null, /**< StateStack State stack */
+		TIME_PER_FRAME: 		1/60, /**< Number Time to spend on each frame in seconds */
 		
+		/**
+		 * \brief Start the game
+		 */
 		run: function()
 		{
 			var dt = 0;

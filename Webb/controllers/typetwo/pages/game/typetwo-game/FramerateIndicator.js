@@ -1,15 +1,28 @@
 'use strict';
 
+/**
+ * \brief HTML-based framerate indicator module.
+ * 
+ * The indicator is not drawn onto the canvas, as
+ * it is its own HTML element.
+ * 
+ * The framerate is averaged on the last X taken
+ * framerate samples. See the filterStrength variable.
+ * 
+ * Toggle: CTRL+§
+ */
 var FramerateIndicator = function()
 {
-	var indicator = null;
-	var interval = null;
-	var enabled = false;
-	var filterStrength = 10;
-	var frameTime = 0;
-	var lastUpdateTime = Date.now();
+	var indicator = null; /**< DOM Shown indicator */
+	var interval = null; /**< Function Interval function handle */
+	var enabled = false; /**< Boolean Flag indicating whether the indicator is to be shown or not */ 
+	var filterStrength = 10; /**< Number How many samples to take the average of */
+	var frameTime = 0; /**< Number Duration of frame in milliseconds */
+	var lastUpdateTime = Date.now(); /**< Last time indicator was updated */
 
-	
+	/**
+	 * \brief Updates the indicator's shown value
+	 */
 	var updateIndicator = function()
 	{
 		indicator.html("FPS: " + (1000/frameTime).toFixed(1));
@@ -19,6 +32,9 @@ var FramerateIndicator = function()
 
 	var my =  
 	{
+		/**
+		 * \brief Enable indicator
+		 */
 		enable: function()
 		{
 			enabled = true;
@@ -37,6 +53,9 @@ var FramerateIndicator = function()
 			interval = setInterval(updateIndicator, 1000);
 		},
 		
+		/**
+		 * \brief Disable indicator
+		 */
 		disable: function()
 		{
 			enabled = false;
@@ -44,6 +63,9 @@ var FramerateIndicator = function()
 			clearInterval(interval);
 		},
 		
+		/**
+		 * \brief Update indicator.
+		 */
 		update: function()
 		{
 			frameTime += (Date.now() - lastUpdateTime - frameTime) / filterStrength;

@@ -1,6 +1,13 @@
 'use strict';
+
+/*
+ * \brief WebSocket
+ */
 var Socket = function()
 {
+	/*
+	 * \brief Constructor
+	 */
 	function Socket(host, port, protocol)
 	{
 		this.host = host;

@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * \brief Test base class for all states that show parts of the main menu.
+ */
 var MainMenuState = function()
 {
 	function MainMenuState(stateStack, canvas)
@@ -30,6 +33,12 @@ var MainMenuState = function()
 
 	$.extend(MainMenuState.prototype, MenuState.prototype,
 	{		
+		/**
+		 * \brief Render state
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \returns Boolean
+		 */
 		render: function(ct)
 		{
 			this.drawBackground(ct);

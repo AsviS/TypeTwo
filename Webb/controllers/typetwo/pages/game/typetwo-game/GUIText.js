@@ -1,7 +1,16 @@
 'use strict';
 
+/**
+ * \brief Text container 
+ */
 var GUIText = function()
 {
+	/**
+	 * \brief Constructor
+	 * 
+	 * \param Array text Text to show, formatted as an array of strings. Each element is one line.
+	 * \param GUIText.FontSettings fontSettings Settings to use for font.
+	 */
 	function GUIText(text, fontSettings)
 	{
 		GUIElement.call(this);
@@ -10,6 +19,15 @@ var GUIText = function()
 		this.setFontSettings(fontSettings || new GUIText.FontSettings());
 	}
 
+	/**
+	 * \brief Font settings constructor
+	 * 
+	 * \param String font Font style
+	 * \param Number size Font size
+	 * \param String emphasis Text emphasis (bold, italic etc.).
+	 * \param String color CSS-compatible color string.
+	 * \param String baseLine Text baseLine (top, middle, bottom, etc.).
+	 */
 	GUIText.FontSettings = function(font, size, emphasis, color, baseLine)
 	{
 		this.font = 		font 		|| this.font;
@@ -21,12 +39,17 @@ var GUIText = function()
 	
 	GUIText.FontSettings.prototype =
 	{
-		font: 'sans-serif',
-		size: 20,
-		emphasis: null,
-		color: 'black',
-		baseLine: 'top',
+		font: 'sans-serif', /**< String Font style */
+		size: 20, /**< Number Font size */
+		emphasis: null, /**< String Text emphasis (bold, italic etc.). */
+		color: 'black', /**< String Text color. */
+		baseLine: 'top', /**< String Text baseLine (top, middle, bottom, etc.). */
 		
+		/**
+		 * \brief Convert this object into a Canvas-compatible font string.
+		 * 
+		 * \returns String Canvas-compatible font string.
+		 */
 		toCanvasFontString: function()
 		{
 			return (this.emphasis || '') + " " + this.size + "px " + this.font;
@@ -36,11 +59,17 @@ var GUIText = function()
 
 	$.extend(GUIText.prototype, GUIElement.prototype,
 	{
-		_text: 				undefined,
-		_fontSettings: 		undefined,
-		_canvasFontString: 	undefined,
-		_newlineStep: 		undefined,
+		_text: 				undefined, /**< Array Text to show, formatted as an array of strings. Each element is one line. */
+		_fontSettings: 		undefined, /**< GUIText.FontSettings Settings to use for font. */
+		_canvasFontString: 	undefined, /**< Font settings formatted as Canvas-compatible font string. */
+		_newlineStep: 		undefined, /**< Distance between two lines' baselines in pixels. */
 		
+		/**
+		 * \brief Render this object
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \param Rect transform Global transform.
+		 */
 		_renderCurrent: function(ct, transform)
 		{
 			ct.font = this._canvasFontString;
@@ -55,6 +84,9 @@ var GUIText = function()
 			}
 		},
 		
+		/**
+		 * \brief Update bounding box size.
+		 */
 		_updateSize: function()
 		{
 			if(this._text.length > 0)
@@ -80,6 +112,11 @@ var GUIText = function()
 				this.setSize(0, 0);	
 		},
 		
+		/**
+		 * \brief Set font settings.
+		 * 
+		 * \param GUIText.FontSettings fontSettings
+		 */
 		setFontSettings: function(fontSettings)
 		{
 			this._fontSettings = fontSettings;
@@ -90,11 +127,21 @@ var GUIText = function()
 			this._updateSize();		
 		},
 		
+		/**
+		 * \brief Set text color.
+		 * 
+		 * \param String color A CSS-compatible color string.
+		 */
 		setColor: function(color)
 		{
 			this._fontSettings.color = color;
 		},
 		
+		/**
+		 * \brief Set text.
+		 * 
+		 * \param Array text Text to show, formatted as an array of strings. Each element is one line.
+		 */
 		setText: function(text)
 		{
 			this._text = text || '';

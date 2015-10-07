@@ -1,7 +1,19 @@
 'use strict';
-var Button = function()
+
+/**
+ * \brief Button for GUI
+ */
+var GUIButton = function()
 {
-	function Button(bounds, text, callback, disabled)
+	/**
+	 * \brief Constructor
+	 * 
+	 * \param Rect bounds Position and size of button.
+	 * \param String text Text shown in the middle of the button
+	 * \param Function callback Function to call when button is pressed.
+	 * \param Boolean disabled Flag indicating whether the callback function should be called when button is pressed.
+	 */
+	function GUIButton(bounds, text, callback, disabled)
 	{
 		GUIElement.call(this);
 		
@@ -26,10 +38,16 @@ var Button = function()
 		this.deselect();
 	}
 
-	$.extend(Button.prototype, GUIElement.prototype,
+	$.extend(GUIButton.prototype, GUIElement.prototype,
 	{
-		_text: undefined,
+		_text: undefined, /**< String Text shown in the middle of the button. */
 		
+		/**
+		 * \brief Render this object
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \param Rect transform Global transform.
+		 */
 		_renderCurrent: function(ct, transform)
 		{
 			ct.beginPath();
@@ -41,6 +59,9 @@ var Button = function()
 			ct.stroke();	
 		},
 	
+		/**
+		 * \brief Select this element
+		 */
 		select: function()
 		{			
 			if(this.isSelectable())
@@ -52,6 +73,9 @@ var Button = function()
 			
 		},
 		
+		/**
+		 * \brief Deselect this element.
+		 */
 		deselect: function()
 		{
 			if(this.isSelectable())
@@ -62,6 +86,9 @@ var Button = function()
 			}
 		},
 		
+		/**
+		 * \brief Enable the user to activate this button.
+		 */
 		enable: function()
 		{
 			this.disabled = false;
@@ -70,6 +97,9 @@ var Button = function()
 			this._text.setColor('white');
 		},
 		
+		/**
+		 * \brief Prevent the user from activating this button.
+		 */
 		disable: function()
 		{
 			this.disabled = true;
@@ -78,11 +108,17 @@ var Button = function()
 			this._text.setColor('gray');
 		},
 		
+		/**
+		 * \brief Button is selectable if enabled.
+		 */
 		isSelectable: function()
 		{
 			return this.disabled === false;
 		},
 		
+		/**
+		 * \brief Activate button's callback function.
+		 */
 		activate: function()
 		{
 			this.color = 'silver';
@@ -90,11 +126,19 @@ var Button = function()
 				this._isActivated = true;
 		},
 		
+		/**
+		 * \brief Deactivate this element.
+		 */
 		deactivate: function()
 		{
 			this._isActivated = false;
 		},
 		
+		/**
+		 * \brief Handle device input for this node
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		_handleInputCurrent: function()
 		{
 			if(this.isActivated())
@@ -114,5 +158,5 @@ var Button = function()
 		},
 	});
 	
-	return Button;
+	return GUIButton;
 }();

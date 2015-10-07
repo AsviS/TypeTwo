@@ -1,7 +1,19 @@
 'use strict';
 
+/**
+ * \brief Container for GUI elements.
+ * 
+ * Handles all the elements' necessities,
+ * like updating, rendering and input handling.
+ */
 var GUIContainer = function()
 {
+	/**
+	 * \brief Constructor
+	 * 
+	 * \param Array GUIElement objects.
+	 * \param Rect Bounding box of this container.
+	 */
 	function GUIContainer(guiElements, bounds)
 	{
 		SceneNode.call(this);
@@ -15,15 +27,23 @@ var GUIContainer = function()
 
 	$.extend(GUIContainer.prototype, SceneNode.prototype,
 	{
-		_selection:		null,
-		_activation:	null,
+		_selection:		null, /**< GUIElement Currently selected element */
+		_activation:	null, /**< GUIElement Currently activated element */
 		
-
+		/**
+		 * \brief Update this node
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		_updateCurrent: function(dt)
 		{
 			this._updateElements(dt);
 		},
 
+		/**
+		 * \brief Handle device input for elements.
+		 * 
+		 */
 		handleInput: function()
 		{
 			if(Input.mouse.isPressed(Input.mouse.LEFT))
@@ -63,6 +83,9 @@ var GUIContainer = function()
 				
 		},
 		
+		/**
+		 * \brief Update elements
+		 */
 		_updateElements: function()
 		{
 			for(var i = 0; i < this._children.length; i++)
@@ -79,6 +102,11 @@ var GUIContainer = function()
 			this._deselect();
 		},
 		
+		/**
+		 * \brief Select element.
+		 * 
+		 * \param GUIElement Element to select.
+		 */
 		_select: function(element)
 		{
 			if(this._selection == element)
@@ -89,6 +117,9 @@ var GUIContainer = function()
 			this._selection = element;
 		},
 		
+		/**
+		 * \brief Deselect current selection, if any.
+		 */
 		_deselect: function()
 		{
 			if(!this._hasSelection())
@@ -98,12 +129,19 @@ var GUIContainer = function()
 			this._selection = null;
 		},
 		
+		/**
+		 * \brief Does the container currently have a selected element?
+		 * 
+		 * \returns Boolean True if selection exists, else false.
+		 */
 		_hasSelection: function()
 		{
 			return (this._selection !== null);
 		},
 		
-		
+		/**
+		 * \brief Activate currently selected element.
+		 */
 		_activate: function()
 		{
 			if(this._activation === this._selection)
@@ -114,6 +152,9 @@ var GUIContainer = function()
 			this._activation = this._selection;
 		},
 		
+		/**
+		 * \brief Deactivate currently activated element.
+		 */
 		_deactivate: function()
 		{
 			if(!this._hasActivation())
@@ -123,6 +164,11 @@ var GUIContainer = function()
 			this._activation = null;
 		},
 		
+		/**
+		 * \brief Does the container currently have an activated element?
+		 * 
+		 * \returns Boolean True if activated element exists, else false.
+		 */
 		_hasActivation: function()
 		{
 			return (this._activation !== null);

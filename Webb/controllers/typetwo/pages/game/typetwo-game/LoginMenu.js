@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * \brief Test login menu
+ */
 var LoginMenu = function()
 {
 	function LoginMenu(stateStack, canvas)
@@ -16,7 +19,7 @@ var LoginMenu = function()
 		
 		var username = new GUITextField(new Rect(0, 0, this._width / 2, this._height / 10), login);
 		var password = new GUITextField(username.getBounds(), login, true);
-		var loginButton = new Button(new Rect(0, 0, this._width / 4, this._height / 10), ["Log in"], login);
+		var loginButton = new GUIButton(new Rect(0, 0, this._width / 4, this._height / 10), ["Log in"], login);
 		
 		this._guiContainer = new GUIContainer([username, password, loginButton], new Rect(0, 0, this._width, this._height));
 		

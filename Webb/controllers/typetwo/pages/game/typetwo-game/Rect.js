@@ -1,7 +1,18 @@
 'use strict';
 
+/**
+ * \brief A rectangle with a position and size.
+ */
 var Rect = function()
 {
+	/**
+	 * \brief Constructor
+	 * 
+	 * \param Number left X-coordinate of left side.
+	 * \param Number top Y-coordinate of top side.
+	 * \param Number width Width of rectangle
+	 * \param Number height Height of rectangle.
+	 */
 	function Rect(left, top, width, height) 
 	{
 		this.left = left || 0;
@@ -12,6 +23,14 @@ var Rect = function()
 	
 	Rect.prototype =
 	{
+		/**
+		 * \brief Checks if a point is within this rectangle.
+		 * 
+		 * \param Number x X-coordinate of point.
+		 * \param Number y Y-coordinate of point.
+		 * 
+		 * \returns Boolean True if the point is within the rectangle, else false.
+		 */
 		containsPoint: function(x, y)
 		{
 			if(x < this.left)

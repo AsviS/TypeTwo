@@ -1,7 +1,17 @@
 'use strict';
 
+/**
+ * \brief An updatable, renderable node that can handle events.
+ * 
+ * A node has one parent node and may have several children nodes.
+ * Any update, render or input handling invoked on this node 
+ * also calls its children's update, render and input handling functions.
+ */
 var SceneNode = function()
 {
+	/**
+	 * \brief Constructor
+	 */
 	function SceneNode()
 	{
 		GeometricObject.call(this);
@@ -12,15 +22,26 @@ var SceneNode = function()
 
 	SceneNode.prototype =
 	{		
-		_children: null,
-		_parent: null,
+		_children: null, /**< Array Array of SceneNode objects that are children to this node */
+		_parent: null, /**< SceneNode Parent node to this node. */
 		
+		/**
+		 * \brief Update this node and its children
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		update: function(dt)
 		{
 			this._updateCurrent(dt);
 			this._updateChildren(dt);
 		},
 		
+		/**
+		 * \brief Render this node and its children
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \param Rect transform Global transform.
+		 */
 		render: function(ct, transform)
 		{
 			if(typeof transform === 'undefined')
@@ -32,12 +53,27 @@ var SceneNode = function()
 			this._renderChildren(ct, transform);
 		},
 		
+		/**
+		 * \brief Handle device input for this node and its children
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		handleInput: function(dt)
 		{
 			this._handleInputCurrent(dt);
 			this._handleInputChildren(dt);
 		},
 
+		/**
+		 * \brief Get global position of this node.
+		 * 
+		 * Each SceneNode's position is relative to its parent's
+		 * position. For example, if this node's parent has no parent,
+		 * and is positioned at (10, 10), and this node is positioned at
+		 * (5, 0), this function will return (15, 10).
+		 * 
+		 * \returns Vector Global position of this node.
+		 */
 		getGlobalPosition: function()
 		{
 			if(this._parent)
@@ -46,12 +82,26 @@ var SceneNode = function()
 				return this.getPosition();
 		},
 		
+		/**
+		 * \brief Get global bounding box of this node.
+		 * 
+		 * \seealso SceneNode.prototype.getGlobalPosition
+		 * \returns Rect Global bounding box of this node.
+		 */
 		getGlobalBounds: function()
 		{
 			var position = this.getGlobalPosition();
 			return new Rect(position.x, position.y, this._bounds.width, this._bounds.height);
 		},
 		
+		/**
+		 * \brief Draw global bounding box.
+		 * 
+		 *  Used mainly for debugging purposes.
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \param Rect transform Global transform.
+		 */
 		drawGlobalBounds: function(ct, transform)
 		{
 			ct.lineWidth = 1;
@@ -59,6 +109,14 @@ var SceneNode = function()
 			ct.strokeRect(transform.x, transform.y, this._bounds.width, this._bounds.height);
 		},
 		
+		/**
+		 * \brief Draw this node's global bounding box's medians.
+		 * 
+		 * Used mainly for debugging purposes.
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \param Rect transform Global transform.
+		 */
 		drawMedians: function(ct, transform)
 		{
 			ct.lineWidth = 1;
@@ -76,6 +134,14 @@ var SceneNode = function()
 			ct.stroke();
 		},
 		
+		/**
+		 * \brief Snap this node's position in relation to parent.
+		 * 
+		 * "Float" in this context has the same meaning as CSS's float.
+		 * 
+		 * \param String whereX Where to snap on X-axis (center, left, right)
+		 * \param String whereY Where to snap on Y-axis (center, top, bottom)
+		 */
 		floatTo: function(whereX, whereY)
 		{
 			if(!this._parent)
@@ -119,6 +185,13 @@ var SceneNode = function()
 			}
 		},
 		
+		/**
+		 * \brief Attach a SceneNode to this node.
+		 * 
+		 * Sets the specified node's parent to this node.
+		 * 
+		 * \param SceneNode sceneNode Node to attach to this node.
+		 */
 		attachChild: function(sceneNode)
 		{
 			if(sceneNode._parent)
@@ -128,6 +201,11 @@ var SceneNode = function()
 			this._children.push(sceneNode);
 		},
 		
+		/**
+		 * \brief Detach child from this node.
+		 * 
+		 * \param SceneNode sceneNode Node to detach from this node.
+		 */
 		detachChild: function(sceneNode)
 		{
 			var index = this._children.indexOf(sceneNode);
@@ -138,35 +216,66 @@ var SceneNode = function()
 			}
 		},
 		
-		
+		/**
+		 * \brief Update this node
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		_updateCurrent: function(dt)
 		{
 			
 		},
 		
+		/**
+		 * \brief Render this node
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \param Rect transform Global transform.
+		 */
 		_renderCurrent: function(ct, transform)
 		{
 			
 		},
 		
+		
+		/**
+		 * \brief Handle device input for this node
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		_handleInputCurrent: function(dt)
 		{
 			
 		},
 		
-		
+		/**
+		 * \brief Update this node's children
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		_updateChildren: function(dt)
 		{
 			for(var i = 0; i < this._children.length; i++)
 				this._children[i].update(dt);
 		},
 		
+		/**
+		 * \brief Render this node's children
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \param Rect transform Global transform.
+		 */
 		_renderChildren: function(ct, transform)
 		{
 			for(var i = 0; i < this._children.length; i++)
 				this._children[i].render(ct, transform);
 		},
 		
+		/**
+		 * \brief Handle device input for this node's children
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		_handleInputChildren: function(dt)
 		{
 			for(var i = 0; i < this._children.length; i++)

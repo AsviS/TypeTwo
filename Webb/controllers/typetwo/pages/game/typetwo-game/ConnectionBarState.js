@@ -1,7 +1,18 @@
 'use strict';
 
+/**
+ * \brief Displays a progress bar during connection attempt
+ */
 var ConnectionBarState = function()
 {
+	/**
+	 * \brief Constructor
+	 * 
+	 * \param StateStack stateStack
+	 * \param Canvas2D canvas
+	 * \param Number How long in seconds to try the connection before giving up. 
+	 * \param Socket Socket to connect with.
+	 */
 	function ConnectionBarState(stateStack, canvas, timeOut, socket)
 	{
 		State.call(this, stateStack);
@@ -35,12 +46,18 @@ var ConnectionBarState = function()
 
 	$.extend(ConnectionBarState.prototype, State.prototype,
 	{
-		_canvas: 			null,
-		_socket:			null,
-		_guiContainer:		null,
-		_loadingBar:		null,
-		_loadingIncrement: 	0,
+		_canvas: 			null, /**< Canvas2D */
+		_socket:			null, /**< Socket Socket to connect with. */
+		_guiContainer:		null, /**< GUIContainer */
+		_loadingBar:		null, /**< GUIProgressBar */
+		_loadingIncrement: 	0, /**< Number How many percent of the connection bar's max with to increment the current width with per second */
 
+		/**
+		 * \brief Update connection bar
+		 * 
+		 * \param Number dt Time per frame
+		 * \returns Boolean
+		 */
 		update: function(dt)
 		{								
 			if(this._socket.status === Socket.statusID.CLOSED)
@@ -62,6 +79,12 @@ var ConnectionBarState = function()
 			return true;
 		},
 	
+		/**
+		 * \brief Render connection bar
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \returns Boolean
+		 */
 		render: function(ct)
 		{
 			ct.fillStyle = 'black';
@@ -72,6 +95,12 @@ var ConnectionBarState = function()
 			return true;
 		},
 		
+		/**
+		 * \brief Block other states from handling input.
+		 * 
+		 * \param Number dt Time per frame.
+		 * \returns Boolean
+		 */
 		handleInput: function(dt)
 		{
 			return false;

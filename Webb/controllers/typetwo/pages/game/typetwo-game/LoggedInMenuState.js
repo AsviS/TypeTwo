@@ -1,12 +1,15 @@
 'use strict';
 
+/**
+ * \brief Test state
+ */
 var LoggedInMenuState = function()
 {
 	function LoggedInMenuState(stateStack, canvas)
 	{
 		MainMenuState.call(this, stateStack, canvas);
 				
-		var logoutButton = new Button
+		var logoutButton = new GUIButton
 		(
 			new Rect(0, 0, this._width/3, this._height/10),
 			['Log out'],
@@ -30,7 +33,7 @@ var LoggedInMenuState = function()
 			config.webSocket.fetchData.sendQuery("getUnits", function(response){self._text.setText(response.data);}, function(response){console.log("query timed out");});
 		};
 		
-		var getUnitsButton = new Button
+		var getUnitsButton = new GUIButton
 		(
 			new Rect(0, 0, this._width/3, this._height/10),
 			["Get units"],

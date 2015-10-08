@@ -21,7 +21,20 @@ var GUIElement = function()
 		 */
 		select: function()
 		{
-			this._isSelected = true;
+			if(this._select() === true)
+				this._isSelected = true;
+		},
+		
+		/**
+		 * \brief Select this element.
+		 * 
+		 * This function is used by inheriting classes.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
+		 */
+		_select: function()
+		{
+			return true;
 		},
 		
 		/**
@@ -29,7 +42,20 @@ var GUIElement = function()
 		 */
 		deselect: function()
 		{
-			this._isSelected = false;
+			if(this._deselect() === true)
+				this._isSelected = false;
+		},
+		
+		/**
+		 * \brief Deselect this element.
+		 * 
+		 * This function is used by inheriting classes.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
+		 */
+		_deselect: function()
+		{
+			return true;
 		},
 		
 		/**
@@ -57,7 +83,20 @@ var GUIElement = function()
 		 */
 		activate: function()
 		{
-			this._isActivated = true;
+			if(this._activate() === true)
+				this._isActivated = true;
+		},
+		
+		/**
+		 * \brief Activate this element
+		 * 
+		 * This function is used by inheriting classes.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
+		 */
+		_activate: function()
+		{
+			return true;
 		},
 		
 		/**
@@ -65,7 +104,20 @@ var GUIElement = function()
 		 */
 		deactivate: function()
 		{	
-			this._isActivated = false;
+			if(this._deactivate() === true)
+				this._isActivated = false;
+		},
+		
+		/**
+		 * \brief Deactivate this element
+		 * 
+		 * This function is used by inheriting classes.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
+		 */
+		_deactivate: function()
+		{
+			return true;
 		},
 		
 		/**

@@ -61,33 +61,43 @@ var GUIButton = function()
 	
 		/**
 		 * \brief Select this element
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
 		 */
-		select: function()
+		_select: function()
 		{			
 			if(this.isSelectable())
 			{
 				this.color = this.isActivated() ? 'silver' : 'white';
 				this.borderColor = 'gray';
 				this._text.setColor('gray');
+				
+				return true;
 			}
 			
 		},
 		
 		/**
 		 * \brief Deselect this element.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
 		 */
-		deselect: function()
+		_deselect: function()
 		{
 			if(this.isSelectable())
 			{
 				this.color = 'gray';
 				this.borderColor = 'silver';
 				this._text.setColor('white');
+				
+				return true;
 			}
 		},
 		
 		/**
 		 * \brief Enable the user to activate this button.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
 		 */
 		enable: function()
 		{
@@ -110,6 +120,8 @@ var GUIButton = function()
 		
 		/**
 		 * \brief Button is selectable if enabled.
+		 * 
+		 * \returns Boolean True if enabled, else false.
 		 */
 		isSelectable: function()
 		{
@@ -118,20 +130,24 @@ var GUIButton = function()
 		
 		/**
 		 * \brief Activate button's callback function.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
 		 */
-		activate: function()
+		_activate: function()
 		{
 			this.color = 'silver';
 			if(this.isSelectable())
-				this._isActivated = true;
+				return true;
 		},
 		
 		/**
 		 * \brief Deactivate this element.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
 		 */
-		deactivate: function()
+		_deactivate: function()
 		{
-			this._isActivated = false;
+			return true;
 		},
 		
 		/**

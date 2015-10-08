@@ -100,20 +100,26 @@ var GUITextField = function()
 		
 		/**
 		 * \brief Activate this element
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
 		 */
-		activate: function()
+		_activate: function()
 		{
-			this._isActivated = true;
             $('#field').trigger('focus');
+            
+            return true;
 		},
 		
 		/**
 		 * \brief Deactivate this element
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
 		 */
-		deactivate: function()
+		_deactivate: function()
 		{
-			this._isActivated = false;
             $('#field').trigger('blur');
+            
+            return true;
 		},
 		
 		/**

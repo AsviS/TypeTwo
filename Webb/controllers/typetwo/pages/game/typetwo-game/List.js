@@ -67,7 +67,7 @@ var List = function()
 		 */
 		popBack: function()
 		{
-			if(size > 1)
+			if(this._size > 1)
 			{
 				this._back = this._back.previous;
 				
@@ -116,38 +116,24 @@ var List = function()
 		 */
 		removeIf: function(predicate)
 		{
-			if(!this._front)
-				return;
-				
-			var i = this._front;
-			do
-			{
-				if(predicate(i.data))	
-					this._removeNode(i);
-					
-				i = i.next;
-			} while(i);
+			for(var i = this.begin(); i != this.end(); i = i.next)
+				if(predicate(i.data))
+					this.removeNode(i);
 		},
 		
 		/**
 		 * \brief Find an element if it matches the predicate function.
 		 * 
 		 * \param Function predicate Function that takes the element's data as parameter and returns a boolean value. 
+		 * 
+		 * \returns Object Null if not found, else the element's data.
 		 */
 		findIf: function(predicate)
 		{
-			if(!this._front)
-				return null;
-				
-			var i = this._front;
-			do
-			{
+			for(var i = this.begin(); i != this.end(); i = i.next)
 				if(predicate(i.data))
 					return i.data;
-			
-				i = i.next;
-			} while(i);
-			
+					
 			return null;
 		},
 		
@@ -156,7 +142,7 @@ var List = function()
 		 * 
 		 * \param Node node Node to remove.
 		 */
-		_removeNode: function(node)
+		removeNode: function(node)
 		{
 			if(node == this._front)
 				this.popFront();
@@ -170,6 +156,71 @@ var List = function()
 				if(node.next)
 					node.next.previous = node.previous;
 			}
+		},
+		
+		/**
+		 * \brief Apply a function on every element
+		 * 
+		 * If the function returns false, the forEach function terminates.
+		 * 
+		 * \param Function func A function that returns a boolean and takes the data object as parameter.
+		 */
+		forEach: function(func)
+		{
+			for(var i = this.begin(); i != this.end(); i = i.next)
+				if(!func(i.data))
+					break;
+		},
+		
+		/**
+		 * \brief Get first node
+		 * 
+		 * Used for iteration.
+		 * 
+		 * \returns List.Node First node in list. Returns null if list is empty.
+		 */
+		begin: function()
+		{
+			return this._front;
+		},
+		
+		/**
+		 * \brief Get the end of the list.
+		 * 
+		 * Used for iteration.
+		 * 
+		 * \returns List.Node Returns null.
+		 */
+		end: function()
+		{
+			return null;
+		},
+		
+		/**
+		 * \brief Remove an element by data.
+		 * 
+		 * \param Object Data of the element to find.
+		 */
+		remove: function(data)
+		{
+			for(var i = this.begin(); i != this.end(); i = i.next)
+			{
+				if(i.data === data)
+				{
+					this.removeNode(i);
+					return;
+				}
+			}
+		},
+		
+		/**
+		 * \brief Get element count.
+		 * 
+		 * \returns Number Number of elements in list.
+		 */
+		size: function()
+		{
+			return this._size;
 		},
 	};
 	

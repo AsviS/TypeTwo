@@ -34,3 +34,14 @@ const Database::StoredProcedure
 ::ParameterTypes<std::string>
 ::ResultSetTypes<unsigned int, std::string, std::string, std::string, std::string, std::string, std::string>
 StoredProcedures::GET_USER_BY_USERNAME("user_getby_username");
+
+const Database::StoredProcedure
+::ParameterTypes<int, int, int, int>
+::ResultSetTypes<>
+StoredProcedures::INSERT_UNIT("unit_insert", true);
+
+
+const Database::StoredProcedure
+::ParameterTypes<int>
+::ResultSetTypes<int, int, int, int>
+StoredProcedures::GET_UNITS_BY_ZONE_ID("unit_getby_zoneid");

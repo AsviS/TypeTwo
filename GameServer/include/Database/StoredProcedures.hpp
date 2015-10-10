@@ -43,6 +43,16 @@ class StoredProcedures
         ::ParameterTypes<std::string>
         ::ResultSetTypes<unsigned int, std::string, std::string, std::string, std::string, std::string, std::string>
         GET_USER_BY_USERNAME; ///< Get user by username.
+
+        static const Database::StoredProcedure
+        ::ParameterTypes<int, int, int, int>
+        ::ResultSetTypes<>
+        INSERT_UNIT; ///< Create a unit
+
+        static const Database::StoredProcedure
+        ::ParameterTypes<int>
+        ::ResultSetTypes<int, int, int, int>
+        GET_UNITS_BY_ZONE_ID; ///< Get units that are located in specified zone.
 };
 }
 

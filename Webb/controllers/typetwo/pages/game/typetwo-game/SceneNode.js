@@ -16,13 +16,13 @@ var SceneNode = function()
 	{
 		GeometricObject.call(this);
 		
-		this._children = [];
+		this._children = new List();
 		this._parent = null;
 	}
 
 	SceneNode.prototype =
 	{		
-		_children: null, /**< Array Array of SceneNode objects that are children to this node */
+		_children: null, /**< List SceneNode objects that are children to this node */
 		_parent: null, /**< SceneNode Parent node to this node. */
 		
 		/**
@@ -198,7 +198,7 @@ var SceneNode = function()
 				sceneNode._parent.detachChild(sceneNode);
 			
 			sceneNode._parent = this;
-			this._children.push(sceneNode);
+			this._children.pushBack(sceneNode);
 		},
 		
 		/**
@@ -208,12 +208,7 @@ var SceneNode = function()
 		 */
 		detachChild: function(sceneNode)
 		{
-			var index = this._children.indexOf(sceneNode);
-			if(index >= 0)
-			{
-				sceneNode._parent = null;
-				this._children.splice(index, 1);
-			}
+			this._children.remove(sceneNode);
 		},
 		
 		/**
@@ -255,8 +250,8 @@ var SceneNode = function()
 		 */
 		_updateChildren: function(dt)
 		{
-			for(var i = 0; i < this._children.length; i++)
-				this._children[i].update(dt);
+			for(var i = this._children.begin(); i != this._children.end(); i = i.next)
+				i.data.update(dt);
 		},
 		
 		/**
@@ -267,8 +262,8 @@ var SceneNode = function()
 		 */
 		_renderChildren: function(ct, transform)
 		{
-			for(var i = 0; i < this._children.length; i++)
-				this._children[i].render(ct, transform);
+			for(var i = this._children.begin(); i != this._children.end(); i = i.next)
+				i.data.render(ct, transform);
 		},
 		
 		/**
@@ -278,8 +273,8 @@ var SceneNode = function()
 		 */
 		_handleInputChildren: function(dt)
 		{
-			for(var i = 0; i < this._children.length; i++)
-				this._children[i].handleInput(dt);
+			for(var i = this._children.begin(); i != this._children.end(); i = i.next)
+				i.data.handleInput(dt);
 		},
 	};
 	

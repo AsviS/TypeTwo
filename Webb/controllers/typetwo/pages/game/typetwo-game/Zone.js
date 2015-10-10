@@ -2,7 +2,7 @@
 
 var Zone = function()
 {
-	function Zone(bounds, parentZone, subZones, borderingZones)
+	function Zone(id, bounds, parentZone, subZones, borderingZones)
 	{
 		GUIElement.call(this);
 		
@@ -12,7 +12,7 @@ var Zone = function()
 		this._bounds.width -= 4;
 		this._bounds.height -= 4;
 		
-		
+		this._id = id;
 		this._parentZone = parentZone || null;
 		this._subZones = subZones || [];
 		this._borderingZones = borderingZones || [];
@@ -21,6 +21,7 @@ var Zone = function()
 
 	$.extend(Zone.prototype, GUIElement.prototype,
 	{
+		_id: 0,
 		_parentZone: null,
 		_subZones: null,
 		_borderingZones: null,
@@ -65,13 +66,19 @@ var Zone = function()
 			for(var i = 0; i < this._borderingZones.length; i++)
 				this._borderingZones[i].neighborSelect();
 			
+			GUIEvents.populatePurchaseList.trigger(this);
+			GUIEvents.populateZoneUnitList.trigger(this);
+			
 			return true;
 		},
 		
 		_deactivate: function()
-		{			
+		{	
 			for(var i = 0; i < this._borderingZones.length; i++)
 				this._borderingZones[i].neighborDeselect();
+			
+			GUIEvents.depopulatePurchaseList.trigger(this);
+			GUIEvents.depopulateZoneUnitList.trigger(this);
 			
 			return true;
 		},
@@ -85,6 +92,11 @@ var Zone = function()
 		{
 			return true;
 		},
+		
+		getId: function()
+		{
+			return this._id;
+		}
 	});
 
 	return Zone;

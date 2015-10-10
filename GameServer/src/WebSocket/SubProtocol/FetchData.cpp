@@ -45,14 +45,26 @@ const SubProtocol& SubProtocols::FETCH_DATA = SubProtocol
 
             message >> id >> procedure;
 
-            if(procedure == "getUnits")
-            {
-                Connection& connection = SubProtocol::getConnection(connectionData);
+            Connection& connection = SubProtocol::getConnection(connectionData);
 
+
+            if(procedure == "getUnitsByZoneId")
+            {
+                int zoneId;
+                message >> zoneId;
+                std::string units = Database::StoredProcedures::GET_UNITS_BY_ZONE_ID.callAsFetchDataProtocol(zoneId);
+                connection.sendString(id + '\n' + units);
+            }
+            else if(procedure == "getUnits")
+            {
                 int userId;
                 Database::StoredProcedures::GET_USER_ID.call(connection.getUsername(), userId);
                 std::string units = Database::StoredProcedures::GET_UNITS.callAsFetchDataProtocol(userId);
                 connection.sendString(id + '\n' + units);
+            }
+            else if(procedure == "getUnitTypes")
+            {
+                connection.sendString(id + '\n' + Database::StoredProcedures::GET_ALL_UNIT_TYPES.callAsFetchDataProtocol());
             }
         }
 

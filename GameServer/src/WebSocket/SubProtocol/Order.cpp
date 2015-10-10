@@ -4,6 +4,9 @@
 #include "WebSocket/SubProtocols.hpp"
 #include "WebSocket/Server.hpp"
 #include "WebSocket/Connection.hpp"
+
+#include "Database/StoredProcedures.hpp"
+#include "Database/Row.hpp"
 using namespace WebSocket;
 ///////////////////////////////////
 
@@ -67,6 +70,42 @@ const SubProtocol& SubProtocols::ORDER = SubProtocol
         {
             std::stringstream message(SubProtocol::messageToString(messageData, messageLength));
 
+            std::string id;
+            std::string order;
+            std::string item;
+            int zoneId;
+
+            message >> id >> order >> item >> zoneId;
+
+            Connection& connection = SubProtocol::getConnection(connectionData);
+
+            if(order == "unit")
+            {
+                int userId;
+                Database::StoredProcedures::GET_USER_ID.call(connection.getUsername(), userId);
+
+                std::vector<Database::Row::UnitType> unitTypes = Database::StoredProcedures::GET_ALL_UNIT_TYPES.call<Database::Row::UnitType>();
+
+                int typeId = 0;
+                for(Database::Row::UnitType type : unitTypes)
+                    if(type.name == item)
+                    {
+                        typeId = type.id;
+                        break;
+                    }
+
+                if(typeId > 0 && zoneId > 0)
+                {
+                    Database::StoredProcedures::INSERT_UNIT.call(typeId, userId, zoneId, 100);
+                    connection.sendString(id + '\n' + "1");
+                }
+                else
+                    connection.sendString(id + '\n' + "0");
+            }
+
+            /*
+            std::stringstream message(SubProtocol::messageToString(messageData, messageLength));
+
             Order order;
             std::getline(message, order.item);
             message >> order.quantity;
@@ -76,7 +115,7 @@ const SubProtocol& SubProtocols::ORDER = SubProtocol
                     << "Item: " << order.item << std::endl
                     << "Quantity: " << order.quantity << std::endl;
 
-            SubProtocol::getConnection(connectionData).sendString(output.str());
+            SubProtocol::getConnection(connectionData).sendString(output.str());*/
         }
 
         return 0;

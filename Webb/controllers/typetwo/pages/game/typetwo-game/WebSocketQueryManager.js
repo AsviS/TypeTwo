@@ -67,7 +67,7 @@ var WebSocketQueryManager = function()
 				if(this._isQueryTimedOut(i.data))
 				{
 					i.data.onFail();
-					this._removeNode(i);
+					this.removeNode(i);
 					
 					
 					if(i.data.id == id)
@@ -76,7 +76,7 @@ var WebSocketQueryManager = function()
 				else if(i.data.id == id)
 				{
 					i.data.onSuccess(response);
-					this._removeNode(i);
+					this.removeNode(i);
 					return;
 				}
 

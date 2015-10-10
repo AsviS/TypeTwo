@@ -23,7 +23,10 @@ var OrderProtocol = function()
 		 */
 		_parseMessage: function(message)
 		{
-			return null;
+			if(message.length !== 1)
+				return false;
+			else
+				return (message[0] === "1") ? true : false;
 		},
 	});
 

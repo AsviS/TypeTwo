@@ -22,7 +22,8 @@ var GUIContainer = function()
 			for(var i = 0; i < guiElements.length; i++)
 				this.attachChild(guiElements[i]);
 
-		this._bounds = bounds;
+		if(bounds)
+			this.setBounds(bounds);
 	}
 
 	$.extend(GUIContainer.prototype, SceneNode.prototype,
@@ -56,12 +57,11 @@ var GUIContainer = function()
 			else if(Input.mouse.isPressed(Input.mouse.TAP))
 			{
 				var foundTarget = false;
-				for(var i = 0; i < this._children.length; i++)
+				for(var i = this._children.begin(); i != this._children.end(); i = i.next)
 				{
-					var element = this._children[i];
-					if(element.isSelectable() && element.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
+					if(i.data.isSelectable() && i.data.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
 					{
-						this._select(element);
+						this._select(i.data);
 						this._activate();
 						foundTarget = true;
 					}
@@ -88,12 +88,11 @@ var GUIContainer = function()
 		 */
 		_updateElements: function()
 		{
-			for(var i = 0; i < this._children.length; i++)
+			for(var i = this._children.begin(); i != this._children.end(); i = i.next)
 			{
-				var element = this._children[i];
-				if(element.isSelectable() && element.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
+				if(i.data.isSelectable() && i.data.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
 				{
-					this._select(element);
+					this._select(i.data);
 					return;
 				}
 			}

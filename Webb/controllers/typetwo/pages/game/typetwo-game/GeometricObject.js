@@ -154,6 +154,18 @@ var GeometricObject = function()
 		},
 		
 		/**
+		 * \brief Increment bounding box's size.
+		 * 
+		 * \param Number width Width to increment bounding box's width by.
+		 * \param Number height Height to increment bounding box's height by.
+		 */
+		incrementSize: function(width, height)
+		{
+			this._bounds.width += width;
+			this._bounds.height += height;
+		},
+		
+		/**
 		 * \brief Set the size of the bounding box with a vector.
 		 * 
 		 * \param Vector Vector containing new width and height as x and y values.

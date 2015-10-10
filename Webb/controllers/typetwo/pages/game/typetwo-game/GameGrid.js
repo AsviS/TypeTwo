@@ -30,7 +30,7 @@ var GameGrid = function()
 			{
 				for(var x = 0; x < zonesPerRow; x++)
 				{
-					this._zones[i] = new Zone(bounds);
+					this._zones[i] = new Zone(i, bounds);
 					this.attachChild(this._zones[i]);
 					
 					bounds.left += zoneSize.x;
@@ -62,7 +62,50 @@ var GameGrid = function()
 					i++;
 				}
 			}
-		},		
+		},
+		
+
+		/**
+		 * \brief Handle device input for elements.
+		 * 
+		 */
+		handleInput: function()
+		{
+			if(Input.mouse.isPressed(Input.mouse.LEFT) && this.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
+			{
+				if(this._hasSelection())
+					this._activate();
+				else
+					this._deactivate();
+			}
+			else if(Input.mouse.isPressed(Input.mouse.TAP))
+			{
+				var foundTarget = false;
+				for(var i = this._children.begin(); i != this._children.end(); i = i.next)
+				{
+					if(i.data.isSelectable() && i.data.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
+					{
+						this._select(i.data);
+						this._activate();
+						foundTarget = true;
+					}
+				}
+				
+				if(!foundTarget)
+				{
+					this._deactivate();
+					this._deselect();
+				}
+			}
+			
+			if(this._hasActivation())
+			{
+				this._activation.handleInput();
+				if(!this._activation.isActivated())
+					this._deactivate();
+			}
+				
+		},
 	});
 
 	return GameGrid;

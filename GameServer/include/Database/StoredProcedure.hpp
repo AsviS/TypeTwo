@@ -145,6 +145,46 @@ namespace StoredProcedure
                 template<typename RowType, typename... ColumnTypes>
                 RowType getRow(otl_stream& stream, ColumnTypes... columns) const;
 
+                /// \brief Catch-function for getColumns
+                ///
+                /// This function is called instead of
+                /// getColumnsAsFetchDataProtocol(otl_stream&, std::stringstream&, CurrentColumnType&, RemainingColumnTypes&...)
+                /// when there are no more columns to extract.
+                ///
+                /// \param otl_stream&
+                /// \param std::stringstream&
+                /// \return void
+                ///
+                ///
+                void getColumnsAsFetchDataProtocol(otl_stream&, std::stringstream&) const;
+
+                /// \brief Recursively fetch a row's columns from a stream in accordance to the Fetch Data subprotocol
+                ///
+                /// \param typename CurrentColumnType Type of current column.
+                /// \param typename... RemainingColumnTypes Types of remaining columns.
+                /// \param stream otl_stream& Stream to fetch data from
+                /// \param std::stringstream& Stringstream to store row in.
+                /// \param currentColumn CurrentColumnType& Current column output
+                /// \param remainingColumns RemainingColumnTypes&... Remaining columns
+                /// \return void
+                ///
+                ///
+                template<typename CurrentColumnType, typename... RemainingColumnTypes>
+                void getColumnsAsFetchDataProtocol(otl_stream& stream, std::stringstream& strStream, CurrentColumnType& currentColumn, RemainingColumnTypes&... remainingColumns) const;
+
+
+                /// \brief Get row data in accordance to the Fetch Data WebSocket subprotocol
+                ///
+                /// \param typename RowType Type of object to store row data in.
+                /// \param typename... ColumnTypes Types of columns to extract.
+                /// \param stream otl_stream& Stream to fetch data from.
+                /// \param columns ColumnTypes... Variables to store output in.
+                /// \return std::string Row data formatted in accordance to the Fetch Data WebSocket subprotocol
+                ///
+                ///
+                template<typename... ColumnTypes>
+                std::string getRowAsFetchDataProtocol(otl_stream& stream, ColumnTypes... columns) const;
+
 
                 /// \brief Catch-function for executeInputParameters
                 ///

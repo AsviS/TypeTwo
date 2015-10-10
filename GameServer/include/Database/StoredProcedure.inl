@@ -88,7 +88,7 @@ std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) cons
 
         otl_stream stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
         stream.set_commit(M_REQUIRES_COMMIT);
-        stream.set_all_column_types(otl_all_num2str | otl_all_date2str);
+        stream.set_all_column_types(otl_all_date2str);
 
         executeParameters(stream, params...);
 
@@ -110,11 +110,7 @@ std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) cons
 
         if(M_RETURNS_RESULT_SET)
             while(!stream.eof())
-            {
-                std::string buffer;
-                stream >> buffer;
-                str.append(1, '\n').append(buffer);
-            }
+                str += getRowAsFetchDataProtocol(stream, initializeParameterPack<ResultTypes>()...);
     }
     catch(otl_exception& e)
     {
@@ -181,6 +177,34 @@ RowType STORED_PROCEDURE::getRow(otl_stream& stream, ColumnTypes... columns) con
     return RowType(columns...);
 }
 
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::getColumnsAsFetchDataProtocol(otl_stream&, std::stringstream&) const
+{
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+template<typename CurrentColumnType, typename... RemainingColumnTypes>
+void STORED_PROCEDURE::getColumnsAsFetchDataProtocol(otl_stream& stream, std::stringstream& strStream, CurrentColumnType& currentColumn, RemainingColumnTypes&... remainingColumns) const
+{
+    stream >> currentColumn;
+    strStream << '\n' << currentColumn;
+    getColumnsAsFetchDataProtocol(stream, strStream, remainingColumns...);
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+template<typename... ColumnTypes>
+std::string STORED_PROCEDURE::getRowAsFetchDataProtocol(otl_stream& stream, ColumnTypes... columns) const
+{
+    std::stringstream strStream;
+    getColumnsAsFetchDataProtocol(stream, strStream, columns...);
+    return strStream.str();
+}
 
 ///////////////////////////////////
 

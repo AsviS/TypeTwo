@@ -1,6 +1,7 @@
 ///////////////////////////////////
 // TypeTwo internal headers
 #include "Database/StoredProcedureQueryStringCompiler.hpp"
+#include "utility.hpp"
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -8,13 +9,6 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-///////////////////////////////////
-
-///////////////////////////////////
-// OTL4
-#define OTL_ODBC
-#define OTL_STL
-#include "otlv4.h"
 ///////////////////////////////////
 
 #define STORED_PROCEDURE Database::StoredProcedure::ParameterTypes<ParamTypes...>::ResultSetTypes<ResultTypes...>
@@ -27,7 +21,6 @@ STORED_PROCEDURE::ResultSetTypes(std::string name, bool requiresCommit, Connecti
 , M_REQUIRES_COMMIT(requiresCommit)
 , mDatabase(database)
 {
-
 }
 
 ///////////////////////////////////
@@ -37,16 +30,37 @@ void STORED_PROCEDURE::call(ParamTypes... params) const
 {
     try
     {
-        otl_stream stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
-        stream.set_commit(M_REQUIRES_COMMIT);
-        stream.set_all_column_types(otl_all_date2str);
+        otl_stream& stream = openStream();
 
         executeParameters(stream, params...);
+
+        closeStream(stream);
     }
     catch(otl_exception& e)
     {
         throwCallExcepton(e.msg);
     }
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+otl_stream& STORED_PROCEDURE::openStream() const
+{
+    otl_stream* stream = new otl_stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
+    stream->set_commit(M_REQUIRES_COMMIT);
+    stream->set_all_column_types(otl_all_date2str);
+
+    return *stream;
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::closeStream(otl_stream& stream) const
+{
+    if(&stream)
+        delete &stream;
 }
 
 ///////////////////////////////////
@@ -58,9 +72,7 @@ std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
     std::vector<RowType> resultSet;
     try
     {
-        otl_stream stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
-        stream.set_commit(M_REQUIRES_COMMIT);
-        stream.set_all_column_types(otl_all_date2str);
+        otl_stream& stream = openStream();
 
         executeParameters(stream, params...);
 
@@ -68,6 +80,8 @@ std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
         if(M_RETURNS_RESULT_SET)
             while(!stream.eof())
                 resultSet.push_back(getRow<RowType>(stream, initializeParameterPack<ResultTypes>()...));
+
+        closeStream(stream);
     }
     catch(otl_exception& e)
     {
@@ -75,49 +89,6 @@ std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
     }
 
     return resultSet;
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-std::string STORED_PROCEDURE::callAsFetchDataProtocol(ParamTypes... params) const
-{
-    std::string str;
-    try
-    {
-
-        otl_stream stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
-        stream.set_commit(M_REQUIRES_COMMIT);
-        stream.set_all_column_types(otl_all_date2str);
-
-        executeParameters(stream, params...);
-
-        std::stringstream strStream;
-        int numColumns;
-        otl_column_desc* columns = stream.describe_select(numColumns);
-
-        if(numColumns > 0)
-        {
-            for(int i = 0; i < numColumns - 1; i++)
-                strStream << columns[i].dbtype << ' ' << columns[i].name << ',';
-
-            strStream << columns[numColumns - 1].dbtype << ' ' << columns[numColumns - 1].name;
-
-            str = strStream.str();
-        }
-
-        str.reserve(str.size() +  stream.get_dirty_buf_len());
-
-        if(M_RETURNS_RESULT_SET)
-            while(!stream.eof())
-                str += getRowAsFetchDataProtocol(stream, initializeParameterPack<ResultTypes>()...);
-    }
-    catch(otl_exception& e)
-    {
-        throwCallExcepton(e.msg);
-    }
-
-    return str;
 }
 
 ///////////////////////////////////
@@ -139,15 +110,6 @@ void STORED_PROCEDURE::executeParameters(otl_stream& stream, ParamTypes... param
 {
     executeInputParameters(stream, params...);
     executeOutputParameters(stream, 0, params...);
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-template<typename Type>
-Type STORED_PROCEDURE::initializeParameterPack() const
-{
-    return Type();
 }
 
 ///////////////////////////////////
@@ -175,35 +137,6 @@ RowType STORED_PROCEDURE::getRow(otl_stream& stream, ColumnTypes... columns) con
 {
     getColumns(stream, columns...);
     return RowType(columns...);
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-void STORED_PROCEDURE::getColumnsAsFetchDataProtocol(otl_stream&, std::stringstream&) const
-{
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-template<typename CurrentColumnType, typename... RemainingColumnTypes>
-void STORED_PROCEDURE::getColumnsAsFetchDataProtocol(otl_stream& stream, std::stringstream& strStream, CurrentColumnType& currentColumn, RemainingColumnTypes&... remainingColumns) const
-{
-    stream >> currentColumn;
-    strStream << '\n' << currentColumn;
-    getColumnsAsFetchDataProtocol(stream, strStream, remainingColumns...);
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-template<typename... ColumnTypes>
-std::string STORED_PROCEDURE::getRowAsFetchDataProtocol(otl_stream& stream, ColumnTypes... columns) const
-{
-    std::stringstream strStream;
-    getColumnsAsFetchDataProtocol(stream, strStream, columns...);
-    return strStream.str();
 }
 
 ///////////////////////////////////

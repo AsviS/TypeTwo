@@ -12,6 +12,13 @@
 #include <string>
 ///////////////////////////////////
 
+///////////////////////////////////
+// OTL4
+#define OTL_ODBC
+#define OTL_STL
+#include "otlv4.h"
+///////////////////////////////////
+
 namespace Database
 {
 
@@ -58,6 +65,12 @@ namespace StoredProcedure
                 ///
                 void call(ParamTypes... params) const;
 
+
+                otl_stream& openStream() const;
+
+                void closeStream(otl_stream& stream) const;
+
+
                 /// \brief Call the procedure and fetch the result set.
                 ///
                 /// \param typename RowType Row type to store the result set's rows in.
@@ -67,25 +80,6 @@ namespace StoredProcedure
                 ///
                 template <typename RowType>
                 std::vector<RowType> call(ParamTypes... params) const;
-
-                /// \brief Call the procedure and return the result set as a string in accordance to the Fetch Data subprotocol.
-                ///
-                /// This function is implemented in this class for performance reasons.
-                ///
-                /// \param params ParamTypes... Parameters used to call the procedure.
-                /// \return std::string Fetch Data subprotocol string representing the result set.
-                ///
-                ///
-                std::string callAsFetchDataProtocol(ParamTypes... params) const;
-
-            private:
-                /// \brief Throw a database error message.
-                ///
-                /// \param otlMessage unsigned char* OTL 4 message to include in message.
-                /// \return void
-                ///
-                ///
-                void throwCallExcepton(unsigned char* otlMessage) const;
 
                 /// \brief Execute parameters to stream
                 ///
@@ -100,14 +94,14 @@ namespace StoredProcedure
                 ///
                 void executeParameters(otl_stream& stream, ParamTypes... params) const;
 
-                /// \brief Recursively initialize variables from a parameter pack
+            private:
+                /// \brief Throw a database error message.
                 ///
-                /// \param typename Type Data type of the variable to initialize.
-                /// \return Type Initialized variable of specified data type.
+                /// \param otlMessage unsigned char* OTL 4 message to include in message.
+                /// \return void
                 ///
                 ///
-                template<typename Type>
-                Type initializeParameterPack() const;
+                void throwCallExcepton(unsigned char* otlMessage) const;
 
                 /// \brief Catch-function for getColumns
                 ///
@@ -144,47 +138,6 @@ namespace StoredProcedure
                 ///
                 template<typename RowType, typename... ColumnTypes>
                 RowType getRow(otl_stream& stream, ColumnTypes... columns) const;
-
-                /// \brief Catch-function for getColumns
-                ///
-                /// This function is called instead of
-                /// getColumnsAsFetchDataProtocol(otl_stream&, std::stringstream&, CurrentColumnType&, RemainingColumnTypes&...)
-                /// when there are no more columns to extract.
-                ///
-                /// \param otl_stream&
-                /// \param std::stringstream&
-                /// \return void
-                ///
-                ///
-                void getColumnsAsFetchDataProtocol(otl_stream&, std::stringstream&) const;
-
-                /// \brief Recursively fetch a row's columns from a stream in accordance to the Fetch Data subprotocol
-                ///
-                /// \param typename CurrentColumnType Type of current column.
-                /// \param typename... RemainingColumnTypes Types of remaining columns.
-                /// \param stream otl_stream& Stream to fetch data from
-                /// \param std::stringstream& Stringstream to store row in.
-                /// \param currentColumn CurrentColumnType& Current column output
-                /// \param remainingColumns RemainingColumnTypes&... Remaining columns
-                /// \return void
-                ///
-                ///
-                template<typename CurrentColumnType, typename... RemainingColumnTypes>
-                void getColumnsAsFetchDataProtocol(otl_stream& stream, std::stringstream& strStream, CurrentColumnType& currentColumn, RemainingColumnTypes&... remainingColumns) const;
-
-
-                /// \brief Get row data in accordance to the Fetch Data WebSocket subprotocol
-                ///
-                /// \param typename RowType Type of object to store row data in.
-                /// \param typename... ColumnTypes Types of columns to extract.
-                /// \param stream otl_stream& Stream to fetch data from.
-                /// \param columns ColumnTypes... Variables to store output in.
-                /// \return std::string Row data formatted in accordance to the Fetch Data WebSocket subprotocol
-                ///
-                ///
-                template<typename... ColumnTypes>
-                std::string getRowAsFetchDataProtocol(otl_stream& stream, ColumnTypes... columns) const;
-
 
                 /// \brief Catch-function for executeInputParameters
                 ///

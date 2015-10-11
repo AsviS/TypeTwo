@@ -16,7 +16,7 @@ class StoredProcedures
     public:
         static const StoredProcedure
         ::ParameterTypes<int>
-        ::ResultSetTypes<int, int, int>
+        ::ResultSetTypes<int, int, int, int>
         GET_UNITS; ///< Get units that belong to a user by user's ID.
 
         static const StoredProcedure
@@ -53,6 +53,16 @@ class StoredProcedures
         ::ParameterTypes<int>
         ::ResultSetTypes<int, int, int, int>
         GET_UNITS_BY_ZONE_ID; ///< Get units that are located in specified zone.
+
+        static const Database::StoredProcedure
+        ::ParameterTypes<int, int>
+        ::ResultSetTypes<int, int, int, int, int>
+        GET_UNITS_BY_USER_ID_AND_ZONE_ID; ///< Get units that belong to a specified user and that are located in specified zone.
+
+        static const Database::StoredProcedure
+        ::ParameterTypes<int>
+        ::ResultSetTypes<int>
+        GET_USER_ZONE_IDS; ///< Get all zone IDs where the user has a unit.
 };
 }
 

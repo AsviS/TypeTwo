@@ -7,7 +7,7 @@ using namespace Database;
 
 const StoredProcedure
 ::ParameterTypes<int>
-::ResultSetTypes<int, int, int>
+::ResultSetTypes<int, int, int, int>
 StoredProcedures::GET_UNITS("unit_getby_userid");
 
 const StoredProcedure
@@ -40,8 +40,17 @@ const Database::StoredProcedure
 ::ResultSetTypes<>
 StoredProcedures::INSERT_UNIT("unit_insert", true);
 
-
 const Database::StoredProcedure
 ::ParameterTypes<int>
 ::ResultSetTypes<int, int, int, int>
 StoredProcedures::GET_UNITS_BY_ZONE_ID("unit_getby_zoneid");
+
+const Database::StoredProcedure
+::ParameterTypes<int, int>
+::ResultSetTypes<int, int, int, int, int>
+StoredProcedures::GET_UNITS_BY_USER_ID_AND_ZONE_ID("unit_getby_userid_zoneid");
+
+const Database::StoredProcedure
+::ParameterTypes<int>
+::ResultSetTypes<int>
+StoredProcedures::GET_USER_ZONE_IDS("unit_get_zoneid_by_userid");

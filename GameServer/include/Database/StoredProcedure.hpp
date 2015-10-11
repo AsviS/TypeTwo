@@ -30,6 +30,22 @@ namespace Database
 ///
 namespace StoredProcedure
 {
+    struct StreamHolder
+    {
+            otl_stream& stream;
+
+            StreamHolder(otl_stream& stream)
+            : stream(stream)
+            {
+
+            }
+
+            ~StreamHolder()
+            {
+                delete &stream;
+            }
+    };
+
     /// \brief
     ///
     /// \param typename... ParamTypes Types of the procedure's parameters used when calling the procedure.
@@ -65,10 +81,41 @@ namespace StoredProcedure
                 ///
                 void call(ParamTypes... params) const;
 
+                class Stream1
+                {
+                    private:
+                        typedef ParameterTypes<ParamTypes...>::ResultSetTypes<ResultTypes...> Procedure;
+                        const Procedure& mProcedure;
+                        StreamHolder mStream;
 
-                otl_stream& openStream() const;
+                    public:
+                        Stream1(const Procedure& procedure)
+                        : mProcedure(procedure)
+                        , mStream(mProcedure.createStreamHolder())
+                        {
 
-                void closeStream(otl_stream& stream) const;
+                        }
+
+                        void execute(ParamTypes... params)
+                        {
+                            mProcedure.execute(mStream, params...);
+                        }
+
+                        template<typename RowType>
+                        std::vector<RowType> execute(ParamTypes... params)
+                        {
+                            return mProcedure.execute<RowType>(mStream, params...);
+                        }
+                };
+
+                StreamHolder createStreamHolder() const;
+
+                Stream1 createStream() const;
+
+                void execute(StreamHolder& stream, ParamTypes... params) const;
+
+                template <typename RowType>
+                std::vector<RowType> execute(StreamHolder& stream, ParamTypes... params) const;
 
 
                 /// \brief Call the procedure and fetch the result set.

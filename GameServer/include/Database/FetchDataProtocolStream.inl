@@ -6,17 +6,9 @@
 template <typename Procedure, typename... Result>
 Stream<Procedure, Result...>::Stream(const Procedure& procedure)
 : mProcedure(procedure)
-, mStream(mProcedure.openStream())
+, mStream(mProcedure.createStreamHolder())
 {
 
-}
-
-///////////////////////////////////
-
-template <typename Procedure, typename... Result>
-Stream<Procedure, Result...>::~Stream()
-{
-    mProcedure.closeStream(mStream);
 }
 
 ///////////////////////////////////
@@ -25,7 +17,7 @@ template <typename Procedure, typename... Result>
 template<typename... ParamTypes>
 void Stream<Procedure, Result...>::execute(ParamTypes... params)
 {
-    mProcedure.executeParameters(mStream, params...);
+    mProcedure.executeParameters(mStream.stream, params...);
     getRows(initializeParameterPack<Result>()...);
 }
 
@@ -46,7 +38,7 @@ template <typename Procedure, typename... Result>
 void Stream<Procedure, Result...>::prependColumnDescription()
 {
     int numColumns;
-    otl_column_desc* columns = mStream.describe_select(numColumns);
+    otl_column_desc* columns = mStream.stream.describe_select(numColumns);
 
     if(numColumns > 0)
     {
@@ -71,7 +63,7 @@ template <typename Procedure, typename... Result>
 template<typename CurrentColumnType, typename... RemainingColumnTypes>
 void Stream<Procedure, Result...>::getColumns(std::stringstream& strStream, CurrentColumnType& currentColumn, RemainingColumnTypes&... remainingColumns)
 {
-    mStream >> currentColumn;
+    mStream.stream >> currentColumn;
     strStream << '\n' << currentColumn;
     getColumns(strStream, remainingColumns...);
 }
@@ -84,7 +76,7 @@ void Stream<Procedure, Result...>::getRows(ColumnTypes... columns)
 {
     std::stringstream strStream;
 
-    while(!mStream.eof())
+    while(!mStream.stream.eof())
         getColumns(strStream, columns...);
 
     mBuffer += strStream.str();

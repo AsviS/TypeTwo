@@ -16,13 +16,7 @@ var TypeTwo = function()
 	{
 		config.init();
 		this._stateStack = new StateStack();
-		
-		config.webSocket.order.init("verp", "verp", this._stateStack, config.canvas);
-		config.webSocket.fetchData.init("verp", "verp", this._stateStack, config.canvas);
-		
-		var self = this;
-		config.webSocket.order.onOpen(function(){self._stateStack.push(new GameState(self._stateStack, config.canvas));});
-		//this._stateStack.push(new LoginMenu(this._stateStack, config.canvas));
+		this._stateStack.push(new LoginMenu(this._stateStack, config.canvas));
 		FramerateIndicator.enable();
 	}
 

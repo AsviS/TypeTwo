@@ -28,15 +28,39 @@ STORED_PROCEDURE::ResultSetTypes(std::string name, bool requiresCommit, Connecti
 STORED_PROCEDURE_TEMPLATES
 void STORED_PROCEDURE::call(ParamTypes... params) const
 {
-    StreamHolder stream = createStreamHolder();
     try
     {
-        executeParameters(stream.stream, params...);
+        otl_stream& stream = openStream();
+
+        executeParameters(stream, params...);
+
+        closeStream(stream);
     }
     catch(otl_exception& e)
     {
         throwCallExcepton(e.msg);
     }
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+otl_stream& STORED_PROCEDURE::openStream() const
+{
+    otl_stream* stream = new otl_stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
+    stream->set_commit(M_REQUIRES_COMMIT);
+    stream->set_all_column_types(otl_all_date2str);
+
+    return *stream;
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::closeStream(otl_stream& stream) const
+{
+    if(&stream)
+        delete &stream;
 }
 
 ///////////////////////////////////
@@ -45,15 +69,19 @@ STORED_PROCEDURE_TEMPLATES
 template <typename RowType>
 std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
 {
-    StreamHolder stream = createStreamHolder();
     std::vector<RowType> resultSet;
     try
     {
-        executeParameters(stream.stream, params...);
+        otl_stream& stream = openStream();
+
+        executeParameters(stream, params...);
+
 
         if(M_RETURNS_RESULT_SET)
-            while(!stream.stream.eof())
-                resultSet.push_back(getRow<RowType>(stream.stream, initializeParameterPack<ResultTypes>()...));
+            while(!stream.eof())
+                resultSet.push_back(getRow<RowType>(stream, initializeParameterPack<ResultTypes>()...));
+
+        closeStream(stream);
     }
     catch(otl_exception& e)
     {
@@ -61,72 +89,6 @@ std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
     }
 
     return resultSet;
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-void STORED_PROCEDURE::execute(StreamHolder& stream, ParamTypes... params) const
-{
-    try
-    {
-        executeParameters(stream.stream, params...);
-    }
-    catch(otl_exception& e)
-    {
-        throwCallExcepton(e.msg);
-    }
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-template <typename RowType>
-std::vector<RowType> STORED_PROCEDURE::execute(StreamHolder& stream, ParamTypes... params) const
-{
-    std::vector<RowType> resultSet;
-    try
-    {
-        executeParameters(stream.stream, params...);
-
-        if(M_RETURNS_RESULT_SET)
-            while(!stream.stream.eof())
-                resultSet.push_back(getRow<RowType>(stream.stream, initializeParameterPack<ResultTypes>()...));
-    }
-    catch(otl_exception& e)
-    {
-        throwCallExcepton(e.msg);
-    }
-
-    return resultSet;
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-Database::StoredProcedure::StreamHolder STORED_PROCEDURE::createStreamHolder() const
-{
-    otl_stream* stream;
-    try
-    {
-        stream = new otl_stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
-        stream->set_commit(M_REQUIRES_COMMIT);
-        stream->set_all_column_types(otl_all_date2str);
-    }
-    catch(otl_exception& e)
-    {
-        throwCallExcepton(e.msg);
-    }
-
-    return StreamHolder(*stream);
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-typename Database::StoredProcedure::ParameterTypes<ParamTypes...>::template ResultSetTypes<ResultTypes...>::Stream1 STORED_PROCEDURE::createStream() const
-{
-    return Stream1(*this);
 }
 
 ///////////////////////////////////

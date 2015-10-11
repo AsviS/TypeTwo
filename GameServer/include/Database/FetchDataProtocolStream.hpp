@@ -16,6 +16,8 @@ class Stream
     public:
         Stream(const Procedure& procedure);
 
+        ~Stream();
+
         template<typename... ParamTypes>
         void execute(ParamTypes... params);
 
@@ -67,7 +69,7 @@ class Stream
 
     private:
         const Procedure& mProcedure; ///< Procedure to call
-        StoredProcedure::StreamHolder mStream; ///< Stream connected to database to call through
+        otl_stream& mStream; ///< Stream connected to database to call through
         std::string mBuffer; ///< Fetched data.
 };
 

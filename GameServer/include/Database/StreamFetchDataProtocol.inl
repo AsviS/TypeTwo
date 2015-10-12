@@ -6,7 +6,7 @@
 template <typename Procedure, typename... Result>
 Stream<Procedure, Result...>::Stream(const Procedure& procedure)
 : mProcedure(procedure)
-, mStream(mProcedure.createStreamHolder())
+, mStream(mProcedure.createStreamPtr())
 {
 
 }
@@ -17,7 +17,7 @@ template <typename Procedure, typename... Result>
 template<typename... ParamTypes>
 void Stream<Procedure, Result...>::execute(ParamTypes... params)
 {
-    mProcedure.executeParameters(mStream.stream, params...);
+    mProcedure.executeParameters(*mStream, params...);
     getRows(initializeParameterPack<Result>()...);
 }
 
@@ -38,7 +38,7 @@ template <typename Procedure, typename... Result>
 void Stream<Procedure, Result...>::prependColumnDescription()
 {
     int numColumns;
-    otl_column_desc* columns = mStream.stream.describe_select(numColumns);
+    otl_column_desc* columns = mStream->describe_select(numColumns);
 
     if(numColumns > 0)
     {
@@ -63,7 +63,7 @@ template <typename Procedure, typename... Result>
 template<typename CurrentColumnType, typename... RemainingColumnTypes>
 void Stream<Procedure, Result...>::getColumns(std::stringstream& strStream, CurrentColumnType& currentColumn, RemainingColumnTypes&... remainingColumns)
 {
-    mStream.stream >> currentColumn;
+    mStream->operator>>(currentColumn);
     strStream << '\n' << currentColumn;
     getColumns(strStream, remainingColumns...);
 }
@@ -76,9 +76,26 @@ void Stream<Procedure, Result...>::getRows(ColumnTypes... columns)
 {
     std::stringstream strStream;
 
-    while(!mStream.stream.eof())
+    while(!mStream->eof())
         getColumns(strStream, columns...);
 
     mBuffer += strStream.str();
 }
 
+///////////////////////////////////
+
+template<template<typename... a> class Procedure, typename... Result>
+Stream<Procedure<Result...>, Result...> create(const Procedure<Result...>& procedure)
+{
+    return Stream<Procedure<Result...>, Result...>(procedure);
+}
+
+///////////////////////////////////
+
+template<template<typename... a> class Procedure, typename... Result, typename... Params>
+std::string call(const Procedure<Result...>& procedure, Params... params)
+{
+    Stream<Procedure<Result...>, Result...> stream(procedure);
+    stream.execute(params...);
+    return stream.fetch();
+}

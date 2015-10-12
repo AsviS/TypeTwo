@@ -1,5 +1,10 @@
-#ifndef TYPETWO_FETCH_DATA_PROTOCOL_STREAM_HPP
-#define TYPETWO_FETCH_DATA_PROTOCOL_STREAM_HPP
+#ifndef TYPETWO_DATABASE_STREAM_FETCH_DATA_PROTOCOL_HPP
+#define TYPETWO_DATABASE_STREAM_FETCH_DATA_PROTOCOL_HPP
+
+///////////////////////////////////
+// TypeTwo internal headers
+#include "Database/StoredProcedure.hpp"
+///////////////////////////////////
 
 ///////////////////////////////////
 // STD C++
@@ -7,6 +12,8 @@
 ///////////////////////////////////
 
 namespace Database
+{
+namespace Stream
 {
 namespace FetchDataProtocol
 {
@@ -67,30 +74,21 @@ class Stream
 
     private:
         const Procedure& mProcedure; ///< Procedure to call
-        StoredProcedure::StreamHolder mStream; ///< Stream connected to database to call through
+        StoredProcedure::StreamPtr mStream; ///< Stream connected to database to call through
         std::string mBuffer; ///< Fetched data.
 };
 
-#include "Database/FetchDataProtocolStream.inl"
-
 template<template<typename... a> class Procedure, typename... Result>
-Stream<Procedure<Result...>, Result...> createStream(const Procedure<Result...>& procedure)
-{
-    return Stream<Procedure<Result...>, Result...>(procedure);
-}
+Stream<Procedure<Result...>, Result...> create(const Procedure<Result...>& procedure);
 
 template<template<typename... a> class Procedure, typename... Result, typename... Params>
-std::string call(const Procedure<Result...>& procedure, Params... params)
-{
-    Stream<Procedure<Result...>, Result...> stream(procedure);
-    stream.execute(params...);
-    return stream.fetch();
-}
+std::string call(const Procedure<Result...>& procedure, Params... params);
 
-}
-}
+#include "Database/StreamFetchDataProtocol.inl"
+
+}}}
 
 
 
-#endif // TYPETWO_FETCH_DATA_PROTOCOL_STREAM_HPP
+#endif // TYPETWO_DATABASE_STREAM_FETCH_DATA_PROTOCOL_HPP
 

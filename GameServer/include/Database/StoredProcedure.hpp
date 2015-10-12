@@ -10,6 +10,7 @@
 // STD C++
 #include <vector>
 #include <string>
+#include <memory>
 ///////////////////////////////////
 
 ///////////////////////////////////
@@ -30,21 +31,7 @@ namespace Database
 ///
 namespace StoredProcedure
 {
-    struct StreamHolder
-    {
-            otl_stream& stream;
-
-            StreamHolder(otl_stream& stream)
-            : stream(stream)
-            {
-
-            }
-
-            ~StreamHolder()
-            {
-                delete &stream;
-            }
-    };
+    typedef std::unique_ptr<otl_stream> StreamPtr;
 
     /// \brief
     ///
@@ -81,41 +68,12 @@ namespace StoredProcedure
                 ///
                 void call(ParamTypes... params) const;
 
-                class Stream1
-                {
-                    private:
-                        typedef ParameterTypes<ParamTypes...>::ResultSetTypes<ResultTypes...> Procedure;
-                        const Procedure& mProcedure;
-                        StreamHolder mStream;
+                StreamPtr createStreamPtr() const;
 
-                    public:
-                        Stream1(const Procedure& procedure)
-                        : mProcedure(procedure)
-                        , mStream(mProcedure.createStreamHolder())
-                        {
-
-                        }
-
-                        void execute(ParamTypes... params)
-                        {
-                            mProcedure.execute(mStream, params...);
-                        }
-
-                        template<typename RowType>
-                        std::vector<RowType> execute(ParamTypes... params)
-                        {
-                            return mProcedure.execute<RowType>(mStream, params...);
-                        }
-                };
-
-                StreamHolder createStreamHolder() const;
-
-                Stream1 createStream() const;
-
-                void execute(StreamHolder& stream, ParamTypes... params) const;
+                void execute(otl_stream& stream, ParamTypes... params) const;
 
                 template <typename RowType>
-                std::vector<RowType> execute(StreamHolder& stream, ParamTypes... params) const;
+                std::vector<RowType> execute(otl_stream& stream, ParamTypes... params) const;
 
 
                 /// \brief Call the procedure and fetch the result set.
@@ -142,6 +100,8 @@ namespace StoredProcedure
                 void executeParameters(otl_stream& stream, ParamTypes... params) const;
 
             private:
+                otl_stream* createOtlStream() const;
+
                 /// \brief Throw a database error message.
                 ///
                 /// \param otlMessage unsigned char* OTL 4 message to include in message.
@@ -184,7 +144,7 @@ namespace StoredProcedure
                 ///
                 ///
                 template<typename RowType, typename... ColumnTypes>
-                RowType getRow(otl_stream& stream, ColumnTypes... columns) const;
+                std::vector<RowType> getRows(otl_stream& stream, ColumnTypes... columns) const;
 
                 /// \brief Catch-function for executeInputParameters
                 ///

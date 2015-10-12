@@ -28,15 +28,9 @@ STORED_PROCEDURE::ResultSetTypes(std::string name, bool requiresCommit, Connecti
 STORED_PROCEDURE_TEMPLATES
 void STORED_PROCEDURE::call(ParamTypes... params) const
 {
-    StreamHolder stream = createStreamHolder();
-    try
-    {
-        executeParameters(stream.stream, params...);
-    }
-    catch(otl_exception& e)
-    {
-        throwCallExcepton(e.msg);
-    }
+    otl_stream* stream = createOtlStream();
+    execute(*stream, params...);
+    delete stream;
 }
 
 ///////////////////////////////////
@@ -45,32 +39,21 @@ STORED_PROCEDURE_TEMPLATES
 template <typename RowType>
 std::vector<RowType> STORED_PROCEDURE::call(ParamTypes... params) const
 {
-    StreamHolder stream = createStreamHolder();
-    std::vector<RowType> resultSet;
-    try
-    {
-        executeParameters(stream.stream, params...);
+    otl_stream* stream = createOtlStream();
+    std::vector<RowType> result = execute<RowType>(*stream, params...);
 
-        if(M_RETURNS_RESULT_SET)
-            while(!stream.stream.eof())
-                resultSet.push_back(getRow<RowType>(stream.stream, initializeParameterPack<ResultTypes>()...));
-    }
-    catch(otl_exception& e)
-    {
-        throwCallExcepton(e.msg);
-    }
-
-    return resultSet;
+    delete stream;
+    return result;
 }
 
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-void STORED_PROCEDURE::execute(StreamHolder& stream, ParamTypes... params) const
+void STORED_PROCEDURE::execute(otl_stream& stream, ParamTypes... params) const
 {
     try
     {
-        executeParameters(stream.stream, params...);
+        executeParameters(stream, params...);
     }
     catch(otl_exception& e)
     {
@@ -82,16 +65,15 @@ void STORED_PROCEDURE::execute(StreamHolder& stream, ParamTypes... params) const
 
 STORED_PROCEDURE_TEMPLATES
 template <typename RowType>
-std::vector<RowType> STORED_PROCEDURE::execute(StreamHolder& stream, ParamTypes... params) const
+std::vector<RowType> STORED_PROCEDURE::execute(otl_stream& stream, ParamTypes... params) const
 {
     std::vector<RowType> resultSet;
     try
     {
-        executeParameters(stream.stream, params...);
+        executeParameters(stream, params...);
 
         if(M_RETURNS_RESULT_SET)
-            while(!stream.stream.eof())
-                resultSet.push_back(getRow<RowType>(stream.stream, initializeParameterPack<ResultTypes>()...));
+            resultSet = getRows<RowType>(stream, initializeParameterPack<ResultTypes>()...);
     }
     catch(otl_exception& e)
     {
@@ -104,7 +86,15 @@ std::vector<RowType> STORED_PROCEDURE::execute(StreamHolder& stream, ParamTypes.
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
-Database::StoredProcedure::StreamHolder STORED_PROCEDURE::createStreamHolder() const
+Database::StoredProcedure::StreamPtr STORED_PROCEDURE::createStreamPtr() const
+{
+    return StreamPtr(createOtlStream());
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+otl_stream* STORED_PROCEDURE::createOtlStream() const
 {
     otl_stream* stream;
     try
@@ -118,15 +108,7 @@ Database::StoredProcedure::StreamHolder STORED_PROCEDURE::createStreamHolder() c
         throwCallExcepton(e.msg);
     }
 
-    return StreamHolder(*stream);
-}
-
-///////////////////////////////////
-
-STORED_PROCEDURE_TEMPLATES
-typename Database::StoredProcedure::ParameterTypes<ParamTypes...>::template ResultSetTypes<ResultTypes...>::Stream1 STORED_PROCEDURE::createStream() const
-{
-    return Stream1(*this);
+    return stream;
 }
 
 ///////////////////////////////////
@@ -171,10 +153,16 @@ void STORED_PROCEDURE::getColumns(otl_stream& stream, CurrentColumnType& current
 
 STORED_PROCEDURE_TEMPLATES
 template<typename RowType, typename... ColumnTypes>
-RowType STORED_PROCEDURE::getRow(otl_stream& stream, ColumnTypes... columns) const
+std::vector<RowType> STORED_PROCEDURE::getRows(otl_stream& stream, ColumnTypes... columns) const
 {
-    getColumns(stream, columns...);
-    return RowType(columns...);
+    std::vector<RowType> rows;
+    while(!stream.eof())
+    {
+        getColumns(stream, columns...);
+        rows.push_back(RowType(columns...));
+    }
+
+    return rows;
 }
 
 ///////////////////////////////////

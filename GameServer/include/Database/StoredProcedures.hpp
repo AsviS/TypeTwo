@@ -51,7 +51,7 @@ class StoredProcedures
 
         static const Database::StoredProcedure
         ::ParameterTypes<int>
-        ::ResultSetTypes<int, int, int, int>
+        ::ResultSetTypes<int, int, int, int, int>
         GET_UNITS_BY_ZONE_ID; ///< Get units that are located in specified zone.
 
         static const Database::StoredProcedure

@@ -42,7 +42,7 @@ StoredProcedures::INSERT_UNIT("unit_insert", true);
 
 const Database::StoredProcedure
 ::ParameterTypes<int>
-::ResultSetTypes<int, int, int, int>
+::ResultSetTypes<int, int, int, int, int>
 StoredProcedures::GET_UNITS_BY_ZONE_ID("unit_getby_zoneid");
 
 const Database::StoredProcedure

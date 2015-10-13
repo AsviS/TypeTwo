@@ -23,6 +23,8 @@ var Socket = function()
 		this._messagesBackBuffer = [];
 		this._messagesBuffer1 = [];
 		this._messagesBuffer2 = [];
+	
+		this._onOpenCallbacks = [];
 		
 	}
 	
@@ -44,7 +46,7 @@ var Socket = function()
 		_websocket: null, /**< WebSocket WebSocket connection */
 		_protocol: null, /**< WebSocketSubProtocol Connection protocol used */
 		_status: Socket.statusID.UNINITIALIZED, /**< Socket.statusID Current connection status */
-		_onOpenCallbacks: [], /**< Array Functions to be called when connetion is opened */
+		_onOpenCallbacks: null, /**< Array Functions to be called when connetion is opened */
 		
 		_messagesFrontBuffer: null, /**< Array Front buffer of received messages. This buffer is shown to the outside. */
 		_messagesBackBuffer: null, /**< Array Back buffer of received messages. This buffer is used to store received messages. */
@@ -82,7 +84,6 @@ var Socket = function()
 			this._websocket = new WebSocket(url, this._protocol.getName());
 			
 			this._status = Socket.statusID.CONNECTING;
-			stateStack.push(new ConnectionBarState(stateStack, canvas, 5, this));
 			
 			var self = this;
 			this._websocket.onopen = function(){self._onOpen();};
@@ -123,6 +124,7 @@ var Socket = function()
 		 */
 		sendQuery: function(query, success, fail, timeOut)
 		{
+			
 			if(this._status === Socket.statusID.OPEN)
 			{
 				var id = WebSocketQueryManager.pushQuery(success, fail, timeOut);
@@ -131,7 +133,7 @@ var Socket = function()
 			}
 			else
 			{
-				console.log('could not send');
+				console.log('could not send query: ' + query);
 				return false;
 			}
 		},
@@ -184,6 +186,7 @@ var Socket = function()
 		{
 			this._status = Socket.statusID.OPEN;
 			
+			console.log("derp");
 			for(var i = 0; i < this._onOpenCallbacks.length; i++)
 				this._onOpenCallbacks[i]();
 				

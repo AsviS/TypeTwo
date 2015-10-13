@@ -80,9 +80,11 @@ var GameState = function()
 
 					for(var i = 0; i < response.length; i++)
 					{
-						var unitName = response[i].fk_unit_unittypeid_unit_type === "1" ? "Fighter" : "Bomber";
+						var unit = response[i];
 						
-						var text = new GUIText([unitName + "\t|\t" + response[i].hp + "hp"]);
+						var unitName = unit.fk_unit_unittypeid_unit_type === "1" ? "Fighter" : "Bomber";
+						
+						var text = new GUIText([unit.unit_id + "\t|\t" + unitName + "\t|\t" + unit.hp + "hp"]);
 						text.setColor('white');
 						
 						self._purchaseList.appendElement(text);

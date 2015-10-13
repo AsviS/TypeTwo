@@ -7,6 +7,39 @@ var GameGrid = function()
 		GUIContainer.call(this, [], bounds);
 		
 		this._initializeZones(numZones);
+		
+		var self = this;
+		config.webSocket.fetchData.sendQuery
+		(
+			"getVisibleUnits",
+			function(response)
+			{
+				response = response.data;
+				
+				var unitCount = [];
+				unitCount.length = self._zones.length;
+				
+				for(var i = 0; i < unitCount.length; i++)
+					unitCount[i] = 0;
+				
+				for(var i = 0; i < response.length; i++)
+					unitCount[response[i].fk_unit_zoneid_zone]++;
+				
+				for(var i = 0; i < unitCount.length; i++)
+				{
+					if(unitCount[i] > 0)
+					{
+						var text = new GUIText([unitCount[i]]);
+						text.setColor('white');
+						self._zones[i].attachChild(text);
+					}
+				}
+			},
+			function()
+			{
+				console.log("Could not fetch visible units.");
+			}
+		);
 	}
 	
 	$.extend(GameGrid.prototype, GUIContainer.prototype,

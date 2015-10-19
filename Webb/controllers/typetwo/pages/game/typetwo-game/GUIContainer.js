@@ -50,9 +50,9 @@ var GUIContainer = function()
 			if(Input.mouse.isPressed(Input.mouse.LEFT))
 			{
 				if(this._hasSelection())
-					this._activate();
+					this._activateElement();
 				else
-					this._deactivate();
+					this._deactivateElement();
 			}
 			else if(Input.mouse.isPressed(Input.mouse.TAP))
 			{
@@ -61,16 +61,16 @@ var GUIContainer = function()
 				{
 					if(i.data.isSelectable() && i.data.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
 					{
-						this._select(i.data);
-						this._activate();
+						this._selectElement(i.data);
+						this._activateElement();
 						foundTarget = true;
 					}
 				}
 				
 				if(!foundTarget)
 				{
-					this._deactivate();
-					this._deselect();
+					this._deactivateElement();
+					this._deselectElement();
 				}
 			}
 			
@@ -78,7 +78,7 @@ var GUIContainer = function()
 			{
 				this._activation.handleInput();
 				if(!this._activation.isActivated())
-					this._deactivate();
+					this._deactivateElement();
 			}
 				
 		},
@@ -92,13 +92,13 @@ var GUIContainer = function()
 			{
 				if(i.data.isSelectable() && i.data.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
 				{
-					this._select(i.data);
+					this._selectElement(i.data);
 					return;
 				}
 			}
 			
 			// If we got here, it means that the cursor is not on any element.
-			this._deselect();
+			this._deselectElement();
 		},
 		
 		/**
@@ -106,12 +106,12 @@ var GUIContainer = function()
 		 * 
 		 * \param GUIElement Element to select.
 		 */
-		_select: function(element)
+		_selectElement: function(element)
 		{
 			if(this._selection == element)
 				return;
 			
-			this._deselect();
+			this._deselectElement();
 			element.select();
 			this._selection = element;
 		},
@@ -119,7 +119,7 @@ var GUIContainer = function()
 		/**
 		 * \brief Deselect current selection, if any.
 		 */
-		_deselect: function()
+		_deselectElement: function()
 		{
 			if(!this._hasSelection())
 				return;
@@ -141,12 +141,12 @@ var GUIContainer = function()
 		/**
 		 * \brief Activate currently selected element.
 		 */
-		_activate: function()
+		_activateElement: function()
 		{
 			if(this._activation === this._selection)
 				return;
 			
-			this._deactivate();
+			this._deactivateElement();
 			this._selection.activate();
 			this._activation = this._selection;
 		},
@@ -154,7 +154,7 @@ var GUIContainer = function()
 		/**
 		 * \brief Deactivate currently activated element.
 		 */
-		_deactivate: function()
+		_deactivateElement: function()
 		{
 			if(!this._hasActivation())
 				return;

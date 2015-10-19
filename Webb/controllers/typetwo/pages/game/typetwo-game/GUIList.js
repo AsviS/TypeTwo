@@ -11,7 +11,7 @@ var GUIList = function()
 	}
 
 
-	$.extend(GUIList.prototype, GUIContainer.prototype,
+	$.extend(GUIList.prototype, GUIContainer.prototype, GUIElement.prototype,
 	{
 		_gapThickness: 5,
 		
@@ -36,6 +36,30 @@ var GUIList = function()
 			}
 			
 			this.attachChild(element);
+		},
+		
+		_updateCurrent: function()
+		{
+			this._pack();
+		},
+		
+		_pack: function()
+		{
+			var size = new Vector();
+			for(var i = this._children.begin(); i != this._children.end(); i = i.next)
+			{
+				i.data.setPosition(0, size.y);
+				
+				var elementSize = i.data.getSize();
+				if(elementSize.x > size.x)
+					size.x = elementSize.x;
+					
+				size.y += elementSize.y + this._gapThickness;
+			}
+			
+			size.y -= this._gapThickness;
+			
+			this.setSizeVector(size);
 		},
 		
 		clear: function()

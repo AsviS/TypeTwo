@@ -15,7 +15,7 @@ var GUIText = function()
 	{
 		GUIElement.call(this);
 		
-		this._text = text;
+		this._text = text || [];
 		this.setFontSettings(fontSettings || new GUIText.FontSettings());
 	}
 

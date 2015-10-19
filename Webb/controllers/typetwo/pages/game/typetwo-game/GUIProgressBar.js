@@ -50,6 +50,19 @@ var GUIProgressBar = function()
 		},
 		
 		/**
+		 * \brief Set progress bar's progress width
+		 * 
+		 * \param Number percent Percent of progress bar to fill.
+		 */
+		setProgress: function(percent)
+		{
+			this._progress = this._bounds.width * percent;
+			
+			if(this._progress >= this._bounds.width)
+				this._progress = this._bounds.width;
+		},
+		
+		/**
 		 * \brief Has the progress bar reached 100% progress?
 		 * 
 		 * \returns Boolean True if progress bar has reached 100%, else false.

@@ -185,6 +185,8 @@ var Socket = function()
 		_onOpen: function()
 		{
 			this._status = Socket.statusID.OPEN;
+			
+			console.log("derp");
 			for(var i = 0; i < this._onOpenCallbacks.length; i++)
 				this._onOpenCallbacks[i]();
 				

@@ -7,54 +7,44 @@ var GameGrid = function()
 		GUIContainer.call(this, [], bounds);
 		
 		this._initializeZones(numZones);
-
-		
-		var units = GameData.units;
-		this._unitCounts = [];
-		this._unitCounts.length = this._zones.length;
-		
-		for(var i = 0; i < this._unitCounts.length; i++)
-			this._unitCounts[i] = 0;
-		
-		for(var i = 1; i < units.length; i++)
-			if(units[i])
-				this._unitCounts[units[i].fk_unit_zoneid_zone - 1]++;
-		
-		for(var i = 0; i < this._unitCounts.length; i++)
-		{
-			var text = new GUIText();
-			text.setColor('white');
-			this._zones[i].attachChild(text);
-			
-			if(this._unitCounts[i] > 0)
-				text.setText([this._unitCounts[i]]);
-			
-			this._unitCounts[i] = text;			
-		}
 		
 		var self = this;
-		GUIEvents.populateZoneUnitList.registerCallback(function(zone)
-		{
-			var zoneId = zone.getId();
-			var unitCount = 0;
-			for(var i = 0; i < GameData.units.length; i++)
+		config.webSocket.fetchData.sendQuery
+		(
+			"getVisibleUnits",
+			function(response)
 			{
-				var unit = GameData.units[i];
+				response = response.data;
 				
-				if(unit && unit.fk_unit_zoneid_zone == zoneId)
-					unitCount++;
+				var unitCount = [];
+				unitCount.length = self._zones.length;
+				
+				for(var i = 0; i < unitCount.length; i++)
+					unitCount[i] = 0;
+				
+				for(var i = 0; i < response.length; i++)
+					unitCount[response[i].fk_unit_zoneid_zone]++;
+				
+				for(var i = 0; i < unitCount.length; i++)
+				{
+					if(unitCount[i] > 0)
+					{
+						var text = new GUIText([unitCount[i]]);
+						text.setColor('white');
+						self._zones[i].attachChild(text);
+					}
+				}
+			},
+			function()
+			{
+				console.log("Could not fetch visible units.");
 			}
-			
-			if(unitCount > 0)
-				self._unitCounts[zone.getId() - 1].setText([unitCount]);
-		});
-			
+		);
 	}
 	
 	$.extend(GameGrid.prototype, GUIContainer.prototype,
 	{
 		_zones: null,
-		_unitCounts: null,
 		
 		
 		_initializeZones: function(numZones)
@@ -73,7 +63,7 @@ var GameGrid = function()
 			{
 				for(var x = 0; x < zonesPerRow; x++)
 				{
-					this._zones[i] = new Zone(i + 1, bounds);
+					this._zones[i] = new Zone(i, bounds);
 					this.attachChild(this._zones[i]);
 					
 					bounds.left += zoneSize.x;
@@ -117,9 +107,9 @@ var GameGrid = function()
 			if(Input.mouse.isPressed(Input.mouse.LEFT) && this.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
 			{
 				if(this._hasSelection())
-					this._activateElement();
+					this._activate();
 				else
-					this._deactivateElement();
+					this._deactivate();
 			}
 			else if(Input.mouse.isPressed(Input.mouse.TAP))
 			{
@@ -128,16 +118,16 @@ var GameGrid = function()
 				{
 					if(i.data.isSelectable() && i.data.getGlobalBounds().containsPoint(Input.mouse.position.x, Input.mouse.position.y))
 					{
-						this._selectElement(i.data);
-						this._activateElement();
+						this._select(i.data);
+						this._activate();
 						foundTarget = true;
 					}
 				}
 				
 				if(!foundTarget)
 				{
-					this._deactivateElement();
-					this._deselectElement();
+					this._deactivate();
+					this._deselect();
 				}
 			}
 			
@@ -145,7 +135,7 @@ var GameGrid = function()
 			{
 				this._activation.handleInput();
 				if(!this._activation.isActivated())
-					this._deactivateElement();
+					this._deactivate();
 			}
 				
 		},

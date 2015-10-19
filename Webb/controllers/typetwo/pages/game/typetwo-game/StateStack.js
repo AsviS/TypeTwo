@@ -26,8 +26,7 @@ var StateStack = function()
 		_action :
 		{
 			PUSH: 0, /**< Push a specified State object to stack */
-			POP: 1, /**< Pop the top State from stack */
-			FOCUS: 2 /**< Put an existing state on the top of the stack */
+			POP: 1 /**< Pop the top State from stack */
 		},
 		
 		/**
@@ -60,16 +59,6 @@ var StateStack = function()
 		pop: function()
 		{
 			this._eventQueue.push(new this._event(this._action.POP));
-		},
-		
-		/**
-		 * \brief Put existing state on top of state stack.
-		 * 
-		 * \param State state State to focus.
-		 */
-		focus: function(state)
-		{
-			this._eventQueue.push(new this._event(this._action.FOCUS, state));
 		},
 				
 		/**
@@ -125,15 +114,6 @@ var StateStack = function()
 						
 					case this._action.POP:
 						this._stateStack.pop();
-						break;
-						
-					case this._action.FOCUS:
-						var index = this._stateStack.indexOf(this._eventQueue[i].state);
-						if(index >= 0)
-						{
-							this._stateStack.splice(index, 1);
-							this._stateStack.push(this._eventQueue[i].state);
-						}
 						break;
 						
 					default:

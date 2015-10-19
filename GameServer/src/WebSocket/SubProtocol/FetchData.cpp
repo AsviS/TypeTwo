@@ -71,13 +71,6 @@ const SubProtocol& SubProtocols::FETCH_DATA = SubProtocol
             }
             else if(procedure == "getVisibleUnits")
             {
-                // Just get all of them, for now.
-                int userId;
-                SP::GET_USER_ID.call(connection.getUsername(), userId);
-                connection.sendString(id + '\n' + Stream::call(SP::GET_UNITS, userId));
-
-
-                /*
                 int userId;
                 SP::GET_USER_ID.call(connection.getUsername(), userId);
 
@@ -88,7 +81,6 @@ const SubProtocol& SubProtocols::FETCH_DATA = SubProtocol
                     stream.execute(zoneId);
 
                 connection.sendString(id + '\n' + stream.fetch());
-                */
             }
         }
 

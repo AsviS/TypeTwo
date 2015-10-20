@@ -11,7 +11,7 @@ var GUIList = function()
 	}
 
 
-	$.extend(GUIList.prototype, GUIContainer.prototype, GUIElement.prototype,
+	$.extend(GUIList.prototype, GUIElement.prototype, GUIContainer.prototype,
 	{
 		_gapThickness: 5,
 		
@@ -38,8 +38,9 @@ var GUIList = function()
 			this.attachChild(element);
 		},
 		
-		_updateCurrent: function()
+		_updateCurrent: function(dt)
 		{
+			GUIContainer.prototype._updateCurrent.call(this, dt);
 			this._pack();
 		},
 		
@@ -65,7 +66,19 @@ var GUIList = function()
 		clear: function()
 		{
 			this._children.clear();
-		}
+		},
+		
+		/**
+		 * \brief Is this element selectable?
+		 * 
+		 * \returns Boolean True if selectable, else false.
+		 */
+		isSelectable: function()
+		{
+			return true;
+		},
+		
+		
 	});
 
 	return GUIList;

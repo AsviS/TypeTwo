@@ -68,10 +68,30 @@ namespace StoredProcedure
                 ///
                 void call(ParamTypes... params) const;
 
+                /// \brief Create stream to this stored procedure
+                ///
+                /// \return StreamPtr Unique pointer of a stream to this stored procedure.
+                ///
+                ///
                 StreamPtr createStreamPtr() const;
 
+                /// \brief Execute a query on a stream
+                ///
+                /// \param stream otl_stream& OTL stream object
+                /// \param params ParamTypes... Query arguments
+                /// \return void
+                ///
+                ///
                 void execute(otl_stream& stream, ParamTypes... params) const;
 
+                /// \brief Execute a query on a stream and fetch result set.
+                ///
+                /// \param typename RowType Row type to store the result set's rows in.
+                /// \param stream otl_stream& OTL stream object.
+                /// \param params ParamTypes... Query arguments
+                /// \return std::vector<RowType> Result set formatted as RowType data.
+                ///
+                ///
                 template <typename RowType>
                 std::vector<RowType> execute(otl_stream& stream, ParamTypes... params) const;
 
@@ -100,6 +120,11 @@ namespace StoredProcedure
                 void executeParameters(otl_stream& stream, ParamTypes... params) const;
 
             private:
+                /// \brief Open a stream to the database
+                ///
+                /// \return otl_stream* Pointer to resulting stream
+                ///
+                ///
                 otl_stream* createOtlStream() const;
 
                 /// \brief Throw a database error message.

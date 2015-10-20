@@ -6,6 +6,16 @@
 
 namespace Database { namespace StoredProcedure
 {
+    std::string QueryStringCompiler<>::compile(std::string procedureName)
+    {
+        return "CALL " + procedureName + "()";
+    }
+
+    std::string QueryStringCompiler<>::typeToString()
+    {
+        return "";
+    }
+
     template<>
     std::string toString<int>()
     {

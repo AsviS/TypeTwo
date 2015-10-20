@@ -15,11 +15,11 @@ var GameData = function()
 			"getVisibleUnits",
 			function(response)
 			{
-				my.units = [];
-				response = response.data;
+				var units = response.data;
 				
-				for(var i = 0; i < response.length; i++)
-					my.units[response[i].unit_id] = response[i];
+				my.units = new Map();
+				for(var i = 0; i < units.length; i++)
+					my.units.insert(units[i].unit_id, units[i]);
 					
 				numFinishedInitFunctions++;
 			},
@@ -38,11 +38,11 @@ var GameData = function()
 			"getUnitTypes", 
 			function(response)
 			{
-				my.unitTypes = [];
-				response = response.data;
+				var types = response.data;
 				
-				for(var i = 0; i < response.length; i++)
-					my.unitTypes[response[i].unit_type_id] = response[i];
+				my.unitTypes = new Map();
+				for(var i = 0; i < types.length; i++)
+					my.unitTypes.insert(types[i].unit_type_id, types[i]);
 					
 				numFinishedInitFunctions++;		
 			},
@@ -64,11 +64,34 @@ var GameData = function()
 		numFinishedInitFunctions++;
 	}
 	
+	function initUsers()
+	{
+		database.sendQuery
+		(
+			"getUsers",
+			function(response)
+			{
+				var users = response.data;
+				
+				my.users = new Map();
+				for(var i = 0; i < users.length; i++)
+					my.users.insert(users[i].user_id, users[i]);				
+			},
+			function()
+			{
+				console.log("Could not fetch users.");
+			}
+		);
+		
+		numFinishedInitFunctions++;
+	}
+	
 	var initFunctions = 
 	[
 		initUnits,
 		initUnitTypes,
 		initZones,
+		initUsers,
 	];
 	
 	my.init = function()

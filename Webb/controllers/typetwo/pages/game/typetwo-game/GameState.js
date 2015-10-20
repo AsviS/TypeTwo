@@ -67,9 +67,9 @@ var GameState = function()
 			var self = this;
 			GUIEvents.populatePurchaseList.registerCallback(function(zone)
 			{
-				for(var i = 0; i < GameData.unitTypes.length; i++)
+				for(var i in GameData.unitTypes.getMap())
 				{
-					var type = GameData.unitTypes[i];
+					var type = GameData.unitTypes.getMap()[i];
 					
 					if(type)
 					{
@@ -94,7 +94,7 @@ var GameState = function()
 													response = response.data;
 													
 													for(var i = 0; i < response.length; i++)
-														GameData.units[response[i].unit_id] = response[i];
+														GameData.units.insert(response[i].unit_id, response[i]);
 													
 													console.log("derp");
 													
@@ -127,53 +127,6 @@ var GameState = function()
 						));
 					}
 				}
-				
-				/*
-				config.webSocket.fetchData.sendQuery
-				(
-					"getUnitTypes", 
-					function(response)
-					{
-						response = response.data;
-						
-						for(var i = 0; i < response.length; i++)
-						{
-							var buttonCallback = function(queryString){return function()
-							{
-								config.webSocket.order.sendQuery							
-								(
-										queryString,
-										function(response)
-										{
-											console.log(response);
-											
-											if(response.data === true)
-												console.log("Unit purchase succeeded.");
-											else
-												console.log("Unit purchase failed.");										
-										},
-										function()
-										{
-											console.log("Unit purchase timed out.");
-										}
-								);
-							};}("unit\n" + response[i].name + "\n" + zone.getId());
-							
-							self._purchaseList.appendElement(new GUIButton
-								(
-									new Rect(0, 0, 100, 50), 
-									[response[i].name],
-									buttonCallback
-								));
-						}
-							
-					},
-					function()
-					{
-						console.log("Could not fetch unit types.");
-					}
-				);
-				*/
 			});
 			
 			GUIEvents.depopulatePurchaseList.registerCallback(function(zone)
@@ -183,14 +136,19 @@ var GameState = function()
 			
 			GUIEvents.populateZoneUnitList.registerCallback(function(zone)
 			{
-				for(var i = 1; i < GameData.units.length; i++)
+				var units = GameData.units.getMap();
+				for(var i in units)
 				{
-					var unit = GameData.units[i];
-					if(unit && unit.fk_unit_zoneid_zone == zone.getId())
+					var unit = units[i];
+					
+					if(unit.fk_unit_zoneid_zone == zone.getId())
 					{
 						var unitName = unit.fk_unit_unittypeid_unit_type === "1" ? "Fighter" : "Bomber";
+						var user = GameData.users.get(unit.fk_unit_userid_user);
+
+						var username = user ? user.username : "???";
 						
-						var text = new GUIText([unit.unit_id + "\t|\t" + unitName + "\t|\t" + unit.hp + "hp"]);
+						var text = new GUIText([username + "\t|\t" + unitName + "\t|\t" + unit.hp + "hp"]);
 						text.setColor('white');
 						
 						self._unitList.appendElement(text);

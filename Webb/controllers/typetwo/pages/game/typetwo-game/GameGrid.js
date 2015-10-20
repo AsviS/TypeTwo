@@ -9,17 +9,16 @@ var GameGrid = function()
 		this._initializeZones(numZones);
 
 		
-		var units = GameData.units;
+		var units = GameData.units.getMap();
 		this._unitCounts = [];
 		this._unitCounts.length = this._zones.length;
 		
 		for(var i = 0; i < this._unitCounts.length; i++)
 			this._unitCounts[i] = 0;
 		
-		for(var i = 1; i < units.length; i++)
-			if(units[i])
-				this._unitCounts[units[i].fk_unit_zoneid_zone - 1]++;
-		
+		for(var unit in units)
+			this._unitCounts[units[unit].fk_unit_zoneid_zone - 1]++;
+			
 		for(var i = 0; i < this._unitCounts.length; i++)
 		{
 			var text = new GUIText();
@@ -37,14 +36,10 @@ var GameGrid = function()
 		{
 			var zoneId = zone.getId();
 			var unitCount = 0;
-			for(var i = 0; i < GameData.units.length; i++)
-			{
-				var unit = GameData.units[i];
-				
-				if(unit && unit.fk_unit_zoneid_zone == zoneId)
+			for(var unit in units)
+				if(units[unit].fk_unit_zoneid_zone == zoneId)
 					unitCount++;
-			}
-			
+					
 			if(unitCount > 0)
 				self._unitCounts[zone.getId() - 1].setText([unitCount]);
 		});

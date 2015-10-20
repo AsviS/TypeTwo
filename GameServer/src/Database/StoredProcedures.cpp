@@ -12,6 +12,11 @@ StoredProcedures::GET_UNITS("unit_getby_userid");
 
 const StoredProcedure
 ::ParameterTypes<>
+::ResultSetTypes<int, int, int, int, int>
+StoredProcedures::GET_ALL_UNITS("unit_get");
+
+const StoredProcedure
+::ParameterTypes<>
 ::ResultSetTypes<unsigned int, std::string, int, int, int, int, int>
 StoredProcedures::GET_ALL_UNIT_TYPES("unit_type_get");
 

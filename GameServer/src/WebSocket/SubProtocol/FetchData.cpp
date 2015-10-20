@@ -72,9 +72,7 @@ const SubProtocol& SubProtocols::FETCH_DATA = SubProtocol
             else if(procedure == "getVisibleUnits")
             {
                 // Just get all of them, for now.
-                int userId;
-                SP::GET_USER_ID.call(connection.getUsername(), userId);
-                connection.sendString(id + '\n' + Stream::call(SP::GET_UNITS, userId));
+                connection.sendString(id + '\n' + Stream::call(SP::GET_ALL_UNITS));
 
 
                 /*
@@ -89,6 +87,10 @@ const SubProtocol& SubProtocols::FETCH_DATA = SubProtocol
 
                 connection.sendString(id + '\n' + stream.fetch());
                 */
+            }
+            else if(procedure == "getUsers")
+            {
+                connection.sendString(id + '\n' + Stream::call(SP::GET_ALL_USERS, 0, 99999));
             }
         }
 

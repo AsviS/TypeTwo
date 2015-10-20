@@ -22,6 +22,13 @@ struct StoredProcedures
 
     static const StoredProcedure
     ::ParameterTypes<>
+    ::ResultSetTypes<int, int, int, int, int>
+    GET_ALL_UNITS; ///< Get all units
+
+    ///////////////////////////////////
+
+    static const StoredProcedure
+    ::ParameterTypes<>
     ::ResultSetTypes<unsigned int, std::string, int, int, int, int, int>
     GET_ALL_UNIT_TYPES; ///< Get all existing unit types.
 

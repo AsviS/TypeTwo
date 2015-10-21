@@ -56,6 +56,21 @@ const Database::StoredProcedure
 StoredProcedures::GET_UNITS_BY_USER_ID_AND_ZONE_ID("unit_getby_userid_zoneid");
 
 const Database::StoredProcedure
-::ParameterTypes<int>
+::ParameterTypes<>
 ::ResultSetTypes<int>
-StoredProcedures::GET_USER_ZONE_IDS("unit_get_zoneid_by_userid");
+StoredProcedures::GET_ALL_ZONES("zone_get");
+
+const Database::StoredProcedure
+::ParameterTypes<int>
+::ResultSetTypes<int, int>
+StoredProcedures::GET_ZONE_NEIGHBORS("zone_neighbor_getby_zoneid");
+
+const Database::StoredProcedure
+::ParameterTypes<int>
+::ResultSetTypes<int, int, int, int, int>
+StoredProcedures::GET_UNIT_BY_ID("unit_getby_id");
+
+const Database::StoredProcedure
+::ParameterTypes<int, int>
+::ResultSetTypes<>
+StoredProcedures::MOVE_UNIT("unit_set_zoneid", true);

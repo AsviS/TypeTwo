@@ -31,8 +31,18 @@ namespace Row
         , hp(hp)
         {}
 
+        Unit(int id, int unitTypeId, int userId, int zoneId, int hp)
+        : id(id)
+        , unitTypeId(unitTypeId)
+        , userId(userId)
+        , zoneId(zoneId)
+        , hp(hp)
+        {}
+
         int id;
         int unitTypeId;
+        int userId;
+        int zoneId;
         int hp;
     };
 

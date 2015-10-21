@@ -84,9 +84,31 @@ struct StoredProcedures
     ///////////////////////////////////
 
     static const Database::StoredProcedure
-    ::ParameterTypes<int>
+    ::ParameterTypes<>
     ::ResultSetTypes<int>
-    GET_USER_ZONE_IDS; ///< Get all zone IDs where the user has a unit.
+    GET_ALL_ZONES; ///< Get all zones
+
+    ///////////////////////////////////
+
+    static const Database::StoredProcedure
+    ::ParameterTypes<int>
+    ::ResultSetTypes<int, int>
+    GET_ZONE_NEIGHBORS; ///< Get a zone's neighbors by ID.
+
+    ///////////////////////////////////
+
+    static const Database::StoredProcedure
+    ::ParameterTypes<int>
+    ::ResultSetTypes<int, int, int, int, int>
+    GET_UNIT_BY_ID; ///< Get unit by its ID.
+
+
+    ///////////////////////////////////
+
+    static const Database::StoredProcedure
+    ::ParameterTypes<int, int>
+    ::ResultSetTypes<>
+    MOVE_UNIT; ///< Move unit to a zone.
 };
 }
 

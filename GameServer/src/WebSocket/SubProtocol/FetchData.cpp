@@ -92,6 +92,16 @@ const SubProtocol& SubProtocols::FETCH_DATA = SubProtocol
             {
                 connection.sendString(id + '\n' + Stream::call(SP::GET_ALL_USERS, 0, 99999));
             }
+            else if(procedure == "getZones")
+            {
+                std::vector<int> zoneIds = SP::GET_ALL_ZONES.call<int>();
+
+                auto stream = Stream::create(SP::GET_ZONE_NEIGHBORS);
+                for(int id : zoneIds)
+                    stream.execute(id);
+
+                connection.sendString(id + '\n' + stream.fetch());
+            }
         }
 
         return 0;

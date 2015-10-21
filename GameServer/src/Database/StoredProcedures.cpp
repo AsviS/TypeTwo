@@ -42,7 +42,7 @@ StoredProcedures::GET_USER_BY_USERNAME("user_getby_username");
 
 const Database::StoredProcedure
 ::ParameterTypes<int, int, int, int>
-::ResultSetTypes<>
+::ResultSetTypes<int, int, int, int, int>
 StoredProcedures::INSERT_UNIT("unit_insert", true);
 
 const Database::StoredProcedure

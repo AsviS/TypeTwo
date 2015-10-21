@@ -6,6 +6,7 @@
 #include "WebSocket/Connection.hpp"
 
 #include "Database/StoredProcedures.hpp"
+#include "Database/StreamFetchDataProtocol.hpp"
 #include "Database/Row.hpp"
 using namespace WebSocket;
 ///////////////////////////////////
@@ -66,8 +67,11 @@ const SubProtocol& SubProtocols::ORDER = SubProtocol
             return (int)result;
         /////////////////////////////////
 
+
+
         if(reason == LWS_CALLBACK_RECEIVE)
         {
+
             std::stringstream message(SubProtocol::messageToString(messageData, messageLength));
 
             std::string id;
@@ -79,12 +83,15 @@ const SubProtocol& SubProtocols::ORDER = SubProtocol
 
             Connection& connection = SubProtocol::getConnection(connectionData);
 
+            typedef Database::StoredProcedures SP;
+            namespace Stream = Database::Stream::FetchDataProtocol;
+
             if(order == "unit")
             {
                 int userId;
-                Database::StoredProcedures::GET_USER_ID.call(connection.getUsername(), userId);
+                SP::GET_USER_ID.call(connection.getUsername(), userId);
 
-                std::vector<Database::Row::UnitType> unitTypes = Database::StoredProcedures::GET_ALL_UNIT_TYPES.call<Database::Row::UnitType>();
+                std::vector<Database::Row::UnitType> unitTypes = SP::GET_ALL_UNIT_TYPES.call<Database::Row::UnitType>();
 
                 int typeId = 0;
                 for(Database::Row::UnitType type : unitTypes)
@@ -96,8 +103,8 @@ const SubProtocol& SubProtocols::ORDER = SubProtocol
 
                 if(typeId > 0 && zoneId > 0)
                 {
-                    Database::StoredProcedures::INSERT_UNIT.call(typeId, userId, zoneId, 100);
-                    connection.sendString(id + '\n' + "1");
+                    std::string insertedUnit = Stream::call(SP::INSERT_UNIT, typeId, userId, zoneId, 100);
+                    connection.sendString(id + '\n' + "1" + '\n' + insertedUnit);
                 }
                 else
                     connection.sendString(id + '\n' + "0");

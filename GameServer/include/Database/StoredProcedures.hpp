@@ -64,7 +64,7 @@ struct StoredProcedures
 
     static const Database::StoredProcedure
     ::ParameterTypes<int, int, int, int>
-    ::ResultSetTypes<>
+    ::ResultSetTypes<int, int, int, int, int>
     INSERT_UNIT; ///< Create a unit
 
     ///////////////////////////////////

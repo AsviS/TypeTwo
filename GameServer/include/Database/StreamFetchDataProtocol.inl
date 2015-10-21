@@ -17,7 +17,17 @@ template <typename Procedure, typename... Result>
 template<typename... ParamTypes>
 void Stream<Procedure, Result...>::execute(ParamTypes... params)
 {
-    mProcedure.executeParameters(*mStream, params...);
+    try
+    {
+        mProcedure.executeParameters(*mStream, params...);
+    }
+    catch(otl_exception& e)
+    {
+        std::cout   << "Failed to perform database query at Database::Stream::FetchDataProtocol::Stream::execute." << std::endl
+                    << "Probably an UPDATE/INSERT/DELETE operation with invalid arguments (a primary key set to 0, for example)." << std::endl;
+        return;
+    }
+
     getRows(initializeParameterPack<Result>()...);
 }
 

@@ -42,6 +42,8 @@ var GameGrid = function()
 					
 			if(unitCount > 0)
 				self._unitCounts[zone.getId() - 1].setText([unitCount]);
+			else
+				self._unitCounts[zone.getId() - 1].setText([]);
 		});
 			
 	}
@@ -54,14 +56,16 @@ var GameGrid = function()
 		
 		_initializeZones: function(numZones)
 		{
-			var zoneSize = new Vector(this._bounds.width, this._bounds.height).div(numZones);
+			numZones = GameData.zones.size();
+			
+			var zoneSize = new Vector(this._bounds.width, this._bounds.height).div(Math.sqrt(numZones));
 			
 			
 			this._zones = [];
 			this._zones.length = numZones;		
 				
-			var numRows = this._bounds.height / zoneSize.y;
-			var zonesPerRow = this._bounds.width / zoneSize.x;
+			var numRows = Math.floor(this._bounds.height / zoneSize.y);
+			var zonesPerRow = Math.floor(this._bounds.width / zoneSize.x);
 			var i = 0;
 			var bounds = new Rect(0, 0, zoneSize.x, zoneSize.y);
 			for(var y = 0; y < numRows; y++)
@@ -77,28 +81,18 @@ var GameGrid = function()
 				
 				bounds.top += zoneSize.y;
 				bounds.left = 0;
-			}		
+			}					
 			
-			i = 0;
-			for(var y = 0; y < numRows; y++)
+			for(i = 0; i < numZones; i++)
 			{
-				for(var x = 0; x < zonesPerRow; x++)
-				{
-					var borderingZones = [];
-					
-					if(y > 0)
-						borderingZones.push(this._zones[i - zonesPerRow]);
-					if(y < numRows - 1)
-						borderingZones.push(this._zones[i + zonesPerRow]);
-						
-					if(x > 0)
-						borderingZones.push(this._zones[i - 1]);
-					if(x < zonesPerRow - 1)
-						borderingZones.push(this._zones[i + 1]);
-					
-					this._zones[i].setBorderingZones(borderingZones);
-					i++;
-				}
+				var neighbors = GameData.zones.get(i + 1).neighbors;
+				
+				var borderingZones = [];
+				for(var j = 0; j < neighbors.length; j++)
+					borderingZones.push(this._zones[neighbors[j] - 1]);
+
+				
+				this._zones[i].setBorderingZones(borderingZones);
 			}
 		},
 		
@@ -136,10 +130,10 @@ var GameGrid = function()
 				}
 			}
 			
-			if(this._hasActivation())
+			if(this._hasSelection())
 			{
-				this._activation.handleInput();
-				if(!this._activation.isActivated())
+				this._selection.handleInput();
+				if(this._hasActivation() && !this._activation.isActivated())
 					this._deactivateElement();
 			}
 				

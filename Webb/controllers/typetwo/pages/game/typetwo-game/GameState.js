@@ -123,6 +123,7 @@ var GameState = function()
 			GUIEvents.populateZoneUnitList.registerCallback(function(zone)
 			{
 				var units = GameData.units.getMap();
+				self._unitList.clear();
 				for(var i in units)
 				{
 					var unit = units[i];

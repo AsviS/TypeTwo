@@ -50,6 +50,63 @@ var Zone = function()
 			ct.strokeWidth = 2;
 			ct.strokeRect(transform.x, transform.y, this._bounds.width, this._bounds.height);
 		},
+
+		_handleInputCurrent: function(dt)
+		{
+			if(Input.mouse.isPressed(Input.mouse.RIGHT))
+			{
+				for(var i = 0; i < this._borderingZones.length; i++)
+					if(this._borderingZones[i].isActivated())
+					{
+						var startZone = this._borderingZones[i];
+						var destinationZone = this;
+						
+						var args = [];
+						var units = GameData.units.getMap();
+						for(var j in units)
+						{
+							if(units[j].fk_unit_zoneid_zone == startZone.getId())
+							{
+								args.push(units[j].unit_id);
+								args.push(destinationZone.getId());
+							}
+						}
+						
+						
+						config.webSocket.order.sendQuery
+						(
+							"unitMove",
+							args,
+							function(response)
+							{
+								response = response.data;
+								
+								if(response.success)
+								{
+									for(var j = 0; j < args.length; j += 2)
+									{										
+										GameData.units.get(args[j]).fk_unit_zoneid_zone = destinationZone.getId();
+									}
+									
+									GUIEvents.populateZoneUnitList.trigger(startZone);
+									GUIEvents.populateZoneUnitList.trigger(destinationZone);
+								}
+								else
+									console.log("Could not move unit(s).");
+								
+							},
+							function()
+							{
+								console.log("Attempt to move unit(s) timed out.");
+							}
+						);
+						
+						break;
+					}
+						
+			}
+				
+		},
 		
 		neighborSelect: function()
 		{

@@ -49,7 +49,10 @@ class Stream
         ///
         ///
         template<typename RowType, typename... ParamTypes>
-        std::vector<RowType> execute(ParamTypes... params);
+        void execute(std::vector<RowType>& rows, ParamTypes... params);
+
+
+        void commit() const;
 
     private:
         const Procedure& mProcedure; ///< StoredProcedure object to execute queries with

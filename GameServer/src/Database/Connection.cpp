@@ -43,6 +43,12 @@ Connection::~Connection()
 
 otl_connect& Connection::getConnection()
 {
-    mConnection.commit();
     return mConnection;
+}
+
+///////////////////////////////////
+
+void Connection::commit() const
+{
+    mConnection.commit();
 }

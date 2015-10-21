@@ -68,19 +68,27 @@ template <typename RowType>
 std::vector<RowType> STORED_PROCEDURE::execute(otl_stream& stream, ParamTypes... params) const
 {
     std::vector<RowType> resultSet;
+    execute(stream, resultSet, params...);
+    return resultSet;
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
+template <typename RowType>
+void STORED_PROCEDURE::execute(otl_stream& stream, std::vector<RowType>& resultSet, ParamTypes... params) const
+{
     try
     {
         executeParameters(stream, params...);
 
         if(M_RETURNS_RESULT_SET)
-            resultSet = getRows<RowType>(stream, initializeParameterPack<ResultTypes>()...);
+            getRows<RowType>(stream, resultSet, initializeParameterPack<ResultTypes>()...);
     }
     catch(otl_exception& e)
     {
         throwCallExcepton(e.msg);
     }
-
-    return resultSet;
 }
 
 ///////////////////////////////////
@@ -101,6 +109,7 @@ otl_stream* STORED_PROCEDURE::createOtlStream() const
     {
         stream = new otl_stream(1, M_QUERY_STRING.c_str(), mDatabase.getConnection(), M_RETURNS_RESULT_SET);
         stream->set_commit(M_REQUIRES_COMMIT);
+        //stream->set_commit(0);
         stream->set_all_column_types(otl_all_date2str);
     }
     catch(otl_exception& e)
@@ -135,6 +144,14 @@ void STORED_PROCEDURE::executeParameters(otl_stream& stream, ParamTypes... param
 ///////////////////////////////////
 
 STORED_PROCEDURE_TEMPLATES
+void STORED_PROCEDURE::commit() const
+{
+    mDatabase.commit();
+}
+
+///////////////////////////////////
+
+STORED_PROCEDURE_TEMPLATES
 void STORED_PROCEDURE::getColumns(otl_stream& stream) const
 {
 }
@@ -153,16 +170,13 @@ void STORED_PROCEDURE::getColumns(otl_stream& stream, CurrentColumnType& current
 
 STORED_PROCEDURE_TEMPLATES
 template<typename RowType, typename... ColumnTypes>
-std::vector<RowType> STORED_PROCEDURE::getRows(otl_stream& stream, ColumnTypes... columns) const
+void STORED_PROCEDURE::getRows(otl_stream& stream, std::vector<RowType>& resultSet, ColumnTypes... columns) const
 {
-    std::vector<RowType> rows;
     while(!stream.eof())
     {
         getColumns(stream, columns...);
-        rows.push_back(RowType(columns...));
+        resultSet.push_back(RowType(columns...));
     }
-
-    return rows;
 }
 
 ///////////////////////////////////

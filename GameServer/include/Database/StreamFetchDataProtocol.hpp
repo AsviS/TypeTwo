@@ -50,6 +50,9 @@ class Stream
         ///
         std::string fetch();
 
+
+        void commit() const;
+
     private:
         /// \brief Prepend descriptions of the stream's result set's columns to mBuffer.
         ///

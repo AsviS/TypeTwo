@@ -8,7 +8,7 @@ Stream<Procedure, Result...>::Stream(const Procedure& procedure)
 : mProcedure(procedure)
 , mStream(mProcedure.createStreamPtr())
 {
-
+    mStream->set_commit(0);
 }
 
 ///////////////////////////////////
@@ -90,6 +90,14 @@ void Stream<Procedure, Result...>::getRows(ColumnTypes... columns)
         getColumns(strStream, columns...);
 
     mBuffer += strStream.str();
+}
+
+///////////////////////////////////
+
+template <typename Procedure, typename... Result>
+void Stream<Procedure, Result...>::commit() const
+{
+    mProcedure.commit();
 }
 
 ///////////////////////////////////

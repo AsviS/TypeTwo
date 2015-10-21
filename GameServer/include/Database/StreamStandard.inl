@@ -3,7 +3,7 @@ Stream<Procedure>::Stream(const Procedure& procedure)
 : mProcedure(procedure)
 , mStream(mProcedure.createStreamPtr())
 {
-
+    mStream->set_commit(0);
 }
 
 ///////////////////////////////////
@@ -19,9 +19,17 @@ void Stream<Procedure>::execute(ParamTypes... params)
 
 template<typename Procedure>
 template<typename RowType, typename... ParamTypes>
-std::vector<RowType> Stream<Procedure>::execute(ParamTypes... params)
+void Stream<Procedure>::execute(std::vector<RowType>& rows, ParamTypes... params)
 {
-    return mProcedure.execute<RowType>(*mStream, params...);
+    mProcedure.execute<RowType>(*mStream, rows, params...);
+}
+
+///////////////////////////////////
+
+template <typename Procedure>
+void Stream<Procedure>::commit() const
+{
+    mProcedure.commit();
 }
 
 ///////////////////////////////////

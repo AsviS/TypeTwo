@@ -95,6 +95,17 @@ namespace StoredProcedure
                 template <typename RowType>
                 std::vector<RowType> execute(otl_stream& stream, ParamTypes... params) const;
 
+                /// \brief Execute a query on a stream and fetch result set.
+                ///
+                /// \param typename RowType Row type to store the result set's rows in. Automatically deduced.
+                /// \param resultSet std::vector<RowType>& Vector to store result set in.
+                /// \param stream otl_stream& OTL stream object.
+                /// \param params ParamTypes... Query arguments
+                /// \return void
+                ///
+                ///
+                template <typename RowType>
+                void execute(otl_stream& stream, std::vector<RowType>& resultSet, ParamTypes... params) const;
 
                 /// \brief Call the procedure and fetch the result set.
                 ///
@@ -118,6 +129,8 @@ namespace StoredProcedure
                 ///
                 ///
                 void executeParameters(otl_stream& stream, ParamTypes... params) const;
+
+                void commit() const;
 
             private:
                 /// \brief Open a stream to the database
@@ -164,12 +177,13 @@ namespace StoredProcedure
                 /// \param typename RowType Type of object to store row data in.
                 /// \param typename... ColumnTypes Types of columns to extract.
                 /// \param stream otl_stream& Stream to fetch data from.
+                /// \param resultSet std::vector<RowType>& Vector to store rows in.
                 /// \param columns ColumnTypes... Variables to store output in.
                 /// \return RowType Row data formatted as a RowType object.
                 ///
                 ///
                 template<typename RowType, typename... ColumnTypes>
-                std::vector<RowType> getRows(otl_stream& stream, ColumnTypes... columns) const;
+                void getRows(otl_stream& stream, std::vector<RowType>& resultSet, ColumnTypes... columns) const;
 
                 /// \brief Catch-function for executeInputParameters
                 ///

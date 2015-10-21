@@ -44,6 +44,8 @@ class Connection
         ///
         otl_connect& getConnection();
 
+        void commit() const;
+
     private:
         otl_connect& mConnection; ///< otl_connect connection object that is wrapped by this class.
 };

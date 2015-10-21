@@ -12,7 +12,7 @@ date_default_timezone_set('UTC');
 
 // GYG-FRAMEWORK
 $controllersPath = __DIR__ . '/controllers/';
-$defaultController = 'playhouse';
+$defaultController = 'typetwo';
 $useRewriteRule = true;
 
 $controllers = 
@@ -20,7 +20,6 @@ $controllers =
 	'file',
 	'ajax',
 	'typetwo',
-	'playhouse',
 ];
 
 $shortcuts =

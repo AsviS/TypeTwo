@@ -47,7 +47,8 @@ var FramerateIndicator = function()
 			    top: 0,
 			    margin: '0.5em 0 0 0.5em',
 			    padding: 0,
-			    position: 'absolute',			
+			    position: 'absolute',
+			    color: 'white',		
 			});
 			updateIndicator();
 			interval = setInterval(updateIndicator, 1000);

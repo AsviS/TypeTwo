@@ -12,7 +12,6 @@ var OrderProtocol = function()
 	{
 		WebSocketSubProtocol.call(this, 'order');
 	};
-	
 
 	$.extend(OrderProtocol.prototype, WebSocketSubProtocol.prototype, 
 	{
@@ -21,13 +20,19 @@ var OrderProtocol = function()
 		 * 
 		 * \param String message Message to parse
 		 */
-		_parseMessage: function(message)
+		_parseInMessage: function(message)
 		{
-			if(message.length !== 1)
-				return false;
-			else
-				return (message[0] === "1") ? true : false;
+			var success = message.length > 0 && message[0] === "1";
+			message.shift();
+			var data = FetchDataProtocol.prototype.parseDataString(message);
+			
+			return {success: success, data: data};
 		},
+		
+		_parseOutMessage: function(data)
+		{
+			return data.join('\n');
+		}
 	});
 
 	return OrderProtocol;

@@ -73,12 +73,12 @@ var GameState = function()
 					
 					if(type)
 					{
-						var buttonCallback = function(queryString){return function()
+						var buttonCallback = function(args){return function()
 						{
 							config.webSocket.order.sendQuery							
 							(
-									queryString,
-									null,
+									"unit",
+									args,
 									function(response)
 									{
 										response = response.data;
@@ -103,7 +103,7 @@ var GameState = function()
 										console.log("Unit purchase timed out.");
 									}
 							);
-						};}("unit\n" + type.name + "\n" + zone.getId());
+						};}([type.unit_type_id, zone.getId()]);
 						
 						self._purchaseList.appendElement(new GUIButton
 						(

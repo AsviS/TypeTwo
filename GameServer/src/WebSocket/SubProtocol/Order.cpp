@@ -23,32 +23,6 @@ using namespace WebSocket;
 ///////////////////////////////////
 
 
-/*
- * Data received must be formatted as follows:
- * "itemName\nquantity"
- * where itemName is the name of the item to order, and
- * quantity is how many items to order.
- *
- * For example, to order 9 engineers, send the following
- * string:
- * "engineer\n9"
- */
-/// \brief Order data
-///
-/// Data received must be formatted as follows:
-/// "itemName\nquantity"
-/// where itemName is the name of the item to order, and
-/// quantity is how many items to order.
-///
-/// For example, to order 9 engineers, send the following
-/// string:
-/// "engineer\n9"
-struct Order
-{
-    std::string     item;       ///< Item identifier
-    unsigned int    quantity;   ///< How many items to order
-};
-
 const SubProtocol& SubProtocols::ORDER = SubProtocol
 (
     "order",
@@ -75,54 +49,44 @@ const SubProtocol& SubProtocols::ORDER = SubProtocol
             std::stringstream message(SubProtocol::messageToString(messageData, messageLength));
 
             std::string id;
-            std::string order;
-            std::string item;
-            int zoneId;
+            std::string procedure;
 
-            message >> id >> order >> item >> zoneId;
+            message >> id >> procedure;
 
             Connection& connection = SubProtocol::getConnection(connectionData);
 
             typedef Database::StoredProcedures SP;
             namespace Stream = Database::Stream::FetchDataProtocol;
 
-            if(order == "unit")
+            bool success = false;
+            std::string responseData;
+            if(procedure == "unit")
             {
                 int userId;
                 SP::GET_USER_ID.call(connection.getUsername(), userId);
 
-                std::vector<Database::Row::UnitType> unitTypes = SP::GET_ALL_UNIT_TYPES.call<Database::Row::UnitType>();
+                int typeId;
+                int zoneId;
+                message >> typeId >> zoneId;
 
-                int typeId = 0;
-                for(Database::Row::UnitType type : unitTypes)
-                    if(type.name == item)
-                    {
-                        typeId = type.id;
-                        break;
-                    }
+                std::string insertedUnit = Stream::call(SP::INSERT_UNIT, typeId, userId, zoneId, 100);
 
-                if(typeId > 0 && zoneId > 0)
+                if(insertedUnit.size() > 0)
                 {
-                    std::string insertedUnit = Stream::call(SP::INSERT_UNIT, typeId, userId, zoneId, 100);
-                    connection.sendString(id + '\n' + "1" + '\n' + insertedUnit);
+                    success = true;
+                    responseData = insertedUnit;
                 }
-                else
-                    connection.sendString(id + '\n' + "0");
             }
 
-            /*
-            std::stringstream message(SubProtocol::messageToString(messageData, messageLength));
+            if(id != "0")
+            {
+                std::string response = id + '\n' + (success ? "1" : "0");
 
-            Order order;
-            std::getline(message, order.item);
-            message >> order.quantity;
+                if(responseData.size() > 0)
+                    response += '\n' + responseData;
 
-            std::ostringstream output;
-            output  << "You ordered the following: " << std::endl
-                    << "Item: " << order.item << std::endl
-                    << "Quantity: " << order.quantity << std::endl;
-
-            SubProtocol::getConnection(connectionData).sendString(output.str());*/
+                connection.sendString(response);
+            }
         }
 
         return 0;

@@ -57,13 +57,43 @@ var GameData = function()
 	
 	function initZones()
 	{
-		/*
 		database.sendQuery
 		(
-			"getZones"
-			
-		);*/
-		numFinishedInitFunctions++;
+			"getZones",
+			null,
+			function(response)
+			{
+				var zones = response.data;
+
+				my.zones = new Map();
+				for(var i = 0; i < zones.length; i++)
+				{
+					var zoneId = zones[i].zone_id;
+					var neighborId = zones[i].neighbor_id;
+
+					var zone = my.zones.get(zoneId);
+					
+					if(!zone)
+					{
+						zone = 
+						{
+							id: zoneId,
+							neighbors: []
+						};
+						my.zones.insert(zoneId, zone);
+					}
+					
+
+					zone.neighbors.push(neighborId);
+				}
+
+				numFinishedInitFunctions++;
+			},
+			function()
+			{
+				console.log("Could not fetch zones.");
+			}
+		);
 	}
 	
 	function initUsers()

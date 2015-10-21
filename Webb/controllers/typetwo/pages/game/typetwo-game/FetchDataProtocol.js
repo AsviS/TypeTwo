@@ -27,12 +27,17 @@ var FetchDataProtocol = function()
 		 * \param String message Message to parse
 		 * \returns Array Parsed message
 		 */
-		_parseMessage: function(message)
+		_parseInMessage: function(message)
 		{
-			if(message.length <= 1)
+			return this.parseDataString(message);
+		},
+		
+		parseDataString: function(data)
+		{
+			if(data.length <= 1)
 				return [];
 			
-			var columns = message[0].split(',');
+			var columns = data[0].split(',');
 			var numColumns = columns.length;
 
 			var columnData = [];
@@ -51,17 +56,22 @@ var FetchDataProtocol = function()
 			}
 			
 			var rows = [];
-			rows.length = (message.length - 1) / numColumns;
-			for(var i = 1; i < message.length; i += numColumns)
+			rows.length = (data.length - 1) / numColumns;
+			for(var i = 1; i < data.length; i += numColumns)
 			{
 				var row = {};
-				for(var j = 0; j + i < message.length && j < numColumns; j++)
-					row[columnData[j].name] = message[j + i];
+				for(var j = 0; j + i < data.length && j < numColumns; j++)
+					row[columnData[j].name] = data[j + i];
 				
 				rows[(i - 1) / numColumns] = row;
 			}
 		
 			return rows;
+		},
+		
+		_parseOutMessage: function(data)
+		{
+			return data.join('\n');
 		},
 	});
 

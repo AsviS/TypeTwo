@@ -94,15 +94,17 @@ var Socket = function()
 		/**
 		 * \brief Send message
 		 * 
-		 * \param String message Message string to send
+		 * \param String procedure Name of procedure to call
+		 * \param Object data Argument data of procedure
 		 * 
 		 * \returns True if message was sent, else false.
 		 */
-		send: function(message)
+		send: function(procedure, data)
 		{
 			if(this._status === Socket.statusID.OPEN)
 			{
-				this._websocket.send("0\n" + message);
+				var message = this._protocol.parseOutMessage(0, procedure, data);
+				this._websocket.send(message);
 				return true;
 			}
 			else
@@ -115,20 +117,22 @@ var Socket = function()
 		/**
 		 * \brief Send query
 		 * 
-		 * \param String query Query message to send
+		 * \param String procedure Name of procedure to call
+		 * \param Object data Argument data of procedure
 		 * \param Function success Function to call when query received a response.
 		 * \param Function fail Function to call when query did not receive a response (timed out).
 		 * \param Number timeOut Time to wait in milliseconds before dropping the query attempt.
 		 * 
 		 * \returns True if query was sent, else false.
 		 */
-		sendQuery: function(query, success, fail, timeOut)
+		sendQuery: function(procedure, data, success, fail, timeOut)
 		{
 			
 			if(this._status === Socket.statusID.OPEN)
 			{
 				var id = WebSocketQueryManager.pushQuery(success, fail, timeOut);
-				this._websocket.send(id + "\n" + query);
+				var query = this._protocol.parseOutMessage(id, procedure, data);
+				this._websocket.send(query);
 				return true;
 			}
 			else
@@ -198,7 +202,7 @@ var Socket = function()
 		 */
 		_onMessage: function(message) 
 		{		
-			var data = this._protocol.parseMessage(message.data);
+			var data = this._protocol.parseInMessage(message.data);
 			
 			if(data)
 			{

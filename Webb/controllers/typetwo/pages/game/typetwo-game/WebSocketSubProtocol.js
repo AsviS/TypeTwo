@@ -51,20 +51,31 @@ var WebSocketSubProtocol = function()
 		 * \brief Parse a message.
 		 * 
 		 * First the message is parsed in accordance to the standard subprotocol.
-		 * Then it is passed along to the actual subprotocol's _parseMessage function.
+		 * Then it is passed along to the actual subprotocol's _parseInMessage function.
 		 * 
 		 * \param String message Message to parse
 		 * 
 		 * \returns Object Parsed message
 		 */
-		parseMessage: function(message)
+		parseInMessage: function(message)
 		{
 			message = message.trim('\n').split('\n');
 			if(message.length <= 0)
 				return null;
 			
 			var id = message.shift();
-			return new Message(id, this._parseMessage(message));
+			return new Message(id, this._parseInMessage(message));
+		},
+		
+		parseOutMessage: function(id, procedure, data)
+		{
+			data = data || [];
+			
+			var message = 	id + '\n' + 
+							procedure + '\n' + 
+							this._parseOutMessage(data);
+							
+			return message.trim();
 		},
 		
 		/**
@@ -76,10 +87,15 @@ var WebSocketSubProtocol = function()
 		 * 
 		 * \returns Object Parsed message
 		 */
-		_parseMessage: function(message)
+		_parseInMessage: function(message)
 		{
 			return null;
 		},
+		
+		_parseOutMessage: function(message)
+		{
+			return null;
+		}
 	};
 
 	return WebSocketSubProtocol;

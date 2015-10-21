@@ -71,6 +71,9 @@ var WebSocketSubProtocol = function()
 		{
 			data = data || [];
 			
+			if(!Array.isArray(data))
+				throw new Error("Invalid arguments. 'data' must be an array.");
+			
 			var message = 	id + '\n' + 
 							procedure + '\n' + 
 							this._parseOutMessage(data);

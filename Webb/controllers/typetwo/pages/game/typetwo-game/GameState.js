@@ -78,37 +78,23 @@ var GameState = function()
 							config.webSocket.order.sendQuery							
 							(
 									queryString,
+									null,
 									function(response)
 									{
-										console.log(response);
-										
-										if(response.data === true)
+										response = response.data;
+										if(response.success === true)
 										{
 											console.log("Unit purchase succeeded.");
 											
-											config.webSocket.fetchData.sendQuery
-											(
-												"getUnitsByZoneId\n" + zone.getId(),
-												function(response)
-												{
-													response = response.data;
-													
-													for(var i = 0; i < response.length; i++)
-														GameData.units.insert(response[i].unit_id, response[i]);
-													
-													console.log("derp");
-													
-													GUIEvents.depopulateZoneUnitList.trigger();
-													GUIEvents.populateZoneUnitList.trigger(zone);
-												},
-												function()
-												{
-													console.log("failed get units fetch by zone");
-												}
-											);
-											
+											for(var i = 0; i < response.data.length; i++)
+											{
+												var unit = response.data[i];
+												GameData.units.insert(unit.unit_id, unit);
+											}
+
+											GUIEvents.depopulateZoneUnitList.trigger();
+											GUIEvents.populateZoneUnitList.trigger(zone);
 										}
-											
 										else
 											console.log("Unit purchase failed.");										
 									},

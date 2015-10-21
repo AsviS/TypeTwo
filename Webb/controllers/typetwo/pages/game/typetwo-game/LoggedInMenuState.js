@@ -30,7 +30,13 @@ var LoggedInMenuState = function()
 		var self = this;
 		var getUnits = function()
 		{
-			config.webSocket.fetchData.sendQuery("getUnits", function(response){self._text.setText(response.data);}, function(response){console.log("query timed out");});
+			config.webSocket.fetchData.sendQuery
+			(
+				"getUnits", 
+				null,
+				function(response){self._text.setText(response.data);}, 
+				function(response){console.log("query timed out");}
+			);
 		};
 		
 		var getUnitsButton = new GUIButton

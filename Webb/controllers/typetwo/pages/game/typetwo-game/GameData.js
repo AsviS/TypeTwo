@@ -13,6 +13,7 @@ var GameData = function()
 		database.sendQuery
 		(
 			"getVisibleUnits",
+			null,
 			function(response)
 			{
 				var units = response.data;
@@ -35,7 +36,8 @@ var GameData = function()
 	{
 		database.sendQuery
 		(
-			"getUnitTypes", 
+			"getUnitTypes",
+			null,
 			function(response)
 			{
 				var types = response.data;
@@ -69,6 +71,7 @@ var GameData = function()
 		database.sendQuery
 		(
 			"getUsers",
+			null,
 			function(response)
 			{
 				var users = response.data;

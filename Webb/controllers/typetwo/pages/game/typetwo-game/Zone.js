@@ -90,6 +90,7 @@ var Zone = function()
 									
 									GUIEvents.populateZoneUnitList.trigger(startZone);
 									GUIEvents.populateZoneUnitList.trigger(destinationZone);
+									GUIEvents.depopulateZoneUnitList.trigger(startZone);
 								}
 								else
 									console.log("Could not move unit(s).");

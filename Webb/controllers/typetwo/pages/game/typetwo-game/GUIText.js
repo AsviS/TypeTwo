@@ -76,6 +76,11 @@ var GUIText = function()
 			ct.fillStyle = this._fontSettings.color;
 			ct.textBaseline = this._fontSettings.baseLine;
 			
+			ct.shadowColor = "black";
+			ct.shadowOffsetX = 1;
+			ct.shadowOffsetY = 1;
+
+			
 			var yPos = transform.y;
 			for(var i = 0; i < this._text.length; i++)
 			{

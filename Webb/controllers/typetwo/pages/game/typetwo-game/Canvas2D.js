@@ -27,7 +27,10 @@ var Canvas2D = function()
 
 	Canvas2D.prototype =
 	{
-
+		width: 0, /**< Number Canvas element width */
+		height: 0, /**< Number Canvas element height */
+		context: null, /**< Object Canvas context */
+		_canvas: null, /**< Object Canvas element object */
 	};
 
 	return Canvas2D;

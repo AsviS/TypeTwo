@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * \brief Displays a progress bar during connection attempt
+ * \brief Displays a loading screen for things that take tiiiiiiiimeeeee
  */
 var LoadingState = function()
 {
@@ -10,8 +10,12 @@ var LoadingState = function()
 	 * 
 	 * \param StateStack stateStack
 	 * \param Canvas2D canvas
-	 * \param Number How long in seconds to try the connection before giving up. 
-	 * \param Socket Socket to connect with.
+	 * \param Function getProgress Function that returns either a boolean or a number in the range [0, 100]. 
+	 * If the function returns a boolean, it should return true if the loading operation is complete, else false.
+	 * If the function returns a number, it should return 100 if the loading operation is complete, else another number
+	 * in the range. The number is meant to represent the loading operation's progress in percent.
+	 * \param Function onSuccess Callback to invoke when loading is complete. Note that the LoadingState pops itself from
+	 * the state stack before calling onSuccess. Default is to do nothing.
 	 */
 	function LoadingState(stateStack, canvas, getProgress, onSuccess)
 	{
@@ -20,16 +24,9 @@ var LoadingState = function()
 		this._getProgress = getProgress;
 		this._onSuccess = onSuccess || function(){};
 		
-		
-		
-		var text = new GUIText(["Loading..."]);
-		text.setPosition(canvas.width / 4 + 10, canvas.height * 4 / 6);
-		text.setColor('white');
-		
-		
 		this._guiContainer = new GUIContainer
 		(
-			[text], 
+			[], 
 			new Rect(0, 0, canvas.width, canvas.height)
 		);
 		
@@ -41,7 +38,13 @@ var LoadingState = function()
 		{
 			this._loadingBar = new GUIProgressBar(new Rect(canvas.width / 4, canvas.height * 4 / 6, canvas.width / 2, canvas.height / 20));
 			this._guiContainer.attachChild(this._loadingBar);
-		}			
+		}		
+		
+		var text = new GUIText(["Loading..."]);
+		text.setPosition(canvas.width / 4 + 10, canvas.height * 4 / 6);
+		text.setColor('white');
+		
+		this._guiContainer.attachChild(text);
 	}
 						
 
@@ -51,7 +54,6 @@ var LoadingState = function()
 		_loadingBar:		null, /**< GUIProgressBar */
 		_getProgress: null, /**< Function Get current progress of whatever is loading. */
 		_onSuccess: null,	/**< Function Called when loading is complete */
-		_isDone: false,
 
 		/**
 		 * \brief Update connection bar
@@ -60,19 +62,16 @@ var LoadingState = function()
 		 * \returns Boolean
 		 */
 		update: function(dt)
-		{
-			this._stateStack.focus(this);
-			
+		{			
 			var progress = this._getProgress();
-			
-			if((progress === 100 || progress === true) && this._isDone === false)
+
+			if(progress === 100 || progress === true)
 			{
-				this._onSuccess();
-				this._isDone = true;
 				this._stateStack.pop();
+				this._onSuccess();
 			}
 			else if(this._loadingBar)
-				this._loadingBar.setProgress(progress);
+				this._loadingBar.setProgress(progress / 100);
 
 			return false;
 		},

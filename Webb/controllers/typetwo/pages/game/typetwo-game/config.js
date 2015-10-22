@@ -19,7 +19,7 @@ var config =
 		config =
 		{
 			ASSETS_PATH: '../typetwo-game/assets', /**< String Path to asset files */
-			webSocket: /**< Array WebSocket connections.*/
+			webSocket: /**< Object WebSocket connections.*/
 			{
 				order: new Socket('localhost', 8080, new OrderProtocol()), 			/**< Socket Order connection. */
 				chat: new Socket('localhost', 8080, 'chat'),						/**< Socket Chat connection. */

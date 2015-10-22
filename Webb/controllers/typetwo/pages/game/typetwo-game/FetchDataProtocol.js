@@ -13,12 +13,12 @@ var FetchDataProtocol = function()
 		WebSocketSubProtocol.call(this, 'fetch-data');
 	};
 	
-	var DataTypes =
+	function Column(name, type)
 	{
-		String: 12,
-	};
+		this.name = name;
+		this.type = type;
+	}
 	
-
 	$.extend(FetchDataProtocol.prototype, WebSocketSubProtocol.prototype,
 	{
 		/**
@@ -34,40 +34,51 @@ var FetchDataProtocol = function()
 		
 		parseDataString: function(data)
 		{
-			if(data.length <= 1)
+			if(data.length <= 2)
 				return [];
 			
+			var columns = FetchDataProtocol.prototype.parseDataColumns(data);
+
+			return FetchDataProtocol.prototype.parseDataRows(data, columns);
+		},
+		
+		parseDataColumns: function(data)
+		{
 			var columns = data[0].split(',');
-			var numColumns = columns.length;
 
 			var columnData = [];
-			columnData.length = numColumns;
+			columnData.length = columns.length;
 			for(var i = 0; i < columns.length; i++)
 			{
 				var column = columns[i].split(' ');
 				var dataType = column[0];
 				var name = column[1];
 				
-				columnData[i] = 
-				{
-					name: name, 
-					type: dataType
-				};
+				columnData[i] = new Column(name, dataType);
 			}
 			
+			return columnData;
+		},
+		
+		parseDataRows: function(data, columns)
+		{
 			var rows = [];
-			rows.length = (data.length - 1) / numColumns;
-			for(var i = 1; i < data.length; i += numColumns)
+			rows.length = (data.length - 1) / columns.length;
+			var rowIndex = 0;
+			for(var i = 1; i < data.length; i += columns.length)
 			{
 				var row = {};
-				for(var j = 0; j + i < data.length && j < numColumns; j++)
-					row[columnData[j].name] = data[j + i];
+				for(var j = 0; j + i < data.length && j < columns.length; j++)
+					row[columns[j].name] = data[j + i];
 				
-				rows[(i - 1) / numColumns] = row;
+				rows[rowIndex] = row;
+				rowIndex++;
 			}
-		
+			
 			return rows;
 		},
+		
+
 		
 		_parseOutMessage: function(data)
 		{

@@ -45,7 +45,7 @@ var Socket = function()
 		_port: 0, /**< Number Port number */
 		_websocket: null, /**< WebSocket WebSocket connection */
 		_protocol: null, /**< WebSocketSubProtocol Connection protocol used */
-		_status: Socket.statusID.UNINITIALIZED, /**< Socket.statusID Current connection status */
+		status: Socket.statusID.UNINITIALIZED, /**< Socket.statusID Current connection status */
 		_onOpenCallbacks: null, /**< Array Functions to be called when connetion is opened */
 		
 		_messagesFrontBuffer: null, /**< Array Front buffer of received messages. This buffer is shown to the outside. */
@@ -75,7 +75,7 @@ var Socket = function()
 		 */
 		init: function(username, password, stateStack, canvas)
 		{
-			if(this._status === Socket.statusID.CONNECTING)
+			if(this.status === Socket.statusID.CONNECTING)
 				return;
 
 			this.disconnect();
@@ -83,7 +83,7 @@ var Socket = function()
 			var url = 'ws://' + this._host + ':' + this._port + "/" + username + '/' + password;
 			this._websocket = new WebSocket(url, this._protocol.getName());
 			
-			this._status = Socket.statusID.CONNECTING;
+			this.status = Socket.statusID.CONNECTING;
 			
 			var self = this;
 			this._websocket.onopen = function(){self._onOpen();};
@@ -101,7 +101,7 @@ var Socket = function()
 		 */
 		send: function(procedure, data)
 		{
-			if(this._status === Socket.statusID.OPEN)
+			if(this.status === Socket.statusID.OPEN)
 			{
 				var message = this._protocol.parseOutMessage(0, procedure, data);
 				this._websocket.send(message);
@@ -128,7 +128,7 @@ var Socket = function()
 		sendQuery: function(procedure, data, success, fail, timeOut)
 		{
 			
-			if(this._status === Socket.statusID.OPEN)
+			if(this.status === Socket.statusID.OPEN)
 			{
 				var id = WebSocketQueryManager.pushQuery(success, fail, timeOut);
 				var query = this._protocol.parseOutMessage(id, procedure, data);
@@ -188,7 +188,7 @@ var Socket = function()
 		 */
 		_onOpen: function()
 		{
-			this._status = Socket.statusID.OPEN;
+			this.status = Socket.statusID.OPEN;
 			for(var i = 0; i < this._onOpenCallbacks.length; i++)
 				this._onOpenCallbacks[i]();
 				
@@ -219,7 +219,7 @@ var Socket = function()
 		_onClose: function() 
 		{
 			console.log("Closed!");
-			this._status = Socket.statusID.CLOSED;
+			this.status = Socket.statusID.CLOSED;
 		},
 	};
 

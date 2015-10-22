@@ -11,6 +11,12 @@ Stream<Procedure, Result...>::Stream(const Procedure& procedure)
     mStream->set_commit(0);
 }
 
+template <typename Procedure, typename... Result>
+Stream<Procedure, Result...>::~Stream()
+{
+    commit();
+}
+
 ///////////////////////////////////
 
 template <typename Procedure, typename... Result>

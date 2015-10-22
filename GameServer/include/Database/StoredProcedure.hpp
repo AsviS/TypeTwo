@@ -130,6 +130,11 @@ namespace StoredProcedure
                 ///
                 void executeParameters(otl_stream& stream, ParamTypes... params) const;
 
+                /// \brief Commit any modifications of the database to the procedure's connection.
+                ///
+                /// \return void
+                ///
+                ///
                 void commit() const;
 
             private:

@@ -122,10 +122,7 @@ const SubProtocol& SubProtocols::ORDER = SubProtocol
                 }
 
                 if(success)
-                {
                     sendResponse(connection, id, true);
-                    moveStream.commit();
-                }
             }
 
 

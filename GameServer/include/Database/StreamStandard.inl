@@ -9,6 +9,14 @@ Stream<Procedure>::Stream(const Procedure& procedure)
 ///////////////////////////////////
 
 template<typename Procedure>
+Stream<Procedure>::~Stream()
+{
+    commit();
+}
+
+///////////////////////////////////
+
+template<typename Procedure>
 template<typename... ParamTypes>
 void Stream<Procedure>::execute(ParamTypes... params)
 {

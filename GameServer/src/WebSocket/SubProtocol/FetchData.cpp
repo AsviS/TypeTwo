@@ -71,22 +71,8 @@ const SubProtocol& SubProtocols::FETCH_DATA = SubProtocol
             }
             else if(procedure == "getVisibleUnits")
             {
-                // Just get all of them, for now.
+                // Just get all of them for now.
                 connection.sendString(id + '\n' + Stream::call(SP::GET_ALL_UNITS));
-
-
-                /*
-                int userId;
-                SP::GET_USER_ID.call(connection.getUsername(), userId);
-
-                std::vector<int> zoneIds = SP::GET_USER_ZONE_IDS.call<int>(userId);
-
-                auto stream = Stream::create(SP::GET_UNITS_BY_ZONE_ID);
-                for(int zoneId : zoneIds)
-                    stream.execute(zoneId);
-
-                connection.sendString(id + '\n' + stream.fetch());
-                */
             }
             else if(procedure == "getUsers")
             {

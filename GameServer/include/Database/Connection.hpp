@@ -44,6 +44,11 @@ class Connection
         ///
         otl_connect& getConnection();
 
+        /// \brief Commit any database modifications made with this connection.
+        ///
+        /// \return void
+        ///
+        ///
         void commit() const;
 
     private:

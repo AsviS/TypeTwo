@@ -30,6 +30,33 @@ class Stream
         ///
         Stream(const Procedure& procedure);
 
+        /// \brief Destructor
+        ///
+        ///
+        ///
+        ~Stream();
+
+        /// \brief Reset default constructor to default
+        ///
+        ///
+        ///
+        Stream()                            = default;
+
+        /// \brief Reset assignment constructor to default
+        ///
+        /// \param other Stream&&
+        ///
+        ///
+        Stream(Stream&& other)              = default;
+
+        /// \brief Reset assignment operator to default
+        ///
+        /// \param other Stream&&
+        /// \return Stream&
+        ///
+        ///
+        Stream& operator=(Stream&& other)   = default;
+
         /// \brief Execute query on stream
         ///
         /// \param typename... ParamTypes Query parameter types
@@ -51,7 +78,11 @@ class Stream
         template<typename RowType, typename... ParamTypes>
         void execute(std::vector<RowType>& rows, ParamTypes... params);
 
-
+        /// \brief Commit any modifications of the database to the procedure's connection.
+        ///
+        /// \return void
+        ///
+        ///
         void commit() const;
 
     private:

@@ -40,7 +40,7 @@ var GUIButton = function()
 
 	$.extend(GUIButton.prototype, GUIElement.prototype,
 	{
-		_text: undefined, /**< String Text shown in the middle of the button. */
+		_text: null, /**< String Text shown in the middle of the button. */
 		
 		/**
 		 * \brief Render this object

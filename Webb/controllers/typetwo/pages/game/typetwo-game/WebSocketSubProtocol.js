@@ -48,7 +48,7 @@ var WebSocketSubProtocol = function()
 		},
 		
 		/**
-		 * \brief Parse a message.
+		 * \brief Parse an incoming message.
 		 * 
 		 * First the message is parsed in accordance to the standard subprotocol.
 		 * Then it is passed along to the actual subprotocol's _parseInMessage function.
@@ -67,6 +67,16 @@ var WebSocketSubProtocol = function()
 			return new Message(id, this._parseInMessage(message));
 		},
 		
+		/**
+		 * \brief Parse outgoing message.
+		 * 
+		 * First the message is parsed in accordance to the standard subprotocol.
+		 * Then it is passed along to the actual subprotocol's _parseOutMessage function.
+		 * 
+		 * \param Number id Unique identifier
+		 * \param String procedure Name of procedure to call
+		 * \param Array data Data to send
+		 */
 		parseOutMessage: function(id, procedure, data)
 		{
 			data = data || [];
@@ -82,7 +92,7 @@ var WebSocketSubProtocol = function()
 		},
 		
 		/**
-		 * \brief Parse message in accordance to this subprotocol
+		 * \brief Parse incoming message in accordance to this subprotocol
 		 * 
 		 * This function is meant to be overridden by inheriting subprotocol.
 		 * 
@@ -95,6 +105,15 @@ var WebSocketSubProtocol = function()
 			return null;
 		},
 		
+		/**
+		 * \brief Parse outgoing message in accordance to this subprotocol
+		 * 
+		 * This function is meant to be overridden by inheriting subprotocol.
+		 * 
+		 * \param Array message Array to parse
+		 * 
+		 * \returns String Parsed message
+		 */
 		_parseOutMessage: function(message)
 		{
 			return null;

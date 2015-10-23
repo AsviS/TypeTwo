@@ -1,7 +1,15 @@
 'use strict';
 
+/**
+ * \brief Organize GUI elements as a list
+ */
 var GUIList = function()
 {
+	/**
+	 * \brief Constructor
+	 * 
+	 * \param Vector position
+	 */
 	function GUIList(position)
 	{
 		GUIContainer.call(this);
@@ -13,8 +21,13 @@ var GUIList = function()
 
 	$.extend(GUIList.prototype, GUIElement.prototype, GUIContainer.prototype,
 	{
-		_gapThickness: 5,
+		_gapThickness: 5, /**< Number Width of gap between each element */
 		
+		/**
+		 * \brief Add a GUI element to the bottom of the list
+		 * 
+		 * \param GUIElement element
+		 */
 		appendElement: function(element)
 		{			
 			if(this._children.size() > 0)
@@ -38,12 +51,23 @@ var GUIList = function()
 			this.attachChild(element);
 		},
 		
+		/**
+		 * \brief Update this node
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		_updateCurrent: function(dt)
 		{
 			GUIContainer.prototype._updateCurrent.call(this, dt);
 			this._pack();
 		},
 		
+		/**
+		 * \brief Adjust GUI element's positions
+		 * 
+		 * If a GUI element's size changes, all elements below it
+		 * will have to be moved. 
+		 */
 		_pack: function()
 		{
 			var size = new Vector();
@@ -63,6 +87,9 @@ var GUIList = function()
 			this.setSizeVector(size);
 		},
 		
+		/**
+		 * \brief Clear list 
+		 */
 		clear: function()
 		{
 			this._children.clear();

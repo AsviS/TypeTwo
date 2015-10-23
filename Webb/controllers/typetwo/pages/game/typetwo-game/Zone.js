@@ -1,7 +1,23 @@
 'use strict';
 
+/**
+ * \brief A zone!
+ * 
+ * A zone is a GUI element with neighboring zones.
+ * It may have a parent zone and several subzones.
+ * Each zone is unique and is bound by a unique identifier.
+ */
 var Zone = function()
 {
+	/**
+	 * \brief Construct
+	 * 
+	 * \param Number id Unique identifier
+	 * \param Rect bounds Bounding box
+	 * \param Zone parentZone
+	 * \param Array subZones Array of Zone objects
+	 * \param Array borderingZones Array of Zone objects
+	 */
 	function Zone(id, bounds, parentZone, subZones, borderingZones)
 	{
 		GUIElement.call(this);
@@ -21,18 +37,29 @@ var Zone = function()
 
 	$.extend(Zone.prototype, GUIElement.prototype,
 	{
-		_id: 0,
-		_parentZone: null,
-		_subZones: null,
-		_borderingZones: null,
+		_id: 0, /**< Number Unique identifier */
+		_parentZone: null, /**< Zone Parent zone */
+		_subZones: null, /**< Array Array of Zone objects */
+		_borderingZones: null, /**< Array Array of Zone objects */
 		
-		_isNeighborActivated: false,
+		_isNeighborActivated: false, /**< Boolean Indicates whether a neighboring zone has been activated by the user. */
 		
+		/**
+		 * \brief Set bordering zones
+		 * 
+		 * \param Array borderingZones Array of Zone objects.
+		 */
 		setBorderingZones: function(borderingZones)
 		{
 			this._borderingZones = borderingZones;
 		},
 		
+		/**
+		 * \brief Render this node
+		 * 
+		 * \param Canvas.context ct Canvas context to draw to.
+		 * \param Rect transform Global transform.
+		 */
 		_renderCurrent: function(ct, transform)
 		{			
 			ct.fillStyle = 'black';
@@ -51,6 +78,11 @@ var Zone = function()
 			ct.strokeRect(transform.x, transform.y, this._bounds.width, this._bounds.height);
 		},
 
+		/**
+		 * \brief Handle device input for this node
+		 * 
+		 * \param Number dt Time per frame
+		 */
 		_handleInputCurrent: function(dt)
 		{
 			if(Input.mouse.isPressed(Input.mouse.RIGHT))
@@ -109,16 +141,29 @@ var Zone = function()
 				
 		},
 		
+		/**
+		 * \brief Called by a neighboring zone when it is activated.
+		 */
 		neighborSelect: function()
 		{
 			this._isNeighborActivated = true;
 		},
 		
+		/**
+		 * \brief Called by a neighboring zone when it is deactivated.
+		 */
 		neighborDeselect: function()
 		{
 			this._isNeighborActivated = false;
 		},
 		
+		/**
+		 * \brief Activate this element
+		 * 
+		 * This function is used by inheriting classes.
+		 * 
+		 * \returns Boolean True if operation was successful, else false.
+		 */
 		_activate: function()
 		{			
 			for(var i = 0; i < this._borderingZones.length; i++)
@@ -130,6 +175,9 @@ var Zone = function()
 			return true;
 		},
 		
+		/**
+		 * \brief Deactivate this element
+		 */
 		_deactivate: function()
 		{	
 			for(var i = 0; i < this._borderingZones.length; i++)
@@ -151,6 +199,11 @@ var Zone = function()
 			return true;
 		},
 		
+		/**
+		 * \brief Get unique zone identifier
+		 * 
+		 * \returns Number This zone's identifier.
+		 */
 		getId: function()
 		{
 			return this._id;

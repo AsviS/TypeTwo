@@ -16,9 +16,12 @@ var OrderProtocol = function()
 	$.extend(OrderProtocol.prototype, WebSocketSubProtocol.prototype, 
 	{
 		/**
-		 * \brief Parse a message into conformity with the order subprotocol.
+		 * \brief Parse an incoming message into conformity with the order subprotocol.
 		 * 
 		 * \param String message Message to parse
+		 * 
+		 * \returns Object OrderProtocol format. Contains boolean "success" indicating whether the
+		 * was accepted and an array of objects "data" containing the server's response.
 		 */
 		_parseInMessage: function(message)
 		{
@@ -29,6 +32,13 @@ var OrderProtocol = function()
 			return {success: success, data: data};
 		},
 		
+		/**
+		 * \brief Parse outgoing message into conformity with the order subprotocol
+		 * 
+		 * \param Array Array of strings to parse.
+		 * 
+		 * \returns String Parsed message.
+		 */
 		_parseOutMessage: function(data)
 		{
 			return data.join('\n');

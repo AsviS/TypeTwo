@@ -14,8 +14,18 @@ var LoginMenu = function()
 			config.webSocket.order.init(username.getText(), password.getText(), stateStack, canvas);
 			config.webSocket.fetchData.init(username.getText(), password.getText(), stateStack, canvas);
 						
-			stateStack.push(new ConnectionBarState(stateStack, canvas, 5, config.webSocket.fetchData));
-			config.webSocket.fetchData.onOpen(function(){stateStack.pop(); stateStack.push(new GameState(stateStack, canvas));});
+			stateStack.push(new ConnectionBarState
+			(
+				stateStack, 
+				canvas, 
+				5, 
+				config.webSocket.fetchData,
+				function()
+				{
+					stateStack.pop(); 
+					stateStack.push(new GameState(stateStack, canvas));
+				}
+			));
 		};
 		
 		var username = new GUITextField(new Rect(0, 0, this._width / 2, this._height / 10), login);

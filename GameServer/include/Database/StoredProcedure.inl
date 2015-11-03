@@ -111,13 +111,15 @@ otl_stream* STORED_PROCEDURE::createOtlStream() const
         stream->set_commit(M_REQUIRES_COMMIT);
         //stream->set_commit(0);
         stream->set_all_column_types(otl_all_date2str);
+
+		return stream;
     }
     catch(otl_exception& e)
     {
         throwCallExcepton(e.msg);
     }
 
-    return stream;
+    
 }
 
 ///////////////////////////////////

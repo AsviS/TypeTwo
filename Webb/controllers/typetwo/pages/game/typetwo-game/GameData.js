@@ -134,7 +134,7 @@ var GameData = function()
 		for(var i = 0; i < initFunctions.length; i++)
 			initFunctions[i]();
 		
-		delete this.init;
+		this.init = function(){};
 	};
 	
 	my.isReady = function()

@@ -22,7 +22,7 @@ using namespace WebSocket;
 #include "libwebsockets.h"
 ///////////////////////////////////
 
-Server::Server(unsigned int port, const std::vector<const SubProtocol*>& protocols)
+Server::Server(unsigned int port, const std::vector<const SubProtocol*>& protocols, SslData sslData)
 : mVerbose(false)
 {
     lws_set_log_level
@@ -46,8 +46,12 @@ Server::Server(unsigned int port, const std::vector<const SubProtocol*>& protoco
     info.uid = -1;
     info.user = this;
 
-    mContext = libwebsocket_create_context(&info);
+    info.ssl_cert_filepath = sslData.certPath;
+    info.ssl_ca_filepath = sslData.caPath;
+    info.ssl_private_key_filepath = sslData.privateKeyPath;
+    info.ssl_private_key_password = sslData.privateKeyPassword;
 
+    mContext = libwebsocket_create_context(&info);
 
     if (!mContext)
         throw std::runtime_error("Could not initialize WebSocket server.");

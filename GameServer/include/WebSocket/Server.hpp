@@ -43,14 +43,41 @@ class Server
             InvalidUserCredentials, ///< The connection passed invalid credentials.
         };
 
+        struct SslData
+        {
+
+            /// \brief
+            ///
+            /// \param const char* certPath = nullptr File path to certificate file
+            /// \param const char* caPath = nullptr File path to certificate authority file
+            /// \param const char* privateKeyPath = nullptr File path to private key file
+            /// \param const char* privateKeyPassword = nullptr Password to private key file (if any).
+            ///
+            ///
+            SslData(const char* certPath = nullptr, const char* caPath = nullptr, const char* privateKeyPath = nullptr, const char* privateKeyPassword = nullptr)
+            : certPath(certPath)
+            , caPath(caPath)
+            , privateKeyPath(privateKeyPath)
+            , privateKeyPassword(privateKeyPassword)
+            {
+            };
+
+            const char* certPath;
+            const char* caPath;
+            const char* privateKeyPath;
+            const char* privateKeyPassword;
+        };
+
     public:
         /// \brief Constructor
         ///
         /// \param port unsigned int Port to listen to
         /// \param protocols const std::vector<WebSocketSubProtocol::Ptr>& Protocols to respond to
+        /// \param SslData() SslData sslData= Used for SSL server.
         ///
         ///
-        Server(unsigned int port, const std::vector<const SubProtocol*>& protocol);
+        ///
+        Server(unsigned int port, const std::vector<const SubProtocol*>& protocol, SslData sslData = SslData());
 
         /// \brief Destructor
         ///

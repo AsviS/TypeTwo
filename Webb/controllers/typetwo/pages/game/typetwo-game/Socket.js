@@ -80,7 +80,9 @@ var Socket = function()
 
 			this.disconnect();
 	
-			var url = 'ws://' + this._host + ':' + this._port + "/" + username + '/' + password;
+			var protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+	
+			var url = protocol + this._host + ':' + this._port + "/" + username + '/' + password;
 			this._websocket = new WebSocket(url, this._protocol.getName());
 			
 			this.status = Socket.statusID.CONNECTING;
